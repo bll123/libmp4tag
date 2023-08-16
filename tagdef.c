@@ -39,6 +39,7 @@ const mp4tagdef_t mp4tags [] = {
   { "ldes", "podcastdescription", MP4TAG_TYPE_UNKNOWN, },
   { "egid", "podcastid", MP4TAG_TYPE_UNKNOWN, },
   { "keyw", "podcastkeywords", MP4TAG_TYPE_UNKNOWN, },
+  { "ownr", "owner", MP4TAG_TYPE_STR, },
   { "purl", "podcasturl", MP4TAG_TYPE_STR, },
   { "pgap", "gaplessplayback", MP4TAG_TYPE_BOOL, },
   { "purd", "purchasedate", MP4TAG_TYPE_STR, },

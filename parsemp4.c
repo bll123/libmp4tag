@@ -506,6 +506,8 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
     p += tlen;
   }
 
+// fprintf (stdout, "== %s\n", tnm);
+
 // ### search for tnm in tagdefs
 
   memcpy (&tlen, p, sizeof (uint32_t));
@@ -524,12 +526,15 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
   p += sizeof (uint32_t) + sizeof (uint32_t);
 
   /* general data */
-  if ((tflag & 0x00ffffff) == 0) {
+  if ((tflag & 0x00ffffff) == 0 ||
+      (tflag & 0x00ffffff) == 0x15) {
     /* what follows depends on the identifier */
 
 // fprintf (stdout, "parse: %s %d\n", tnm, (int) tlen);
     if (strcmp (tnm, "disk") == 0 ||
         strcmp (tnm, "trkn") == 0) {
+      /* pair of 32 bit and 16 bit numbers */
+      /* why did they put the larger number in the smaller field ? */
 // fprintf (stdout, "  pair\n");
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);
@@ -538,17 +543,13 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
       t16 = be16toh (t16);
       fprintf (stdout, "%s=(%d, %d)\n", tnm, (int) t32, (int) t16);
       /* trkn has an additional two trailing bytes */
-    } else if (tlen == 8) {
-// fprintf (stdout, "  64\n");
-      memcpy (&t64, p, sizeof (uint64_t));
-      t64 = be64toh (t64);
-      fprintf (stdout, "%s=%ld\n", tnm, (long) t64);
-    } else if (tlen == 1) {
-// fprintf (stdout, "  8\n");
-      memcpy (&t8, p, sizeof (uint8_t));
-      fprintf (stdout, "%s=%d\n", tnm, t8);
+    } else if (tlen == 4) {
+// fprintf (stdout, "  32 (4)\n");
+      memcpy (&t32, p, sizeof (uint32_t));
+      t32 = be32toh (t32);
+      fprintf (stdout, "%s=%d\n", tnm, (int) t32);
     } else if (tlen == 2) {
-// fprintf (stdout, "  16\n");
+// fprintf (stdout, "  16 (2)\n");
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
       if (strcmp (tnm, "gnre") == 0) {
@@ -560,16 +561,20 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
       } else {
         fprintf (stdout, "%s=%d\n", tnm, t16);
       }
+    } else if (tlen == 8) {
+// fprintf (stdout, "  64 (8)\n");
+      memcpy (&t64, p, sizeof (uint64_t));
+      t64 = be64toh (t64);
+      fprintf (stdout, "%s=%ld\n", tnm, (long) t64);
+    } else if (tlen == 1) {
+// fprintf (stdout, "  8 (1)\n");
+      memcpy (&t8, p, sizeof (uint8_t));
+      fprintf (stdout, "%s=%d\n", tnm, t8);
     } else if (tlen == 1) {
 // fprintf (stdout, "  8\n");
       memcpy (&t8, p, sizeof (uint8_t));
       fprintf (stdout, "  ");
-      fprintf (stdout, "%s=%d\n", (int) t8);
-    } else if (tlen == 4) {
-// fprintf (stdout, "  32\n");
-      memcpy (&t32, p, sizeof (uint32_t));
-      t32 = be32toh (t32);
-      fprintf (stdout, "%s=%d\n", (int) t32);
+      fprintf (stdout, "%s=%d\n", tnm, (int) t8);
     } else {
       fprintf (stdout, "%s=(binary data)\n", tnm);
     }
@@ -577,24 +582,10 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
 
   /* picture */
   if ((tflag & 0x00ffffff) == 0x0d) {
-    fprintf (stdout, "%s=(%ld)\n", tnm, (long) tlen);
+    fprintf (stdout, "%s=jpeg (%ld)\n", tnm, (long) tlen);
   }
   if ((tflag & 0x00ffffff) == 0x0e) {
-    fprintf (stdout, "%s=(%ld)\n", tnm, (long) tlen);
-  }
-
-  /* tempo, compilation (cpil), shwm, pgap */
-  if ((tflag & 0x00ffffff) == 0x15) {
-    if (tlen == 2) {
-      memcpy (&t16, p, sizeof (uint16_t));
-      t16 = be16toh (t16);
-      fprintf (stdout, "%s=%d\n", tnm, (int) t16);
-    } else if (tlen == 1) {
-      memcpy (&t8, p, sizeof (uint8_t));
-      fprintf (stdout, "%s=%d\n", tnm, (int) t8);
-    } else {
-      fprintf (stdout, "  unhandled len\n");
-    }
+    fprintf (stdout, "%s=png (%ld)\n", tnm, (long) tlen);
   }
 
   /* string type */

@@ -3,9 +3,11 @@
 PKGNM=libmp4tag
 CLI_NM=mp4tagcli
 
-LIB_OBJ=$(PKGNM).o parsemp4.o tagdef.o 
+LIB_OBJ=$(PKGNM).o parsemp4.o tagdef.o
 CLI_OBJ=$(CLI_NM).o
 EXE_EXT=
+
+CFLAGS=-Wall -Wextra
 
 .PHONY: all clean
 all:
