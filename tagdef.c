@@ -8,7 +8,7 @@
 #include "libmp4tagint.h"
 
 /* must be sorted in ascii order */
-const mp4tag_t mp4tags [] = {
+const mp4tagdef_t mp4tags [] = {
   { "----:com.apple.iTunes:MusicBrainz Release Group Id", "MUSICBRAINZ_RELEASEGROUPID", MP4TAG_TYPE_STR, },
   { "----:com.apple.iTunes:MusicBrainz Original Artist Id", "MUSICBRAINZ_ORIGINALARTISTID", MP4TAG_TYPE_STR, },
   { "----:com.apple.iTunes:MusicBrainz Original Album Id", "MUSICBRAINZ_ORIGINALALBUMID", MP4TAG_TYPE_STR, },

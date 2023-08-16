@@ -3,8 +3,15 @@
 
 #include "libmp4tag.h"
 
+typedef struct mp4tag {
+  char    *name;
+  char    *data;
+} mp4tag_t;
+
 typedef struct libmp4tag {
   FILE      *fh;
+  mp4tag_t  *tags;
+  int       tagcount;
 } libmp4tag_t;
 
 /* tagdef.c */
@@ -20,9 +27,9 @@ typedef struct {
   const char  *nm;
   const char  *vorbisname;
   int         type;
-} mp4tag_t;
+} mp4tagdef_t;
 
-extern const mp4tag_t mp4tags [];
+extern const mp4tagdef_t mp4tags [];
 
 /* parsemp4.c */
 

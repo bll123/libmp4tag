@@ -27,6 +27,8 @@ mp4tag_open (const char *fn)
 
   libmp4tag = malloc (sizeof (libmp4tag_t));
   libmp4tag->fh = fopen (fn, "rb");
+  libmp4tag->tags = NULL;
+  libmp4tag->tagcount = 0;
 
   return libmp4tag;
 }
