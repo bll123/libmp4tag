@@ -64,38 +64,11 @@ typedef struct {
   uint32_t    moreflags;
 } boxmdhd8_t;
 
-static void dump (FILE *fh);
 static void process_mdhd (const char *data);
 static void process_tag (const char *nm, const char *data);
 
-int
-main (int argc, const char *argv [])
-{
-  FILE        *fh;
-
-  assert (sizeof (boxhead_t) == 8);
-  assert (sizeof (boxmdhd4_t) == 24);
-  assert (sizeof (boxmdhd8pack_t) == 36);
-
-  if (argc < 2) {
-    fprintf (stderr, "no file specified %d\n", argc);
-    exit (1);
-  }
-
-  fh = fopen (argv [1], "rb");
-  if (fh == NULL) {
-    fprintf (stderr, "unable to open %s\n", argv [1]);
-    exit (1);
-  }
-
-  dump (fh);
-
-  fclose (fh);
-  exit (0);
-}
-
-static void
-dump (FILE *fh)
+void
+parsemp4 (FILE *fh)
 {
   boxhead_t       bh;
   boxdata_t       bd;
@@ -107,6 +80,10 @@ dump (FILE *fh)
   int             level = 0;
   size_t          currlen [LEVEL_MAX];
   size_t          usedlen [LEVEL_MAX];
+
+  assert (sizeof (boxhead_t) == 8);
+  assert (sizeof (boxmdhd4_t) == 24);
+  assert (sizeof (boxmdhd8pack_t) == 36);
 
   for (int i = 0; i < LEVEL_MAX; ++i) {
     currlen [i] = 0;

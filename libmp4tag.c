@@ -1,8 +1,13 @@
 /*
  * Copyright 2023 Brad Lanam Pleasant Hill CA
+ *
+ * Resources:
+ *    https://picard-docs.musicbrainz.org/en/appendices/tag_mapping.html
+ *    https://xhelmboyx.tripod.com/formats/mp4-layout.txt
+ *    https://docs.mp3tag.de/mapping/
  */
 
-#include "config.h"
+// #include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

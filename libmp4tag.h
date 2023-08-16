@@ -18,6 +18,10 @@ typedef struct {
 
 extern const mp4tag_t mp4tags [];
 
+/* parsemp4.c */
+
+void parsemp4 (FILE *fh);
+
 /* versioning */
 
 #define CPP_STR(x) #x
