@@ -7,22 +7,21 @@
 int
 main (int argc, const char *argv [])
 {
-  FILE        *fh;
+  libmp4tag_t   *libmp4tag;
 
   if (argc < 2) {
     fprintf (stderr, "no file specified %d\n", argc);
     exit (1);
   }
 
-  fh = fopen (argv [1], "rb");
-  if (fh == NULL) {
+  libmp4tag = mp4tag_open (argv [1]);
+  if (libmp4tag == NULL) {
     fprintf (stderr, "unable to open %s\n", argv [1]);
     exit (1);
   }
 
-  parsemp4 (fh);
-
-  fclose (fh);
+  mp4tag_parse (libmp4tag);
+  mp4tag_free (libmp4tag);
   exit (0);
 }
 

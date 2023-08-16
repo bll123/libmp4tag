@@ -13,6 +13,7 @@
 #include <endian.h>
 
 #include "libmp4tag.h"
+#include "libmp4tagint.h"
 
 enum {
   IDENT_LEN = 4,
@@ -68,7 +69,7 @@ static void process_mdhd (const char *data);
 static void process_tag (const char *nm, const char *data);
 
 void
-parsemp4 (FILE *fh)
+parsemp4 (libmp4tag_t *libmp4tag)
 {
   boxhead_t       bh;
   boxdata_t       bd;
@@ -90,8 +91,8 @@ parsemp4 (FILE *fh)
     usedlen [i] = 0;
   }
 
-  rrc = fread (&bh, sizeof (boxhead_t), 1, fh);
-  while (! feof (fh) && rrc == 1) {
+  rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
+  while (! feof (libmp4tag->fh) && rrc == 1) {
     /* the total length includes the length and the identifier */
     bd.len = be32toh (bh.len) - sizeof (boxhead_t);
     if (*bh.nm == '\xa9') {
@@ -109,7 +110,7 @@ parsemp4 (FILE *fh)
     needdata = false;
     inclevel = false;
 
-    fprintf (stdout, "%*s %2d %.5s: %8d\n", level*2, " ", level, bd.nm, bd.len);
+    // fprintf (stdout, "%*s %2d %.5s: %8d\n", level*2, " ", level, bd.nm, bd.len);
 
     /* track the current level's length */
     currlen [level] = bd.len;
@@ -144,13 +145,13 @@ parsemp4 (FILE *fh)
 
     if (needdata && bd.len > 0) {
       bd.data = malloc (bd.len);
-      rrc = fread (bd.data, bd.len, 1, fh);
+      rrc = fread (bd.data, bd.len, 1, libmp4tag->fh);
       if (rrc != 1) {
         fprintf (stderr, "failed to read %d bytes\n", bd.len);
       }
     }
     if (! needdata && skiplen > 0) {
-      rrc = fseek (fh, skiplen, SEEK_CUR);
+      rrc = fseek (libmp4tag->fh, skiplen, SEEK_CUR);
       if (rrc != 0) {
         fprintf (stderr, "failed to seek %d bytes\n", bd.len);
       }
@@ -196,7 +197,7 @@ parsemp4 (FILE *fh)
     }
 
     inclevel = false;
-    rrc = fread (&bh, sizeof (boxhead_t), 1, fh);
+    rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
   }
 }
 
@@ -240,21 +241,62 @@ static void
 process_tag (const char *nm, const char *data)
 {
   const char  *p;
+  char        tnm [100];
 
-// ### bsearch tagdefs for the correct entry. (tagdef.c)
-// ### check for string
+  strcpy (tnm, nm);
+  if (strcmp (nm, "----") == 0) {
+    size_t    len;
+    size_t    tlen;
 
-  if (strcmp (nm, COPYRIGHT_STR "too") == 0 ||
-      strcmp (nm, "aART") == 0 ||
-      strcmp (nm, COPYRIGHT_STR "nam" ) == 0 ||
-      strcmp (nm, COPYRIGHT_STR "alb" ) == 0 ||
-      strcmp (nm, COPYRIGHT_STR "ART") == 0) {
+    strcpy (tnm, nm);
+    len = strlen (nm);
+    tnm [len++] = ':';
+    tnm [len] = '\0';
+
+    p = data;
+
+    memcpy (&tlen, p, sizeof (uint32_t));
+    tlen = be32toh (tlen);
+    tlen -= sizeof (boxhead_t);
+    tlen -= 4;
+    /* what does 'mean' stand for? i would call it 'vendor' */
+    /* ident len + ident (== "mean") + 4 bytes flags */
+    p += sizeof (uint32_t);
+    p += IDENT_LEN;
+    p += 4;
+    memcpy (tnm + len, p, tlen);
+    len += tlen;
+    tnm [len++] = ':';
+    tnm [len] = '\0';
+    p += tlen;
+
+    memcpy (&tlen, p, sizeof (uint32_t));
+    tlen = be32toh (tlen);
+    tlen -= sizeof (boxhead_t);
+    tlen -= 4;
+    /* ident len + ident (== "name") + 4 bytes flags */
+    p += sizeof (uint32_t);
+    p += IDENT_LEN;
+    p += 4;
+    memcpy (tnm + len, p, tlen);
+    len += tlen;
+    tnm [len] = '\0';
+  }
+
+fprintf (stdout, "%s\n", tnm);
+// ### search for tnm in tagdefs
+
+  if (strcmp (tnm, COPYRIGHT_STR "too") == 0 ||
+      strcmp (tnm, "aART") == 0 ||
+      strcmp (tnm, COPYRIGHT_STR "nam" ) == 0 ||
+      strcmp (tnm, COPYRIGHT_STR "alb" ) == 0 ||
+      strcmp (tnm, COPYRIGHT_STR "ART") == 0) {
     p = data;
     /* ident len + ident (== "data") */
-    p += sizeof (int32_t);
+    p += sizeof (uint32_t);
     p += IDENT_LEN;
     /* 4 bytes flags + reserved value */
-    p += 4 + sizeof (int32_t);
+    p += 4 + sizeof (uint32_t);
     fprintf (stdout, "  ");
     fprintf (stdout, "%s\n", p);
   }

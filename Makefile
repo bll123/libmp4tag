@@ -15,7 +15,8 @@ all:
 
 clean:
 	-rm -f $(LIB_OBJ) $(CLI_OBJ) \
-		$(PKGNM).so $(PKGNM).so.1 $(CLI_NM)$(EXE_EXT)
+		$(PKGNM).so $(PKGNM).so.1 $(CLI_NM)$(EXE_EXT) \
+		w ww *~
 
 # libraries
 
@@ -25,7 +26,7 @@ $(PKGNM).so.$(APIVERS): $(LIB_OBJ)
 		-o $@ $(LIB_OBJ)
 
 $(PKGNM).so: $(PKGNM).so.$(APIVERS)
-	ln -s $(PKGNM).so.$(APIVERS) $(PKGNM).so
+	ln -sf $(PKGNM).so.$(APIVERS) $(PKGNM).so
 
 # executables
 

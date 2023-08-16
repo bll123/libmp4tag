@@ -14,9 +14,64 @@
 #include <string.h>
 
 #include "libmp4tag.h"
+#include "libmp4tagint.h"
+
+libmp4tag_t *
+mp4tag_open (const char *fn)
+{
+  libmp4tag_t *libmp4tag = NULL;
+
+  if (fn == NULL) {
+    return NULL;
+  }
+
+  libmp4tag = malloc (sizeof (libmp4tag_t));
+  libmp4tag->fh = fopen (fn, "rb");
+
+  return libmp4tag;
+}
+
+void
+mp4tag_close (libmp4tag_t *libmp4tag)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+  if (libmp4tag->fh == NULL) {
+    return;
+  }
+  fclose (libmp4tag->fh);
+  libmp4tag->fh = NULL;
+}
+
+void
+mp4tag_free (libmp4tag_t *libmp4tag)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+
+  if (libmp4tag->fh != NULL) {
+    fclose (libmp4tag->fh);
+  }
+  free (libmp4tag);
+}
+
+void
+mp4tag_parse (libmp4tag_t *libmp4tag)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+  if (libmp4tag->fh == NULL) {
+    return;
+  }
+
+  parsemp4 (libmp4tag);
+}
 
 const char *
-mp4tag_version (char *vbuff, size_t sz)
+mp4tag_version (void)
 {
   return LIBMP4TAG_VERSION;
 }

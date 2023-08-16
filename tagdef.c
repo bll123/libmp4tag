@@ -5,7 +5,9 @@
 #include <string.h>
 
 #include "libmp4tag.h"
+#include "libmp4tagint.h"
 
+/* must be sorted in ascii order */
 const mp4tag_t mp4tags [] = {
   { "----:com.apple.iTunes:MusicBrainz Release Group Id", "MUSICBRAINZ_RELEASEGROUPID", MP4TAG_TYPE_STR, },
   { "----:com.apple.iTunes:MusicBrainz Original Artist Id", "MUSICBRAINZ_ORIGINALARTISTID", MP4TAG_TYPE_STR, },
@@ -29,8 +31,8 @@ const mp4tag_t mp4tags [] = {
   { "desc", "DESCRIPTION", MP4TAG_TYPE_STR, },
   { "disk", "DISCNUMBER", MP4TAG_TYPE_OTHER, },
   { "egid", "episodeglobaluniqueid", MP4TAG_TYPE_OTHER, },
-  /* standard apple genre -- uses specific id */
-  { "gnre", "GENRE", MP4TAG_TYPE_STR, },
+  /* standard apple genre -- uses numeric id */
+  { "gnre", "GENRE", MP4TAG_TYPE_OTHER, },
   { "mvc",  "MOVEMENTTOTAL", MP4TAG_TYPE_OTHER, },
   { "mvi",  "MOVEMENT", MP4TAG_TYPE_OTHER, },
   { "pcst", "podcast", MP4TAG_TYPE_BOOL, },
@@ -74,3 +76,4 @@ const mp4tag_t mp4tags [] = {
   { "©wrt", "COMPOSER", MP4TAG_TYPE_STR, },
   { "stik", "mediatype", MP4TAG_TYPE_OTHER, },
 };
+
