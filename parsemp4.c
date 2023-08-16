@@ -443,11 +443,8 @@ process_mdhd (libmp4tag_t *libmp4tag, const char *data)
   libmp4tag->samplerate = mdhd8.timescale;
   libmp4tag->duration = (int64_t)
       ((double) mdhd8.duration * 1000.0 / (double) mdhd8.timescale);
-  fprintf (stdout, "  ");
-  fprintf (stdout, "moddate: %ld ", (long) mdhd8.modifieddate);
-  fprintf (stdout, "timescale: %ld ", (long) mdhd8.timescale);
-  fprintf (stdout, "duration: %ld ", (long) libmp4tag->duration);
-  fprintf (stdout, "\n");
+  fprintf (stdout, "duration=%ld\n", (long) libmp4tag->duration);
+  fprintf (stdout, "samplerate=%d\n", libmp4tag->samplerate);
 }
 
 static void
@@ -467,7 +464,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
   if (strcmp (nm, "free") == 0) {
     memcpy (&tlen, p, sizeof (uint32_t));
     tlen = be32toh (tlen);
-    fprintf (stdout, "free block: %d\n", (int) tlen);
+    fprintf (stdout, "  free block: %d\n", (int) tlen);
     return;
   }
 
@@ -516,13 +513,13 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
   tlen -= sizeof (boxhead_t);
   tlen -= sizeof (uint32_t);  // flags
   tlen -= sizeof (uint32_t);  // reserved
-fprintf (stdout, "%s len: %d\n", tnm, (int) tlen);
+// fprintf (stdout, "%s len: %d\n", tnm, (int) tlen);
   /* ident len + ident (== "data") */
   p += sizeof (uint32_t);
   p += IDENT_LEN;
   memcpy (&tflag, p, sizeof (uint32_t));
   tflag = be32toh (tflag);
-fprintf (stdout, "== flag: %08x\n", tflag);
+// fprintf (stdout, "== flag: %08x\n", tflag);
   /* 4 bytes flags + reserved value */
   p += sizeof (uint32_t) + sizeof (uint32_t);
 
@@ -530,83 +527,71 @@ fprintf (stdout, "== flag: %08x\n", tflag);
   if ((tflag & 0x00ffffff) == 0) {
     /* what follows depends on the identifier */
 
-fprintf (stdout, "parse: %s %d\n", tnm, (int) tlen);
+// fprintf (stdout, "parse: %s %d\n", tnm, (int) tlen);
     if (strcmp (tnm, "disk") == 0 ||
         strcmp (tnm, "trkn") == 0) {
-fprintf (stdout, "  pair\n");
+// fprintf (stdout, "  pair\n");
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);
       p += sizeof (uint32_t);
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
-      fprintf (stdout, "  ");
-      fprintf (stdout, "(%d,%d)\n", (int) t32, (int) t16);
+      fprintf (stdout, "%s=(%d, %d)\n", tnm, (int) t32, (int) t16);
       /* trkn has an additional two trailing bytes */
-    } else if (tlen == 8 && strcmp (tnm, "plID") == 0) {
-fprintf (stdout, "  64\n");
+    } else if (tlen == 8) {
+// fprintf (stdout, "  64\n");
       memcpy (&t64, p, sizeof (uint64_t));
       t64 = be64toh (t64);
-    } else if (tlen == 1 &&
-	(strcmp (tnm, "akID") == 0 ||
-        strcmp (tnm, "shwm") == 0 ||
-        strcmp (tnm, "stik") == 0 ||
-        strcmp (tnm, "hdvd") == 0 ||
-        strcmp (tnm, "rtng") == 0)) {
-fprintf (stdout, "  8\n");
+      fprintf (stdout, "%s=%ld\n", tnm, (long) t64);
+    } else if (tlen == 1) {
+// fprintf (stdout, "  8\n");
       memcpy (&t8, p, sizeof (uint8_t));
-    } else if (tlen == 2 &&
-        strcmp (tnm, "gnre") == 0) {
-fprintf (stdout, "  16\n");
+      fprintf (stdout, "%s=%d\n", tnm, t8);
+    } else if (tlen == 2) {
+// fprintf (stdout, "  16\n");
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
-      fprintf (stdout, "  ");
-      fprintf (stdout, "%d ", (int) t16);
-
       if (strcmp (tnm, "gnre") == 0) {
         /* the itunes value is offset by 1 */
 	t16 -= 1;
 	if (t16 <= oldgenrelistsz) {
-          fprintf (stdout, "%s", oldgenrelist [t16]);
+          fprintf (stdout, "%s=%s\n", tnm, oldgenrelist [t16]);
 	}
+      } else {
+        fprintf (stdout, "%s=%d\n", tnm, t16);
       }
-      fprintf (stdout, "\n");
-    } else if (tlen == 1 &&
-        (strcmp (tnm, "pgap") == 0 ||
-        strcmp (tnm, "pcst") == 0)) {
-fprintf (stdout, "  bool\n");
+    } else if (tlen == 1) {
+// fprintf (stdout, "  8\n");
       memcpy (&t8, p, sizeof (uint8_t));
       fprintf (stdout, "  ");
-      fprintf (stdout, "true %d\n", t8);
+      fprintf (stdout, "%s=%d\n", (int) t8);
     } else if (tlen == 4) {
-fprintf (stdout, "  32\n");
+// fprintf (stdout, "  32\n");
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);
-      fprintf (stdout, "  ");
-      fprintf (stdout, "%d\n", (int) t32);
+      fprintf (stdout, "%s=%d\n", (int) t32);
     } else {
-fprintf (stdout, "  binary data\n");
+      fprintf (stdout, "%s=(binary data)\n", tnm);
     }
   }
 
   /* picture */
   if ((tflag & 0x00ffffff) == 0x0d) {
-    fprintf (stdout, "pic jpg\n", (int) t32);
+    fprintf (stdout, "%s=(%ld)\n", tnm, (long) tlen);
   }
   if ((tflag & 0x00ffffff) == 0x0e) {
-    fprintf (stdout, "pic png\n", (int) t32);
+    fprintf (stdout, "%s=(%ld)\n", tnm, (long) tlen);
   }
 
-  /* tempo, compilation (cpil), shwm */
+  /* tempo, compilation (cpil), shwm, pgap */
   if ((tflag & 0x00ffffff) == 0x15) {
     if (tlen == 2) {
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
-      fprintf (stdout, "  ");
-      fprintf (stdout, "%d\n", (int) t16);
+      fprintf (stdout, "%s=%d\n", tnm, (int) t16);
     } else if (tlen == 1) {
       memcpy (&t8, p, sizeof (uint8_t));
-      fprintf (stdout, "  ");
-      fprintf (stdout, "%d\n", (int) t8);
+      fprintf (stdout, "%s=%d\n", tnm, (int) t8);
     } else {
       fprintf (stdout, "  unhandled len\n");
     }
@@ -614,7 +599,6 @@ fprintf (stdout, "  binary data\n");
 
   /* string type */
   if ((tflag & 0x00ffffff) == 1) {
-    fprintf (stdout, "  ");
-    fprintf (stdout, "%.*s\n", (int) tlen, p);
+    fprintf (stdout, "%s=%.*s\n", tnm, (int) tlen, p);
   }
 }
