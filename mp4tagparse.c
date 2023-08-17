@@ -343,7 +343,7 @@ static void
 process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *data)
 {
   const char  *p;
-  char        tnm [100];
+  char        tnm [MP4TAG_ID_MAX];
   uint32_t    tflag;
   uint8_t     t8;
   uint16_t    t16;

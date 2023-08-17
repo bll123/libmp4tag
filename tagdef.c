@@ -13,7 +13,7 @@
 
 /* must be sorted in ascii order */
 /* this list is only needed to verify that the tag being set is valid */
-const mp4tagdef_t mp4tags [] = {
+const mp4tagdef_t mp4taglist [] = {
   { "aART" },
   { "catg" },
   { "covr" },
@@ -69,3 +69,4 @@ const mp4tagdef_t mp4tags [] = {
   { "©wrt" },
 };
 
+const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);

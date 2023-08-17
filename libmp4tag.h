@@ -31,6 +31,7 @@ enum {
 
 enum {
   MP4TAG_NOTFOUND = -1,
+  MP4TAG_ID_MAX = 255,
 };
 
 libmp4tag_t   * mp4tag_open (const char *fn);
@@ -61,7 +62,7 @@ const char    * mp4tag_version (void);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 0
+#define LIBMP4TAG_VERS_REVISION 1
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \

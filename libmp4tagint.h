@@ -45,10 +45,11 @@ typedef struct libmp4tag {
 /* tagdef.c */
 
 typedef struct {
-  const char  *nm;
+  const char  *name;
 } mp4tagdef_t;
 
-extern const mp4tagdef_t mp4tags [];
+extern const mp4tagdef_t mp4taglist [];
+extern const int mp4taglistlen;
 
 /* mp4tagparse.c */
 
@@ -57,8 +58,12 @@ void mp4tag_parse_file (libmp4tag_t *libmp4tag);
 /* mp4tagutil.c */
 
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
-int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *nm);
+int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag);
+bool mp4tag_check_tag (libmp4tag_t *libmp4tag, const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
+int  mp4tag_compare_list (const void *a, const void *b);
 void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz, uint32_t origflag, size_t origlen);
+void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);
+void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
 
 #endif /* INC_LIBMP4TAGINT_H */

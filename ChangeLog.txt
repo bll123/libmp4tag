@@ -2,6 +2,9 @@ libmp4tag Change Log
 
 1.0.1 alpha 2023-8-17
 
+- implemented set-tag, delete-tag, clean
+  updated cli tool.
+  tags cannot be written
 
 1.0.0 alpha 2023-8-17
 
