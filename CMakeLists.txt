@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2023 Brad Lanam Pleasant Hill CA
+# Copyright 2023 Brad Lanam Pleasant Hill CA
 #
 cmake_minimum_required (VERSION 3.18)
 
@@ -83,7 +83,6 @@ set (LIBMP4TAG_FORTIFY T)
 
 # address sanitizer
 if (LIBMP4TAG_BUILD STREQUAL "SanitizeAddress")
-  message ("Sanitize Address Build")
   set (LIBMP4TAG_FORTIFY F)
   add_compile_options (-O0)
   add_compile_options (-ggdb)
@@ -117,22 +116,18 @@ else()
   add_compile_options (-D_FORTIFY_SOURCE=0)
 endif()
 
-#### system specific compile options
+# system specific compile options
 
 if (NOT WIN32)
   SET (CMAKE_INSTALL_RPATH "\${ORIGIN}")
   if (APPLE)
+    # 10.12 = Sierra, 10.13 = High Sierra
     # 10.14 = Mojave, 10.15 = Catalina
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
-    add_compile_options (-mmacosx-version-min=10.14)
-    add_link_options (-mmacosx-version-min=10.14)
-    # The following does not work.
-    # SET (CMAKE_INSTALL_RPATH "@executable_path")
+    add_compile_options (-mmacosx-version-min=10.12)
+    add_link_options (-mmacosx-version-min=10.12)
   endif()
-
-  add_compile_options (-DMG_ARCH=MG_ARCH_UNIX)
 else()
-  add_compile_options (-DMG_ARCH=MG_ARCH_WIN32)
   add_link_options (-static-libgcc)
   add_link_options (-static-libstdc++)
 endif()
@@ -141,6 +136,8 @@ endif()
 
 include (CheckIncludeFile)
 
+check_include_file (winsock2.h _hdr_winsock2)
+check_include_file (windows.h _hdr_windows)
 check_include_file (endian.h _hdr_endian)
 
 configure_file (config.h.in config.h)

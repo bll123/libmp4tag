@@ -23,6 +23,10 @@ static FILE * mp4tag_fopen (const char *fn, const char *mode);
 static void * mp4tag_towide (const char *buff);
 #endif
 
+typedef struct libmp4tagpreserve {
+  mp4tag_t  *tags;
+  int       tagcount;
+} libmp4tagpreserve_t;
 
 libmp4tag_t *
 mp4tag_open (const char *fn)
@@ -34,8 +38,20 @@ mp4tag_open (const char *fn)
   }
 
   libmp4tag = malloc (sizeof (libmp4tag_t));
-  libmp4tag->fn = strdup (fn);
+  if (libmp4tag == NULL) {
+    return NULL;
+  }
   libmp4tag->fh = mp4tag_fopen (fn, "rb");
+  if (libmp4tag->fh == NULL) {
+    free (libmp4tag);
+    return NULL;
+  }
+  libmp4tag->fn = strdup (fn);
+  if (libmp4tag->fn == NULL) {
+    fclose (libmp4tag->fh);
+    free (libmp4tag);
+    return NULL;
+  }
   libmp4tag->tags = NULL;
   libmp4tag->creationdate = 0;
   libmp4tag->modifieddate = 0;
@@ -121,6 +137,23 @@ mp4tag_duration (libmp4tag_t *libmp4tag)
   return libmp4tag->duration;
 }
 
+int
+mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag,
+    mp4tagpub_t *mp4tagpub)
+{
+  if (libmp4tag == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (mp4tagpub == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (libmp4tag->tags == NULL) {
+    return MP4TAG_ERROR;
+  }
+
+  return MP4TAG_ERROR;
+}
+
 void
 mp4tag_iterate_init (libmp4tag_t *libmp4tag)
 {
@@ -132,12 +165,12 @@ mp4tag_iterate_init (libmp4tag_t *libmp4tag)
 }
 
 int
-mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagdisp_t *mp4tagdisp)
+mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub)
 {
   if (libmp4tag == NULL) {
     return MP4TAG_ERROR;
   }
-  if (mp4tagdisp == NULL) {
+  if (mp4tagpub == NULL) {
     return MP4TAG_ERROR;
   }
 
@@ -148,10 +181,114 @@ mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagdisp_t *mp4tagdisp)
     return MP4TAG_ERROR;
   }
 
-  mp4tagdisp->name = libmp4tag->tags [libmp4tag->iterator].name;
-  mp4tagdisp->data = libmp4tag->tags [libmp4tag->iterator].data;
-  mp4tagdisp->binary = libmp4tag->tags [libmp4tag->iterator].binary;
+  mp4tagpub->name = libmp4tag->tags [libmp4tag->iterator].name;
+  mp4tagpub->data = libmp4tag->tags [libmp4tag->iterator].data;
+  mp4tagpub->datalen = libmp4tag->tags [libmp4tag->iterator].datalen;
+  mp4tagpub->binary = libmp4tag->tags [libmp4tag->iterator].binary;
   ++libmp4tag->iterator;
+
+  return MP4TAG_OK;
+}
+
+int
+mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, const char *data)
+{
+  /* a stub for future development */
+  return MP4TAG_ERROR;
+}
+
+int
+mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz)
+{
+  /* a stub for future development */
+  return MP4TAG_ERROR;
+}
+
+int
+mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name)
+{
+  /* a stub for future development */
+  return MP4TAG_ERROR;
+}
+
+int
+mp4tag_write_tags (libmp4tag_t *libmp4tag)
+{
+  /* a stub for future development */
+  return MP4TAG_ERROR;
+}
+
+libmp4tagpreserve_t *
+mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
+{
+  libmp4tagpreserve_t *preserve = NULL;
+
+  if (libmp4tag == NULL) {
+    return NULL;
+  }
+  if (libmp4tag->tags == NULL) {
+    return NULL;
+  }
+
+  preserve = malloc (sizeof (libmp4tagpreserve_t));
+  if (preserve == NULL) {
+    return NULL;
+  }
+
+  preserve->tagcount = libmp4tag->tagcount;
+  preserve->tags = malloc (sizeof (mp4tag_t) * preserve->tagcount);
+  if (preserve->tags == NULL) {
+    free (preserve);
+    return NULL;
+  }
+
+  for (int i = 0; i < preserve->tagcount; ++i) {
+    preserve->tags [i].name = strdup (libmp4tag->tags [i].name);
+    preserve->tags [i].datalen = libmp4tag->tags [i].datalen;
+    preserve->tags [i].data = malloc (libmp4tag->tags [i].datalen);
+    if (preserve->tags [i].data != NULL) {
+      memcpy (preserve->tags [i].data, libmp4tag->tags [i].data,
+          libmp4tag->tags [i].datalen);
+    }
+  }
+
+  return preserve;
+}
+
+int
+mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve)
+{
+  if (libmp4tag == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (preserve == NULL) {
+    return MP4TAG_ERROR;
+  }
+
+  return MP4TAG_ERROR;
+}
+
+int
+mp4tag_preserve_free (libmp4tagpreserve_t *preserve)
+{
+  if (preserve == NULL) {
+    return MP4TAG_ERROR;
+  }
+
+  if (preserve->tags != NULL) {
+    for (int i = 0; i < preserve->tagcount; ++i) {
+      if (preserve->tags [i].name != NULL) {
+        free (preserve->tags [i].name);
+      }
+      if (preserve->tags [i].data != NULL) {
+        free (preserve->tags [i].data);
+      }
+    }
+    free (preserve->tags);
+    preserve->tags = NULL;
+    preserve->tagcount = 0;
+  }
+  free (preserve);
 
   return MP4TAG_OK;
 }
@@ -160,12 +297,6 @@ const char *
 mp4tag_version (void)
 {
   return LIBMP4TAG_VERSION;
-}
-
-const char *
-mp4tag_api_version (void)
-{
-  return LIBMP4TAG_API_VERSION;
 }
 
 static FILE *
@@ -193,6 +324,7 @@ mp4tag_fopen (const char *fname, const char *mode)
 }
 
 #ifdef _WIN32
+
 static void *
 mp4tag_towide (const char *buff)
 {
@@ -202,8 +334,11 @@ mp4tag_towide (const char *buff)
     /* the documentation lies; len does not include room for the null byte */
     len = MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), NULL, 0);
     tbuff = malloc ((len + 1) * sizeof (wchar_t));
-    MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), tbuff, len);
-    tbuff [len] = L'\0';
+    if (tbuff != NULL) {
+      MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), tbuff, len);
+      tbuff [len] = L'\0';
+    }
     return tbuff;
 }
+
 #endif

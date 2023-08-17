@@ -23,6 +23,9 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_
     libmp4tag->tagalloccount += 10;
     libmp4tag->tags = realloc (libmp4tag->tags,
         sizeof (mp4tag_t) * libmp4tag->tagalloccount);
+    if (libmp4tag->tags == NULL) {
+      return;
+    }
   }
   libmp4tag->tags [tagidx].name = NULL;
   libmp4tag->tags [tagidx].data = NULL;
@@ -32,17 +35,24 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_
   if (sz == MP4TAG_STRING) {
     /* string with null terminator */
     libmp4tag->tags [tagidx].data = strdup (data);
+    libmp4tag->tags [tagidx].datalen = strlen (data);
   } else if (sz < 0) {
     /* string w/o null terminator */
     sz = - sz;
     libmp4tag->tags [tagidx].data = malloc (sz + 1);
-    memcpy (libmp4tag->tags [tagidx].data, data, sz);
+    if (libmp4tag->tags [tagidx].data != NULL) {
+      memcpy (libmp4tag->tags [tagidx].data, data, sz);
+    }
     libmp4tag->tags [tagidx].data [sz] = '\0';
+    libmp4tag->tags [tagidx].datalen = sz;
   } else {
     /* binary data */
     libmp4tag->tags [tagidx].data = malloc (sz);
-    memcpy (libmp4tag->tags [tagidx].data, data, sz);
+    if (libmp4tag->tags [tagidx].data != NULL) {
+      memcpy (libmp4tag->tags [tagidx].data, data, sz);
+    }
     libmp4tag->tags [tagidx].binary = true;
+    libmp4tag->tags [tagidx].datalen = sz;
   }
   libmp4tag->tagcount += 1;
 }

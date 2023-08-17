@@ -1,3 +1,7 @@
+/*
+ * Copyright 2023 Brad Lanam Pleasant Hill CA
+ */
+
 #ifndef INC_LIBMP4TAGINT_H
 #define INC_LIBMP4TAGINT_H
 
@@ -13,6 +17,7 @@ enum {
 typedef struct mp4tag {
   char    *name;
   char    *data;
+  size_t  datalen;
   bool    binary;
 } mp4tag_t;
 

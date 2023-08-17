@@ -1,0 +1,8 @@
+syntax: regexp
+^build/
+^tmp/
+\.m4a$
+~$
+^w$
+^ww$
+^TODO$

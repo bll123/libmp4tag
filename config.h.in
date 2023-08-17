@@ -4,8 +4,8 @@
 #ifndef INC_CONFIG_H
 #define INC_CONFIG_H
 
-#cmakedefine SHLIB_EXT "${SHLIB_EXT}"
-
 #cmakedefine01 _hdr_endian
+#cmakedefine01 _hdr_windows
+#cmakedefine01 _hdr_winsock2
 
 #endif /* INC_CONFIG_H */

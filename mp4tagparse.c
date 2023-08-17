@@ -13,8 +13,9 @@
 #include <ctype.h>
 #include <assert.h>
 
-/* ### FIX will need to figure out how to do the endian swapping on windows */
-#include <endian.h>
+#if _hdr_endian
+# include <endian.h>
+#endif
 
 #include "libmp4tag.h"
 #include "libmp4tagint.h"
