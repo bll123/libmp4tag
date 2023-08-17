@@ -13,13 +13,15 @@ set (default_build_type "Release")
 
 set (CMAKE_SHARED_LIBRARY_PREFIX "")
 set (CMAKE_STATIC_LIBRARY_PREFIX "")
-set (CMAKE_INSTALL_PREFIX "")
 
 include_directories (
   "${CMAKE_BINARY_DIR}"
 )
 
-# compile options
+SET (CMAKE_SKIP_BUILD_RPATH FALSE)
+SET (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
+#### compile options
 
 add_compile_options (-fPIC)
 
@@ -77,7 +79,7 @@ if (NOT WIN32)
   add_link_options (-rdynamic)
 endif()
 
-# more compile options: fortification/address sanitizer
+#### more compile options: fortification/address sanitizer
 
 set (LIBMP4TAG_FORTIFY T)
 
@@ -116,11 +118,14 @@ else()
   add_compile_options (-D_FORTIFY_SOURCE=0)
 endif()
 
-# system specific compile options
+#### system specific compile options
 
 if (NOT WIN32)
-  SET (CMAKE_INSTALL_RPATH "\${ORIGIN}")
+  if (NOT APPLE)
+    SET (CMAKE_INSTALL_RPATH "\${ORIGIN}")
+  endif()
   if (APPLE)
+    SET (CMAKE_INSTALL_RPATH "@loader_path")
     # 10.12 = Sierra, 10.13 = High Sierra
     # 10.14 = Mojave, 10.15 = Catalina
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
@@ -132,17 +137,18 @@ else()
   add_link_options (-static-libstdc++)
 endif()
 
-# configuration
+#### configuration
 
 include (CheckIncludeFile)
 
-check_include_file (winsock2.h _hdr_winsock2)
-check_include_file (windows.h _hdr_windows)
+check_include_file (arpa/inet.h _hdr_arpa_inet)
 check_include_file (endian.h _hdr_endian)
+check_include_file (windows.h _hdr_windows)
+check_include_file (winsock2.h _hdr_winsock2)
 
 configure_file (config.h.in config.h)
 
-# libraries
+#### libraries
 
 add_library (libmp4tag SHARED
   libmp4tag.c
@@ -150,10 +156,33 @@ add_library (libmp4tag SHARED
   mp4tagutil.c
   tagdef.c
 )
+if (WIN32)
+  target_link_libraries (libmp4tag PUBLIC ws2_32)
+endif()
+
+#### executables
 
 add_executable (mp4tagcli
   mp4tagcli.c
 )
-target_link_libraries (mp4tagcli
+target_link_libraries (mp4tagcli PRIVATE
   libmp4tag
+)
+if (WIN32)
+  target_link_libraries (mp4tagcli PUBLIC ws2_32)
+endif()
+
+#### install
+
+install (TARGETS
+  libmp4tag
+  DESTINATION lib
+)
+install (TARGETS
+  mp4tagcli
+  DESTINATION bin
+)
+install (FILES
+  libmp4tag.h
+  DESTINATION include
 )

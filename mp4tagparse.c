@@ -16,6 +16,25 @@
 #if _hdr_endian
 # include <endian.h>
 #endif
+#if ! _hdr_endian && _hdr_arpa_inet
+# include <arpa/inet.h>
+# define be32toh ntohl
+# define be16toh ntohs
+# define be64toh ntohll
+#endif
+#if ! _hdr_endian && _hdr_winsock2
+# include <winsock2.h>
+# define be32toh ntohl
+# define be16toh ntohs
+/* it appears that the msys2 winsock2 header file does not define ntohll */
+/* but this will get all mucked up if ntohll is defined */
+static inline uint64_t ntohll (uint64_t v)
+{
+  return (((uint64_t) ntohl((uint32_t) (v & 0xFFFFFFFFUL))) << 32) |
+      (uint64_t) ntohl ((uint32_t) (v >> 32));
+}
+# define be64toh ntohll
+#endif
 
 #include "libmp4tag.h"
 #include "libmp4tagint.h"
@@ -229,13 +248,13 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       bd.data = malloc (bd.len);
       rrc = fread (bd.data, bd.len, 1, libmp4tag->fh);
       if (rrc != 1) {
-        fprintf (stderr, "failed to read %ld bytes\n", bd.len);
+        fprintf (stderr, "failed to read %" PRId64 " bytes\n", bd.len);
       }
     }
     if (! needdata && skiplen > 0) {
       rrc = fseek (libmp4tag->fh, skiplen, SEEK_CUR);
       if (rrc != 0) {
-        fprintf (stderr, "failed to seek %ld bytes\n", bd.len);
+        fprintf (stderr, "failed to seek %" PRId64 " bytes\n", bd.len);
       }
     }
 
@@ -308,7 +327,7 @@ process_mdhd (libmp4tag_t *libmp4tag, const char *data)
     memcpy (&mdhd8.duration, &mdhd8p.duration, sizeof (mdhd8.duration));
     memcpy (&mdhd8.timescale, &mdhd8p.timescale, sizeof (mdhd8.timescale));
     memcpy (&mdhd8.moreflags, &mdhd8p.moreflags, sizeof (mdhd8.moreflags));
-    mdhd8.flags = be32toh (mdhd8.flags);
+    mdhd8.flags = be32toh (mdhd.flags);
     mdhd8.creationdate = be64toh (mdhd8.creationdate);
     mdhd8.modifieddate = be64toh (mdhd8.modifieddate);
     mdhd8.timescale = be64toh (mdhd8.timescale);
@@ -338,8 +357,8 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
   p = data;
 
   if (strcmp (nm, "free") == 0) {
-    tlen = 0;
-    fprintf (stdout, "  free block: %d\n", (int) blen);
+    /* this needs to be tracked */
+    /* the length of the free block needs to passed in */
     return;
   }
 

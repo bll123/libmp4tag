@@ -9,6 +9,7 @@ BUILDDIR = build
 GCC = gcc
 CLANG = clang
 VERSFN = tmp/vers.txt
+PREFIX = /usr
 
 .PHONY: release
 release:
@@ -49,7 +50,7 @@ $(VERSFN):
 # parallel doesn't seem to work under msys2
 .PHONY: cmake
 cmake: $(VERSFN)
-	VERS=$$(cat $(VERSFN)); \
+	@VERS=$$(cat $(VERSFN)); \
 	if test $$(uname -s) = Linux; then \
 	  COMP=$(GCC) \
 	  VERS=$${VERS} \
@@ -69,7 +70,7 @@ cmake: $(VERSFN)
 
 .PHONY: cmakeclang
 cmakeclang: $(VERSFN)
-	VERS=$$(cat $(VERSFN)); \
+	@VERS=$$(cat $(VERSFN)); \
 	if test $$(uname -s) = Linux; then \
 	  COMP=$(CLANG) \
 	  VERS=$${VERS} \
@@ -110,13 +111,27 @@ cmake-windows:
 build:
 	cmake --build $(BUILDDIR) $(pmode)
 
+.PHONY: install
+install:
+	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
+
+# source
+
+.PHONY: sourcetar
+sourcetar: $(VERSFN)
+	VERS=$$(cat $(VERSFN)); \
+	tar -c -z -f libmp4tag-src-$${VERS}.tar.gz \
+		*.c *.h CMakeLists.txt Makefile \
+		README.txt ChangeLog.txt LICENSE.txt
+
 # cleaning
 
 .PHONY: distclean
 distclean:
 	@-$(MAKE) tclean
 	@-$(RM) -rf build tmp
-	@mkdir build
+	@-$(RM) -f libmp4tag-src-*.tar.gz
+	@mkdir $(BUILDDIR)
 
 .PHONY: clean
 clean:
@@ -126,4 +141,3 @@ clean:
 .PHONY: tclean
 tclean:
 	@-$(RM) -f w ww *~ core
-

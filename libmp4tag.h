@@ -39,6 +39,7 @@ int             mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, co
 int             mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz);
 int             mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name);
 int             mp4tag_write_tags (libmp4tag_t *libmp4tag);
+int             mp4tag_clean_tags (libmp4tag_t *libmp4tag);
 libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
 int             mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
 int             mp4tag_preserve_free (libmp4tagpreserve_t *preserve);

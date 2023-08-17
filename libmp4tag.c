@@ -15,6 +15,10 @@
 #include <string.h>
 #include <wchar.h>
 
+#if _hdr_windows
+# include <windows.h>
+#endif
+
 #include "libmp4tag.h"
 #include "libmp4tagint.h"
 
@@ -213,6 +217,13 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name)
 
 int
 mp4tag_write_tags (libmp4tag_t *libmp4tag)
+{
+  /* a stub for future development */
+  return MP4TAG_ERROR;
+}
+
+int
+mp4tag_clean_tags (libmp4tag_t *libmp4tag)
 {
   /* a stub for future development */
   return MP4TAG_ERROR;

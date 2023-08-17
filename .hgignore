@@ -6,3 +6,4 @@ syntax: regexp
 ^w$
 ^ww$
 ^TODO$
+^libmp4tag-src-[0-9.]*\.tar\.gz$

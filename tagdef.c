@@ -6,28 +6,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "libmp4tag.h"
 #include "libmp4tagint.h"
 
 /* must be sorted in ascii order */
+/* this list is only needed to verify that the tag being set is valid */
 const mp4tagdef_t mp4tags [] = {
-  { "----:com.apple.iTunes:CONDUCTOR" },
-  { "----:com.apple.iTunes:MusicBrainz Album Artist Id" },
-  { "----:com.apple.iTunes:MusicBrainz Album Id" },
-  { "----:com.apple.iTunes:MusicBrainz Album Release Country" },
-  { "----:com.apple.iTunes:MusicBrainz Album Status" },
-  { "----:com.apple.iTunes:MusicBrainz Album Type" },
-  { "----:com.apple.iTunes:MusicBrainz Artist Id" },
-  { "----:com.apple.iTunes:MusicBrainz Disc Id" },
-  { "----:com.apple.iTunes:MusicBrainz Original Album Id" },
-  { "----:com.apple.iTunes:MusicBrainz Original Artist Id" },
-  { "----:com.apple.iTunes:MusicBrainz Release Group Id" },
-  { "----:com.apple.iTunes:MusicBrainz Release Track Id" },
-  /* the musicbrainz-track-id is really the recording-id */
-  { "----:com.apple.iTunes:MusicBrainz Track Id" },
-  { "----:com.apple.iTunes:MusicBrainz Work Id" },
   { "aART" },
   { "catg" },
   { "covr" },
@@ -37,7 +23,7 @@ const mp4tagdef_t mp4tags [] = {
   { "disk" },
   { "egid" },
   { "egid" },
-  /* standard apple genre -- uses id3v1 id */
+  /* apple genre -- uses id3v1 id */
   { "gnre" },
   { "hdvd" },
   { "keyw" },

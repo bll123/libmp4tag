@@ -4,6 +4,7 @@
 #ifndef INC_CONFIG_H
 #define INC_CONFIG_H
 
+#cmakedefine01 _hdr_arpa_inet
 #cmakedefine01 _hdr_endian
 #cmakedefine01 _hdr_windows
 #cmakedefine01 _hdr_winsock2

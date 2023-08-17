@@ -5,9 +5,6 @@
 #ifndef INC_LIBMP4TAGINT_H
 #define INC_LIBMP4TAGINT_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #include "libmp4tag.h"
 
 enum {
