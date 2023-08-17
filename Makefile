@@ -34,7 +34,7 @@ sanitizeaddressclang:
 .PHONY: cmake
 .PHONY: cmakeclang cmake-unix cmake-windows
 
-$(VERSFN):
+$(VERSFN): libmp4tag.h
 	@MAJVERS=$$(grep '^#define LIBMP4TAG_VERS_MAJOR [0-9]' libmp4tag.h \
 		| sed 's,.* ,,'); \
 	MINVERS=$$(grep '^#define LIBMP4TAG_VERS_MINOR [0-9]' libmp4tag.h \
@@ -117,6 +117,7 @@ install:
 
 .PHONY: sourcetar
 sourcetar: $(VERSFN)
+	@-$(RM) -f libmp4tag-src-*.tar.gz
 	VERS=$$(cat $(VERSFN)); \
 	tar -c -z -f libmp4tag-src-$${VERS}.tar.gz \
 		*.c *.h CMakeLists.txt Makefile \

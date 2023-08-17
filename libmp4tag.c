@@ -326,9 +326,8 @@ mp4tag_clean_tags (libmp4tag_t *libmp4tag)
   }
 
   mp4tag_free_tags (libmp4tag);
-  /* ### now write it out */
 
-  return MP4TAG_ERROR; // not yet implemented
+  return mp4tag_write_tags (libmp4tag);
 }
 
 libmp4tagpreserve_t *
