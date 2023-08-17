@@ -198,21 +198,89 @@ mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub)
 }
 
 int
-mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, const char *data)
+mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
 {
-  /* a stub for future development */
-  return MP4TAG_ERROR;
+  int       idx = -1;
+
+  if (libmp4tag == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (tag == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (data == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (libmp4tag->tags == NULL) {
+    return MP4TAG_ERROR;
+  }
+
+  idx = mp4tag_find_tag (libmp4tag, tag);
+  if (idx >= 0 && idx < libmp4tag->tagcount) {
+    mp4tag_t  *mp4tag;
+
+    mp4tag = &libmp4tag->tags [idx];
+    if (mp4tag->binary) {
+      return MP4TAG_ERROR;
+    }
+    if (mp4tag->data != NULL) {
+      free (mp4tag->data);
+    }
+    mp4tag->data = strdup (data);
+    mp4tag->datalen = strlen (data);
+    mp4tag->internallen = mp4tag->datalen;
+  } else {
+    mp4tag_add_tag (libmp4tag, tag, data, strlen (data), 0x01, strlen (data));
+    mp4tag_sort_tags (libmp4tag);
+  }
+
+  return MP4TAG_OK;
 }
 
 int
-mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz)
+mp4tag_set_tag_binary (libmp4tag_t *libmp4tag,
+    const char *tag, const char *data, size_t sz)
 {
-  /* a stub for future development */
-  return MP4TAG_ERROR;
+  int       idx = -1;
+
+  if (libmp4tag == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (tag == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (data == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (libmp4tag->tags == NULL) {
+    return MP4TAG_ERROR;
+  }
+
+  idx = mp4tag_find_tag (libmp4tag, tag);
+  if (idx >= 0 && idx < libmp4tag->tagcount) {
+    mp4tag_t  *mp4tag;
+
+    mp4tag = &libmp4tag->tags [idx];
+    if (! mp4tag->binary) {
+      return MP4TAG_ERROR;
+    }
+    if (mp4tag->data != NULL) {
+      free (mp4tag->data);
+    }
+    mp4tag->data = malloc (sz);
+    memcpy (mp4tag->data, data, sz);
+    mp4tag->datalen = sz;
+    mp4tag->internallen = sz;
+  } else {
+    mp4tag_add_tag (libmp4tag, tag, data, sz, 0x00, sz);
+    mp4tag_sort_tags (libmp4tag);
+  }
+
+  return MP4TAG_OK;
 }
 
 int
-mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name)
+mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 {
   /* a stub for future development */
   return MP4TAG_ERROR;

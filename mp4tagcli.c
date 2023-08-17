@@ -13,6 +13,8 @@
 
 #include "libmp4tag.h"
 
+static void setTagName (const char *tag, char *buff, size_t sz);
+
 int
 main (int argc, char *argv [])
 {
@@ -20,18 +22,22 @@ main (int argc, char *argv [])
   mp4tagpub_t   mp4tagpub;
   int           c;
   int           option_index;
-  const char    *tagname = NULL;
+  char          tagname [100];
   bool          display = false;
   bool          dump = false;
+  bool          duration = false;
   int           fnidx = -1;
 
   static struct option mp4tagcli_options [] = {
     { "display",        required_argument,  NULL,   'd' },
     { "dump",           no_argument,        NULL,   'D' },
+    { "duration",       no_argument,        NULL,   'u' },
     { NULL,             0,                  NULL,   0 }
   };
 
-  while ((c = getopt_long_only (argc, argv, "d:D",
+  *tagname = '\0';
+
+  while ((c = getopt_long_only (argc, argv, "d:Du",
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'D': {
@@ -40,9 +46,14 @@ main (int argc, char *argv [])
       }
       case 'd': {
         display = true;
-        if (optarg) {
-          tagname = optarg;
+        if (optarg != NULL) {
+          setTagName (optarg, tagname, sizeof (tagname));
         }
+	break;
+      }
+      case 'u': {
+        duration = true;
+	break;
       }
       default: {
         break;
@@ -64,7 +75,7 @@ main (int argc, char *argv [])
 
   mp4tag_parse (libmp4tag);
 
-  if (display && tagname != NULL) {
+  if (display) {
     int     rc;
 
     rc = mp4tag_get_tag_by_name (libmp4tag, tagname, &mp4tagpub);
@@ -90,7 +101,11 @@ main (int argc, char *argv [])
 	mp4tagpub.name != NULL) {
       fwrite (mp4tagpub.data, mp4tagpub.datalen, 1, stdout);
     }
-  } else {
+  }
+  if (duration) {
+    fprintf (stdout, "%" PRId64 "\n", mp4tag_duration (libmp4tag));
+  }
+  if (! display && ! duration) {
     fprintf (stdout, "duration=%" PRId64 "\n", mp4tag_duration (libmp4tag));
 
     mp4tag_iterate_init (libmp4tag);
@@ -107,3 +122,12 @@ main (int argc, char *argv [])
   exit (0);
 }
 
+static void
+setTagName (const char *tag, char *buff, size_t sz)
+{
+  if (strlen (tag) == 3) {
+    snprintf (buff, sz, "%s%s", COPYRIGHT_STR, tag);
+  } else {
+    strcpy (buff, tag);
+  }
+}

@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define COPYRIGHT_STR   "\xc2\xa9"
+
 typedef struct libmp4tag libmp4tag_t;
 typedef struct libmp4tagpreserve libmp4tagpreserve_t;
 

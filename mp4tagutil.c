@@ -44,6 +44,12 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *nm)
   if (nm == NULL) {
     return -1;
   }
+  if (libmp4tag->tagcount == 0) {
+    return -1;
+  }
+  if (libmp4tag->tags == NULL) {
+    return -1;
+  }
 
   key.name = strdup (nm);
   result = bsearch (&key, libmp4tag->tags, libmp4tag->tagcount,

@@ -44,8 +44,6 @@ enum {
   LEVEL_MAX = 300,
 };
 
-#define COPYRIGHT_STR   "\xc2\xa9"
-
 typedef struct {
   uint32_t    len;
   char        nm [IDENT_LEN];
