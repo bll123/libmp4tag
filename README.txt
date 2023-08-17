@@ -21,7 +21,5 @@ Current Status:
   against video files.
 
   To Do:
-    - port software to Windows.
     - updating tags: update tags in-place when there is available space.
     - updating tags: update tags when there is not enough space.
-

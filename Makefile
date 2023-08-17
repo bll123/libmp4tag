@@ -41,9 +41,7 @@ $(VERSFN):
 		| sed 's,.* ,,'); \
 	REVVERS=$$(grep '^#define LIBMP4TAG_VERS_REVISION [0-9]' libmp4tag.h \
 		| sed 's,.* ,,'); \
-	EXTVERS=$$(grep '^#define LIBMP4TAG_VERS_EXTRA [0-9]' libmp4tag.h \
-		| sed 's,.* ,,'); \
-	VERS="$${MAJVERS}.$${MINVERS}.$${REVVERS}.$${EXTVERS}"; \
+	VERS="$${MAJVERS}.$${MINVERS}.$${REVVERS}"; \
 	test -d tmp || mkdir tmp; \
 	echo $${VERS} > $(VERSFN)
 

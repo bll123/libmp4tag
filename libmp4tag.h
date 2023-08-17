@@ -51,21 +51,18 @@ const char    * mp4tag_version (void);
 /* The major value will (hopefully) stay at version 1. */
 /* The minor value will be updated when major functionality is implemented */
 /* or there are additions to the api. */
-/* The revision value will change for bug fixes. */
-/* The extra value will change for cleanup/documentation. */
+/* The revision value will change for bug fixes/cleanup/documentation. */
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 0
 #define LIBMP4TAG_VERS_REVISION 0
-#define LIBMP4TAG_VERS_EXTRA 0
 #define CPP_STR(x) #x
-#define LIBMP4TAG_VERSION_STR(maj,min,rev,extra) \
+#define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \
    CPP_STR(min) "." \
-   CPP_STR(rev) "." \
-   CPP_STR(extra)
+   CPP_STR(rev)
 #define LIBMP4TAG_VERSION \
-   LIBMP4TAG_VERSION_STR(LIBMP4TAG_VERS_MAJOR,LIBMP4TAG_VERS_MINOR,LIBMP4TAG_VERS_REVISION,LIBMP4TAG_VERS_EXTRA)
+   LIBMP4TAG_VERSION_STR(LIBMP4TAG_VERS_MAJOR,LIBMP4TAG_VERS_MINOR,LIBMP4TAG_VERS_REVISION)
 #define LIBMP4TAG_RELEASE_STATE "alpha"
 
 #endif /* INC_LIBMP4TAG_H */
