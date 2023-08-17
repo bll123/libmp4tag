@@ -7,9 +7,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <ctype.h>
 #include <assert.h>
 
+/* ### FIX will need to figure out how to do the endian swapping on windows */
 #include <endian.h>
 
 #include "libmp4tag.h"
@@ -28,9 +30,9 @@ typedef struct {
 } boxhead_t;
 
 typedef struct {
-  int         len;
+  uint64_t    len;
   char        nm [10];
-  int         dlen;
+  uint64_t    dlen;
   char        *data;
 } boxdata_t;
 
@@ -67,200 +69,72 @@ typedef struct {
 
 /* an idiotic way to do things, */
 /* but we must convert any old gnre data to -gnr. */
-/* itunes still puts data into the gnre field */
+/* itunes still puts data into the gnre field, yick. */
 static const char *oldgenrelist [] = {
-  "Blues",
-  "Classic Rock",
-  "Country",
-  "Dance",
-  "Disco",
-  "Funk",
-  "Grunge",
-  "Hip-Hop",
-  "Jazz",
-  "Metal",
-  "New Age",
-  "Oldies",
-  "Other",
-  "Pop",
-  "R&B",
-  "Rap",
-  "Reggae",
-  "Rock",
-  "Techno",
-  "Industrial",
-  "Alternative",
-  "Ska",
-  "Death Metal",
-  "Pranks",
-  "Soundtrack",
-  "Euro-Techno",
-  "Ambient",
-  "Trip-Hop",
-  "Vocal",
-  "Jazz+Funk",
-  "Fusion",
-  "Trance",
-  "Classical",
-  "Instrumental",
-  "Acid",
-  "House",
-  "Game",
-  "Sound Clip",
-  "Gospel",
-  "Noise",
-  "Alt. Rock",
-  "Bass",
-  "Soul",
-  "Punk",
-  "Space",
-  "Meditative",
-  "Instrumental Pop",
-  "Instrumental Rock",
-  "Ethnic",
-  "Gothic",
-  "Darkwave",
-  "Techno-Industrial",
-  "Electronic",
-  "Pop-Folk",
-  "Eurodance",
-  "Dream",
-  "Southern Rock",
-  "Comedy",
-  "Cult",
-  "Gangsta Rap",
-  "Top 40",
-  "Christian Rap",
-  "Pop/Funk",
-  "Jungle",
-  "Native American",
-  "Cabaret",
-  "New Wave",
-  "Psychedelic",
-  "Rave",
-  "Showtunes",
-  "Trailer",
-  "Lo-Fi",
-  "Tribal",
-  "Acid Punk",
-  "Acid Jazz",
-  "Polka",
-  "Retro",
-  "Musical",
-  "Rock & Roll",
-  "Hard Rock",
-  "Folk",
-  "Folk-Rock",
-  "National Folk",
-  "Swing",
-  "Fast-Fusion",
-  "Bebop",
-  "Latin",
-  "Revival",
-  "Celtic",
-  "Bluegrass",
-  "Avantgarde",
-  "Gothic Rock",
-  "Progressive Rock",
-  "Psychedelic Rock",
-  "Symphonic Rock",
-  "Slow Rock",
-  "Big Band",
-  "Chorus",
-  "Easy Listening",
-  "Acoustic",
-  "Humour",
-  "Speech",
-  "Chanson",
-  "Opera",
-  "Chamber Music",
-  "Sonata",
-  "Symphony",
-  "Booty Bass",
-  "Primus",
-  "Porn Groove",
-  "Satire",
-  "Slow Jam",
-  "Club",
-  "Tango",
-  "Samba",
-  "Folklore",
-  "Ballad",
-  "Power Ballad",
-  "Rhythmic Soul",
-  "Freestyle",
-  "Duet",
-  "Punk Rock",
-  "Drum Solo",
-  "A Cappella",
-  "Euro-House",
-  "Dance Hall",
-  "Goa",
-  "Drum & Bass",
-  "Club-House",
-  "Hardcore",
-  "Terror",
-  "Indie",
-  "BritPop",
-  "Afro-Punk",
-  "Polsk Punk",
-  "Beat",
-  "Christian Gangsta Rap",
-  "Heavy Metal",
-  "Black Metal",
-  "Crossover",
-  "Contemporary Christian",
-  "Christian Rock",
-  "Merengue",
-  "Salsa",
-  "Thrash Metal",
-  "Anime",
-  "JPop",
-  "Synthpop",
-  "Abstract",
-  "Art Rock",
-  "Baroque",
-  "Bhangra",
-  "Big Beat",
-  "Breakbeat",
-  "Chillout",
-  "Downtempo",
-  "Dub",
-  "EBM",
-  "Eclectic",
-  "Electro",
-  "Electroclash",
-  "Emo",
-  "Experimental",
-  "Garage",
-  "Global",
-  "IDM",
-  "Illbient",
-  "Industro-Goth",
-  "Jam Band",
-  "Krautrock",
-  "Leftfield",
-  "Lounge",
-  "Math Rock",
-  "New Romantic",
-  "Nu-Breakz",
-  "Post-Punk",
-  "Post-Rock",
-  "Psytrance",
-  "Shoegaze",
-  "Space Rock",
-  "Trop Rock",
-  "World Music",
-  "Neoclassical",
-  "Audiobook",
-  "Audio Theatre",
-  "Neue Deutsche Welle",
-  "Podcast",
-  "Indie Rock",
-  "G-Funk",
-  "Dubstep",
-  "Garage Rock",
-  "Psybient",
+  "Blues",              "Classic Rock",           "Country",
+  "Dance",              "Disco",                  "Funk",
+  "Grunge",             "Hip-Hop",                "Jazz",
+  "Metal",              "New Age",                "Oldies",
+  "Other",              "Pop",                    "R&B",
+  "Rap",                "Reggae",                 "Rock",
+  "Techno",             "Industrial",             "Alternative",
+  "Ska",                "Death Metal",            "Pranks",
+  "Soundtrack",         "Euro-Techno",            "Ambient",
+  "Trip-Hop",           "Vocal",                  "Jazz+Funk",
+  "Fusion",             "Trance",                 "Classical",
+  "Instrumental",       "Acid",                   "House",
+  "Game",               "Sound Clip",             "Gospel",
+  "Noise",              "Alt. Rock",              "Bass",
+  "Soul",               "Punk",                   "Space",
+  "Meditative",         "Instrumental Pop",       "Instrumental Rock",
+  "Ethnic",             "Gothic",                 "Darkwave",
+  "Techno-Industrial",  "Electronic",             "Pop-Folk",
+  "Eurodance",          "Dream",                  "Southern Rock",
+  "Comedy",             "Cult",                   "Gangsta Rap",
+  "Top 40",             "Christian Rap",          "Pop/Funk",
+  "Jungle",             "Native American",        "Cabaret",
+  "New Wave",           "Psychedelic",            "Rave",
+  "Showtunes",          "Trailer",                "Lo-Fi",
+  "Tribal",             "Acid Punk",              "Acid Jazz",
+  "Polka",              "Retro",                  "Musical",
+  "Rock & Roll",        "Hard Rock",              "Folk",
+  "Folk-Rock",          "National Folk",          "Swing",
+  "Fast-Fusion",        "Bebop",                  "Latin",
+  "Revival",            "Celtic",                 "Bluegrass",
+  "Avantgarde",         "Gothic Rock",            "Progressive Rock",
+  "Psychedelic Rock",   "Symphonic Rock",         "Slow Rock",
+  "Big Band",           "Chorus",                 "Easy Listening",
+  "Acoustic",           "Humour",                 "Speech",
+  "Chanson",            "Opera",                  "Chamber Music",
+  "Sonata",             "Symphony",               "Booty Bass",
+  "Primus",             "Porn Groove",            "Satire",
+  "Slow Jam",           "Club",                   "Tango",
+  "Samba",              "Folklore",               "Ballad",
+  "Power Ballad",       "Rhythmic Soul",          "Freestyle",
+  "Duet",               "Punk Rock",              "Drum Solo",
+  "A Cappella",         "Euro-House",             "Dance Hall",
+  "Goa",                "Drum & Bass",            "Club-House",
+  "Hardcore",           "Terror",                 "Indie",
+  "BritPop",            "Afro-Punk",              "Polsk Punk",
+  "Beat",               "Christian Gangsta Rap",  "Heavy Metal",
+  "Black Metal",        "Crossover",              "Contemporary Christian",
+  "Christian Rock",     "Merengue",               "Salsa",
+  "Thrash Metal",       "Anime",                  "JPop",
+  "Synthpop",           "Abstract",               "Art Rock",
+  "Baroque",            "Bhangra",                "Big Beat",
+  "Breakbeat",          "Chillout",               "Downtempo",
+  "Dub",                "EBM",                    "Eclectic",
+  "Electro",            "Electroclash",           "Emo",
+  "Experimental",       "Garage",                 "Global",
+  "IDM",                "Illbient",               "Industro-Goth",
+  "Jam Band",           "Krautrock",              "Leftfield",
+  "Lounge",             "Math Rock",              "New Romantic",
+  "Nu-Breakz",          "Post-Punk",              "Post-Rock",
+  "Psytrance",          "Shoegaze",               "Space Rock",
+  "Trop Rock",          "World Music",            "Neoclassical",
+  "Audiobook",          "Audio Theatre",          "Neue Deutsche Welle",
+  "Podcast",            "Indie Rock",             "G-Funk",
+  "Dubstep",            "Garage Rock",            "Psybient",
 };
 
 enum {
@@ -268,7 +142,7 @@ enum {
 };
 
 static void process_mdhd (libmp4tag_t *libmp4tag, const char *data);
-static void process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data);
+static void process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *data);
 
 void
 parsemp4 (libmp4tag_t *libmp4tag)
@@ -312,7 +186,7 @@ parsemp4 (libmp4tag_t *libmp4tag)
     needdata = false;
     inclevel = false;
 
-    // fprintf (stdout, "%*s %2d %.5s: %8d\n", level*2, " ", level, bd.nm, bd.len);
+    // fprintf (stdout, "%*s %2d %.5s: %8ld\n", level*2, " ", level, bd.nm, bd.len);
 
     /* track the current level's length */
     currlen [level] = bd.len;
@@ -352,13 +226,13 @@ parsemp4 (libmp4tag_t *libmp4tag)
       bd.data = malloc (bd.len);
       rrc = fread (bd.data, bd.len, 1, libmp4tag->fh);
       if (rrc != 1) {
-        fprintf (stderr, "failed to read %d bytes\n", bd.len);
+        fprintf (stderr, "failed to read %ld bytes\n", bd.len);
       }
     }
     if (! needdata && skiplen > 0) {
       rrc = fseek (libmp4tag->fh, skiplen, SEEK_CUR);
       if (rrc != 0) {
-        fprintf (stderr, "failed to seek %d bytes\n", bd.len);
+        fprintf (stderr, "failed to seek %ld bytes\n", bd.len);
       }
     }
 
@@ -367,7 +241,7 @@ parsemp4 (libmp4tag_t *libmp4tag)
         process_mdhd (libmp4tag, bd.data);
       }
       if (processdata) {
-        process_tag (libmp4tag, bd.nm, bd.data);
+        process_tag (libmp4tag, bd.nm, bd.len, bd.data);
       }
     }
 
@@ -443,12 +317,10 @@ process_mdhd (libmp4tag_t *libmp4tag, const char *data)
   libmp4tag->samplerate = mdhd8.timescale;
   libmp4tag->duration = (int64_t)
       ((double) mdhd8.duration * 1000.0 / (double) mdhd8.timescale);
-  fprintf (stdout, "duration=%ld\n", (long) libmp4tag->duration);
-  fprintf (stdout, "samplerate=%d\n", libmp4tag->samplerate);
 }
 
 static void
-process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
+process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *data)
 {
   const char  *p;
   char        tnm [100];
@@ -458,13 +330,13 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
   uint32_t    t32;
   uint64_t    t64;
   uint32_t    tlen;
+  char        tmp [40];
 
   p = data;
 
   if (strcmp (nm, "free") == 0) {
-    memcpy (&tlen, p, sizeof (uint32_t));
-    tlen = be32toh (tlen);
-    fprintf (stdout, "  free block: %d\n", (int) tlen);
+    tlen = 0;
+    fprintf (stdout, "  free block: %d\n", (int) blen);
     return;
   }
 
@@ -506,22 +378,16 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
     p += tlen;
   }
 
-// fprintf (stdout, "== %s\n", tnm);
-
-// ### search for tnm in tagdefs
-
   memcpy (&tlen, p, sizeof (uint32_t));
   tlen = be32toh (tlen);
   tlen -= sizeof (boxhead_t);
   tlen -= sizeof (uint32_t);  // flags
   tlen -= sizeof (uint32_t);  // reserved
-// fprintf (stdout, "%s len: %d\n", tnm, (int) tlen);
   /* ident len + ident (== "data") */
   p += sizeof (uint32_t);
   p += IDENT_LEN;
   memcpy (&tflag, p, sizeof (uint32_t));
   tflag = be32toh (tflag);
-// fprintf (stdout, "== flag: %08x\n", tflag);
   /* 4 bytes flags + reserved value */
   p += sizeof (uint32_t) + sizeof (uint32_t);
 
@@ -530,66 +396,67 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data)
       (tflag & 0x00ffffff) == 0x15) {
     /* what follows depends on the identifier */
 
-// fprintf (stdout, "parse: %s %d\n", tnm, (int) tlen);
     if (strcmp (tnm, "disk") == 0 ||
         strcmp (tnm, "trkn") == 0) {
       /* pair of 32 bit and 16 bit numbers */
-      /* why did they put the larger number in the smaller field ? */
-// fprintf (stdout, "  pair\n");
+      /* why did they put the potentially larger number in the smaller field */
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);
       p += sizeof (uint32_t);
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
-      fprintf (stdout, "%s=(%d, %d)\n", tnm, (int) t32, (int) t16);
       /* trkn has an additional two trailing bytes */
+
+      snprintf (tmp, sizeof (tmp), "(%d, %d)", (int) t32, (int) t16);
+      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else if (tlen == 4) {
-// fprintf (stdout, "  32 (4)\n");
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);
-      fprintf (stdout, "%s=%d\n", tnm, (int) t32);
+      snprintf (tmp, sizeof (tmp), "%d", (int) t32);
+      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else if (tlen == 2) {
-// fprintf (stdout, "  16 (2)\n");
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
       if (strcmp (tnm, "gnre") == 0) {
         /* the itunes value is offset by 1 */
-	t16 -= 1;
-	if (t16 <= oldgenrelistsz) {
-          fprintf (stdout, "%s=%s\n", tnm, oldgenrelist [t16]);
-	}
+        t16 -= 1;
+        if (t16 < oldgenrelistsz) {
+          /* do not use the 'gnre' identifier */
+          strcpy (tnm, COPYRIGHT_STR "gnr");
+          add_tag (libmp4tag, tnm, oldgenrelist [t16], MP4TAG_STRING);
+        }
       } else {
-        fprintf (stdout, "%s=%d\n", tnm, t16);
+        snprintf (tmp, sizeof (tmp), "%d", (int) t16);
+        add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
       }
     } else if (tlen == 8) {
-// fprintf (stdout, "  64 (8)\n");
       memcpy (&t64, p, sizeof (uint64_t));
       t64 = be64toh (t64);
-      fprintf (stdout, "%s=%ld\n", tnm, (long) t64);
+      snprintf (tmp, sizeof (tmp), "%" PRId64, t64);
+      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else if (tlen == 1) {
-// fprintf (stdout, "  8 (1)\n");
       memcpy (&t8, p, sizeof (uint8_t));
-      fprintf (stdout, "%s=%d\n", tnm, t8);
-    } else if (tlen == 1) {
-// fprintf (stdout, "  8\n");
-      memcpy (&t8, p, sizeof (uint8_t));
-      fprintf (stdout, "  ");
-      fprintf (stdout, "%s=%d\n", tnm, (int) t8);
+      snprintf (tmp, sizeof (tmp), "%d", (int) t8);
+      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else {
-      fprintf (stdout, "%s=(binary data)\n", tnm);
+      /* binary data */
+      add_tag (libmp4tag, tnm, p, tlen);
     }
   }
 
-  /* picture */
   if ((tflag & 0x00ffffff) == 0x0d) {
-    fprintf (stdout, "%s=jpeg (%ld)\n", tnm, (long) tlen);
+    /* jpeg */
+    add_tag (libmp4tag, tnm, p, tlen);
   }
   if ((tflag & 0x00ffffff) == 0x0e) {
-    fprintf (stdout, "%s=png (%ld)\n", tnm, (long) tlen);
+    /* png */
+    add_tag (libmp4tag, tnm, p, tlen);
   }
 
   /* string type */
-  if ((tflag & 0x00ffffff) == 1) {
-    fprintf (stdout, "%s=%.*s\n", tnm, (int) tlen, p);
+  if ((tflag & 0x00ffffff) == 1 && tlen > 0) {
+    /* pass as negative len to indicate a string that needs a terminator */
+    add_tag (libmp4tag, tnm, p, - (ssize_t) tlen);
   }
 }
+

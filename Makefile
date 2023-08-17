@@ -3,17 +3,20 @@
 PKGNM=libmp4tag
 CLI_NM=mp4tagcli
 
-LIB_OBJ=$(PKGNM).o parsemp4.o tagdef.o
+LIB_OBJ=$(PKGNM).o parsemp4.o mp4tagutil.o tagdef.o
 CLI_OBJ=$(CLI_NM).o
 EXE_EXT=
 
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -g
 
-.PHONY: all clean
+.PHONY: all clean distclean
 all:
 	@API=$$(grep '^#define LIBMP4TAG_API_VERS [1-9]' $(PKGNM).h \
 		| sed 's,.* ,,'); \
 	$(MAKE) APIVERS=$${API} $(PKGNM).so $(CLI_NM)
+
+distclean:
+	@$(MAKE) clean
 
 clean:
 	-rm -f $(LIB_OBJ) $(CLI_OBJ) \
