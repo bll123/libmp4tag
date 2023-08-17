@@ -2,6 +2,8 @@
  * Copyright 2023 Brad Lanam Pleasant Hill CA
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -145,7 +147,7 @@ static void process_mdhd (libmp4tag_t *libmp4tag, const char *data);
 static void process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *data);
 
 void
-parsemp4 (libmp4tag_t *libmp4tag)
+mp4tag_parse_file (libmp4tag_t *libmp4tag)
 {
   boxhead_t       bh;
   boxdata_t       bd;
@@ -408,12 +410,12 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
       /* trkn has an additional two trailing bytes */
 
       snprintf (tmp, sizeof (tmp), "(%d, %d)", (int) t32, (int) t16);
-      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
+      mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else if (tlen == 4) {
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);
       snprintf (tmp, sizeof (tmp), "%d", (int) t32);
-      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
+      mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else if (tlen == 2) {
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
@@ -423,40 +425,40 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
         if (t16 < oldgenrelistsz) {
           /* do not use the 'gnre' identifier */
           strcpy (tnm, COPYRIGHT_STR "gnr");
-          add_tag (libmp4tag, tnm, oldgenrelist [t16], MP4TAG_STRING);
+          mp4tag_add_tag (libmp4tag, tnm, oldgenrelist [t16], MP4TAG_STRING);
         }
       } else {
         snprintf (tmp, sizeof (tmp), "%d", (int) t16);
-        add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
+        mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
       }
     } else if (tlen == 8) {
       memcpy (&t64, p, sizeof (uint64_t));
       t64 = be64toh (t64);
       snprintf (tmp, sizeof (tmp), "%" PRId64, t64);
-      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
+      mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else if (tlen == 1) {
       memcpy (&t8, p, sizeof (uint8_t));
       snprintf (tmp, sizeof (tmp), "%d", (int) t8);
-      add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
+      mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING);
     } else {
       /* binary data */
-      add_tag (libmp4tag, tnm, p, tlen);
+      mp4tag_add_tag (libmp4tag, tnm, p, tlen);
     }
   }
 
   if ((tflag & 0x00ffffff) == 0x0d) {
     /* jpeg */
-    add_tag (libmp4tag, tnm, p, tlen);
+    mp4tag_add_tag (libmp4tag, tnm, p, tlen);
   }
   if ((tflag & 0x00ffffff) == 0x0e) {
     /* png */
-    add_tag (libmp4tag, tnm, p, tlen);
+    mp4tag_add_tag (libmp4tag, tnm, p, tlen);
   }
 
   /* string type */
   if ((tflag & 0x00ffffff) == 1 && tlen > 0) {
     /* pass as negative len to indicate a string that needs a terminator */
-    add_tag (libmp4tag, tnm, p, - (ssize_t) tlen);
+    mp4tag_add_tag (libmp4tag, tnm, p, - (ssize_t) tlen);
   }
 }
 

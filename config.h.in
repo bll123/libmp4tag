@@ -1,0 +1,11 @@
+/*
+ * Copyright 2023 Brad Lanam Pleasant Hill CA
+ */
+#ifndef INC_CONFIG_H
+#define INC_CONFIG_H
+
+#cmakedefine SHLIB_EXT "${SHLIB_EXT}"
+
+#cmakedefine01 _hdr_endian
+
+#endif /* INC_CONFIG_H */

@@ -41,12 +41,12 @@ typedef struct {
 
 extern const mp4tagdef_t mp4tags [];
 
-/* parsemp4.c */
+/* mp4tagparse.c */
 
-void parsemp4 (libmp4tag_t *libmp4tag);
+void mp4tag_parse_file (libmp4tag_t *libmp4tag);
 
 /* mp4tagutil.c */
 
-void add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz);
+void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz);
 
 #endif /* INC_LIBMP4TAGINT_H */

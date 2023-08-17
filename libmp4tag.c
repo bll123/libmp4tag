@@ -7,15 +7,22 @@
  *    https://docs.mp3tag.de/mapping/
  */
 
-// #include "config.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <wchar.h>
 
 #include "libmp4tag.h"
 #include "libmp4tagint.h"
+
+static FILE * mp4tag_fopen (const char *fn, const char *mode);
+#ifdef _WIN32
+static void * mp4tag_towide (const char *buff);
+#endif
+
 
 libmp4tag_t *
 mp4tag_open (const char *fn)
@@ -28,7 +35,7 @@ mp4tag_open (const char *fn)
 
   libmp4tag = malloc (sizeof (libmp4tag_t));
   libmp4tag->fn = strdup (fn);
-  libmp4tag->fh = fopen (fn, "rb");
+  libmp4tag->fh = mp4tag_fopen (fn, "rb");
   libmp4tag->tags = NULL;
   libmp4tag->creationdate = 0;
   libmp4tag->modifieddate = 0;
@@ -76,10 +83,10 @@ mp4tag_free (libmp4tag_t *libmp4tag)
   if (libmp4tag->tags != NULL) {
     for (int i = 0; i < libmp4tag->tagcount; ++i) {
       if (libmp4tag->tags [i].name != NULL) {
-	free (libmp4tag->tags [i].name);
+        free (libmp4tag->tags [i].name);
       }
       if (libmp4tag->tags [i].data != NULL) {
-	free (libmp4tag->tags [i].data);
+        free (libmp4tag->tags [i].data);
       }
     }
     free (libmp4tag->tags);
@@ -101,7 +108,7 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
     return;
   }
 
-  parsemp4 (libmp4tag);
+  mp4tag_parse_file (libmp4tag);
 }
 
 int64_t
@@ -161,3 +168,42 @@ mp4tag_api_version (void)
   return LIBMP4TAG_API_VERSION;
 }
 
+static FILE *
+mp4tag_fopen (const char *fname, const char *mode)
+{
+  FILE          *fh;
+
+#ifdef _WIN32
+  {
+    wchar_t       *tfname = NULL;
+    wchar_t       *tmode = NULL;
+
+    tfname = mp4tag_towide (fname);
+    tmode = mp4tag_towide (mode);
+    fh = _wfopen (tfname, tmode);
+    free (tfname);
+    free (tmode);
+  }
+#else
+  {
+    fh = fopen (fname, mode);
+  }
+#endif
+  return fh;
+}
+
+#ifdef _WIN32
+static void *
+mp4tag_towide (const char *buff)
+{
+    wchar_t     *tbuff = NULL;
+    size_t      len;
+
+    /* the documentation lies; len does not include room for the null byte */
+    len = MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), NULL, 0);
+    tbuff = malloc ((len + 1) * sizeof (wchar_t));
+    MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), tbuff, len);
+    tbuff [len] = L'\0';
+    return tbuff;
+}
+#endif

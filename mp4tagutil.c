@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023 Brad Lanam Pleasant Hill CA
+ */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -8,7 +14,7 @@
 #include "libmp4tagint.h"
 
 void
-add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz)
+mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz)
 {
   int   tagidx;
 
