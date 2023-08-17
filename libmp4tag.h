@@ -27,6 +27,10 @@ enum {
   MP4TAG_FINISH,
 };
 
+enum {
+  MP4TAG_NOTFOUND = -1,
+};
+
 libmp4tag_t   * mp4tag_open (const char *fn);
 void            mp4tag_close (libmp4tag_t *libmp4tag);
 void            mp4tag_free (libmp4tag_t *libmp4tag);

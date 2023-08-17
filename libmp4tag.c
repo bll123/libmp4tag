@@ -22,6 +22,7 @@
 #include "libmp4tag.h"
 #include "libmp4tagint.h"
 
+static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
 static FILE * mp4tag_fopen (const char *fn, const char *mode);
 #ifdef _WIN32
 static void * mp4tag_towide (const char *buff);
@@ -100,20 +101,7 @@ mp4tag_free (libmp4tag_t *libmp4tag)
     fclose (libmp4tag->fh);
     libmp4tag->fh = NULL;
   }
-  if (libmp4tag->tags != NULL) {
-    for (int i = 0; i < libmp4tag->tagcount; ++i) {
-      if (libmp4tag->tags [i].name != NULL) {
-        free (libmp4tag->tags [i].name);
-      }
-      if (libmp4tag->tags [i].data != NULL) {
-        free (libmp4tag->tags [i].data);
-      }
-    }
-    free (libmp4tag->tags);
-    libmp4tag->tags = NULL;
-    libmp4tag->tagcount = 0;
-    libmp4tag->tagalloccount = 0;
-  }
+  mp4tag_free_tags (libmp4tag);
   free (libmp4tag);
 }
 
@@ -145,6 +133,9 @@ int
 mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag,
     mp4tagpub_t *mp4tagpub)
 {
+  int     idx = -1;
+  int     rc = MP4TAG_ERROR;
+
   if (libmp4tag == NULL) {
     return MP4TAG_ERROR;
   }
@@ -155,7 +146,19 @@ mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag,
     return MP4TAG_ERROR;
   }
 
-  return MP4TAG_ERROR;
+  idx = mp4tag_find_tag (libmp4tag, tag);
+  if (idx >= 0 && idx < libmp4tag->tagcount) {
+    mp4tag_t    *mp4tag;
+
+    mp4tag = &libmp4tag->tags [idx];
+    mp4tagpub->name = mp4tag->name;
+    mp4tagpub->data = mp4tag->data;
+    mp4tagpub->datalen = mp4tag->datalen;
+    mp4tagpub->binary = mp4tag->binary;
+    rc = MP4TAG_OK;
+  }
+
+  return rc;
 }
 
 void
@@ -225,8 +228,17 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
 int
 mp4tag_clean_tags (libmp4tag_t *libmp4tag)
 {
-  /* a stub for future development */
-  return MP4TAG_ERROR;
+  if (libmp4tag == NULL) {
+    return MP4TAG_ERROR;
+  }
+  if (libmp4tag->tags == NULL) {
+    return MP4TAG_OK;
+  }
+
+  mp4tag_free_tags (libmp4tag);
+  /* ### now write it out */
+
+  return MP4TAG_ERROR; // not yet implemented
 }
 
 libmp4tagpreserve_t *
@@ -308,6 +320,30 @@ const char *
 mp4tag_version (void)
 {
   return LIBMP4TAG_VERSION;
+}
+
+static void
+mp4tag_free_tags (libmp4tag_t *libmp4tag)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+  if (libmp4tag->tags == NULL) {
+    return;
+  }
+
+  for (int i = 0; i < libmp4tag->tagcount; ++i) {
+    if (libmp4tag->tags [i].name != NULL) {
+      free (libmp4tag->tags [i].name);
+    }
+    if (libmp4tag->tags [i].data != NULL) {
+      free (libmp4tag->tags [i].data);
+    }
+  }
+  free (libmp4tag->tags);
+  libmp4tag->tags = NULL;
+  libmp4tag->tagcount = 0;
+  libmp4tag->tagalloccount = 0;
 }
 
 static FILE *

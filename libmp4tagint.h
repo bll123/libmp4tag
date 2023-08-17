@@ -5,6 +5,8 @@
 #ifndef INC_LIBMP4TAGINT_H
 #define INC_LIBMP4TAGINT_H
 
+#include <stdint.h>
+
 #include "libmp4tag.h"
 
 enum {
@@ -15,6 +17,11 @@ typedef struct mp4tag {
   char    *name;
   char    *data;
   size_t  datalen;
+  int     idx;
+  /* internalflags is the flag value from the original data */
+  int     internalflags;
+  /* internallen is the length of the original data */
+  int     internallen;
   bool    binary;
 } mp4tag_t;
 
@@ -49,6 +56,9 @@ void mp4tag_parse_file (libmp4tag_t *libmp4tag);
 
 /* mp4tagutil.c */
 
-void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz);
+void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
+int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *nm);
+int  mp4tag_compare (const void *a, const void *b);
+void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz, uint32_t origflag, size_t origlen);
 
 #endif /* INC_LIBMP4TAGINT_H */

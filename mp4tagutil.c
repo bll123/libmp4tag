@@ -14,7 +14,71 @@
 #include "libmp4tagint.h"
 
 void
-mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz)
+mp4tag_sort_tags (libmp4tag_t *libmp4tag)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+  if (libmp4tag->tags == NULL) {
+    return;
+  }
+
+  /* it's available in libc ... */
+  qsort (libmp4tag->tags, libmp4tag->tagcount, sizeof (mp4tag_t),
+      mp4tag_compare);
+  for (int i = 0; i < libmp4tag->tagcount; ++i) {
+    libmp4tag->tags [i].idx = i;
+  }
+}
+
+int
+mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *nm)
+{
+  mp4tag_t    key;
+  mp4tag_t    *result;
+  int         idx = MP4TAG_NOTFOUND;
+
+  if (libmp4tag == NULL) {
+    return -1;
+  }
+  if (nm == NULL) {
+    return -1;
+  }
+
+  key.name = strdup (nm);
+  result = bsearch (&key, libmp4tag->tags, libmp4tag->tagcount,
+      sizeof (mp4tag_t), mp4tag_compare);
+
+  free (key.name);
+
+  if (result != NULL) {
+    idx = result->idx;
+  }
+
+  return idx;
+}
+
+int
+mp4tag_compare (const void *a, const void *b)
+{
+  const mp4tag_t  *ta = a;
+  const mp4tag_t  *tb = b;
+
+  if (ta->name == NULL && tb->name == NULL) {
+    return 0;
+  }
+  if (ta->name == NULL && tb->name != NULL) {
+    return 1;
+  }
+  if (ta->name != NULL && tb->name == NULL) {
+    return -1;
+  }
+  return strcmp (ta->name, tb->name);
+}
+
+void
+mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm,
+    const char *data, ssize_t sz, uint32_t origflag, size_t origlen)
 {
   int   tagidx;
 
@@ -30,6 +94,9 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_
   libmp4tag->tags [tagidx].name = NULL;
   libmp4tag->tags [tagidx].data = NULL;
   libmp4tag->tags [tagidx].binary = false;
+  /* save these off so that writing the tags back out is easier */
+  libmp4tag->tags [tagidx].internalflags = origflag;
+  libmp4tag->tags [tagidx].internallen = origlen;
 
   libmp4tag->tags [tagidx].name = strdup (nm);
   if (sz == MP4TAG_STRING) {

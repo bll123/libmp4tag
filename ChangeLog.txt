@@ -1,7 +1,9 @@
 libmp4tag Change Log
 
-1.0.0.0 alpha 2023-8-17
+1.0.1 alpha 2023-8-17
+
+
+1.0.0 alpha 2023-8-17
 
 - initial release
   tags cannot be written
-  the software has not yet been ported to Mac OS or Windows
