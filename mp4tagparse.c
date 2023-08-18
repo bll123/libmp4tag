@@ -352,7 +352,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
 
   p = data;
 
-  if (strcmp (nm, "free") == 0) {
+  if (strcmp (nm, MP4TAG_FREE) == 0) {
     return;
   }
 
@@ -439,12 +439,12 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
     } else if (tlen == 2) {
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
-      if (strcmp (tnm, "gnre") == 0) {
+      if (strcmp (tnm, MP4TAG_GENR) == 0) {
         /* the itunes value is offset by 1 */
         t16 -= 1;
         if (t16 < oldgenrelistsz) {
-          /* do not use the 'gnre' identifier */
-          strcpy (tnm, PREFIX_STR "gen");
+          /* do not use the 'genr' identifier */
+          strcpy (tnm, PREFIX_STR MP4TAG_GEN);
           tflag = MP4TAG_ID_STRING;
           mp4tag_add_tag (libmp4tag, tnm, oldgenrelist [t16],
               MP4TAG_STRING, tflag, strlen (oldgenrelist [t16]));

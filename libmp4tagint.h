@@ -11,7 +11,7 @@
 
 #include "libmp4tag.h"
 
-#define MP4TAG_CUSTOM "----"
+/* idents */
 #define MP4TAG_FTYP   "ftyp"
 #define MP4TAG_MOOV   "moov"
 #define MP4TAG_TRAK   "trak"
@@ -20,10 +20,15 @@
 #define MP4TAG_ILST   "ilst"
 #define MP4TAG_META   "meta"
 #define MP4TAG_MDHD   "mdhd"
-#define MP4TAG_DATA   "data"
+#define MP4TAG_FREE   "free"
+/* tags */
+#define MP4TAG_CUSTOM "----"
 #define MP4TAG_TRKN   "trkn"
 #define MP4TAG_DISK   "disk"
 #define MP4TAG_COVR   "covr"
+#define MP4TAG_GENR   "genr"
+#define MP4TAG_GEN    "gen"
+#define MP4TAG_DATA   "data"
 
 enum {
   MP4TAG_ID_LEN = 4,
