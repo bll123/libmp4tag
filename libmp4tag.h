@@ -8,6 +8,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 #define COPYRIGHT_STR   "\xc2\xa9"
 
 typedef struct libmp4tag libmp4tag_t;
@@ -71,5 +75,9 @@ const char    * mp4tag_version (void);
 #define LIBMP4TAG_VERSION \
    LIBMP4TAG_VERSION_STR(LIBMP4TAG_VERS_MAJOR,LIBMP4TAG_VERS_MINOR,LIBMP4TAG_VERS_REVISION)
 #define LIBMP4TAG_RELEASE_STATE "alpha"
+
+#if defined (__cplusplus) || defined (c_plusplus)
+} /* extern C */
+#endif
 
 #endif /* INC_LIBMP4TAG_H */

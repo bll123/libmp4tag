@@ -11,6 +11,12 @@
 
 enum {
   MP4TAG_STRING = 0,
+  MP4TAG_ID_BOOL = 0x15,
+  MP4TAG_ID_STRING = 0x01,
+  MP4TAG_ID_DATA = 0x00,
+  MP4TAG_ID_NUM = 0x15,
+  MP4TAG_ID_JPG = 0x0d,
+  MP4TAG_ID_PNG = 0x0e,
 };
 
 typedef struct mp4tag {
@@ -46,6 +52,8 @@ typedef struct libmp4tag {
 
 typedef struct {
   const char  *name;
+  int         identtype;
+  int         len;
 } mp4tagdef_t;
 
 extern const mp4tagdef_t mp4taglist [];

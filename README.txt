@@ -32,32 +32,33 @@ Using the mp4tagcli executable:
   The duration is displayed in milliseconds.
 
   Displaying the duration and tags:
-    ./mp4tagcli filename.m4a
+    mp4tagcli filename.m4a
   Displaying the duration only:
-    ./mp4tagcli filename.m4a --duration
+    mp4tagcli filename.m4a --duration
   Displaying a single tag:
-    ./mp4tagcli filename.m4a --display nam
-    # note that gnre will never be found, use gnr.
-    ./mp4tagcli filename.m4a --display gnr
+    mp4tagcli filename.m4a --display nam
+    # note that gnre will never be found, use gen.
+    mp4tagcli filename.m4a --display gen
   Dump binary data:
-    ./mp4tagcli filename.m4a --display covr --dump > picture-data
+    mp4tagcli filename.m4a --display covr --dump > picture-data
 
   The following are not yet implemented:
 
   Setting a tag:
-    ./mp4tagcli filename.m4a nam=My-Title
-    ./mp4tagcli filename.m4a trkn='(2,5)'
+    mp4tagcli filename.m4a nam=My-Title
+    mp4tagcli filename.m4a trkn='(2,5)'
   Setting multiple tags:
-    ./mp4tagcli filename.m4a nam=My-Title gnr=Country
+    mp4tagcli filename.m4a nam=My-Title gnr=Country
   Setting a custom tag:
-    ./mp4tagcli filename.m4a -- ----:com.apple.iTunes:CONDUCTOR=Beethoven
-    ./mp4tagcli filename.m4a -- ----:BDJ4:DANCE=Waltz
-    ./mp4tagcli filename.m4a -- \
+    mp4tagcli filename.m4a -- ----:com.apple.iTunes:CONDUCTOR=Beethoven
+    mp4tagcli filename.m4a -- ----:BDJ4:DANCE=Waltz
+    mp4tagcli filename.m4a -- \
         '----:com.apple.iTunes:MusicBrainz Track Id'=1234
   Setting binary data:
-    ./mp4tagcli filename.m4a covr=pic.png
-    ./mp4tagcli filename.m4a --binary -- ----:MYAPP:ALTERNATE=filename.dat
+    mp4tagcli filename.m4a --binary covr=pic.png
+    mp4tagcli filename.m4a --binary -- ----:MYAPP:ALTERNATE=filename.dat
   Deleting a tag:
-    ./mp4tagcli filename.m4a nam=
+    mp4tagcli filename.m4a nam=
   Deleting all tags:
-    ./mp4tagcli filename.m4a --clean
+    mp4tagcli filename.m4a --clean
+

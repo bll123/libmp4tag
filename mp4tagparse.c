@@ -88,7 +88,7 @@ typedef struct {
 } boxmdhd8_t;
 
 /* an idiotic way to do things, */
-/* but we must convert any old gnre data to -gnr. */
+/* but we must convert any old gnre data to -gen. */
 /* itunes still puts data into the gnre field, yick. */
 static const char *oldgenrelist [] = {
   "Blues",              "Classic Rock",           "Country",
@@ -214,6 +214,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 
 //        strcmp (bd.nm, "stbl") == 0 ||
 //        strcmp (bd.nm, "minf") == 0
+// meta ?
     /* to process an heirarchy, set the skiplen to the size of any */
     /* data associated with the current box. */
     if (strcmp (bd.nm, "moov") == 0 ||
@@ -411,6 +412,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
   /* 4 bytes flags + reserved value */
   p += sizeof (uint32_t) + sizeof (uint32_t);
 
+fprintf (stdout, "  %s %02x %d\n", tnm, (tflag & 0x00ffffff), (int) tlen);
   /* general data */
   if ((tflag & 0x00ffffff) == 0 ||
       (tflag & 0x00ffffff) == 0x15) {
@@ -442,7 +444,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
         t16 -= 1;
         if (t16 < oldgenrelistsz) {
           /* do not use the 'gnre' identifier */
-          strcpy (tnm, COPYRIGHT_STR "gnr");
+          strcpy (tnm, COPYRIGHT_STR "gen");
           mp4tag_add_tag (libmp4tag, tnm, oldgenrelist [t16],
               MP4TAG_STRING, tflag, tlen);
         }
