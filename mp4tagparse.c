@@ -87,80 +87,6 @@ typedef struct {
   uint32_t    moreflags;
 } boxmdhd8_t;
 
-/* an idiotic way to do things, */
-/* but we must convert any old gnre data to -gen. */
-/* itunes still puts data into the gnre field, yick. */
-static const char *oldgenrelist [] = {
-  "Blues",              "Classic Rock",           "Country",
-  "Dance",              "Disco",                  "Funk",
-  "Grunge",             "Hip-Hop",                "Jazz",
-  "Metal",              "New Age",                "Oldies",
-  "Other",              "Pop",                    "R&B",
-  "Rap",                "Reggae",                 "Rock",
-  "Techno",             "Industrial",             "Alternative",
-  "Ska",                "Death Metal",            "Pranks",
-  "Soundtrack",         "Euro-Techno",            "Ambient",
-  "Trip-Hop",           "Vocal",                  "Jazz+Funk",
-  "Fusion",             "Trance",                 "Classical",
-  "Instrumental",       "Acid",                   "House",
-  "Game",               "Sound Clip",             "Gospel",
-  "Noise",              "Alt. Rock",              "Bass",
-  "Soul",               "Punk",                   "Space",
-  "Meditative",         "Instrumental Pop",       "Instrumental Rock",
-  "Ethnic",             "Gothic",                 "Darkwave",
-  "Techno-Industrial",  "Electronic",             "Pop-Folk",
-  "Eurodance",          "Dream",                  "Southern Rock",
-  "Comedy",             "Cult",                   "Gangsta Rap",
-  "Top 40",             "Christian Rap",          "Pop/Funk",
-  "Jungle",             "Native American",        "Cabaret",
-  "New Wave",           "Psychedelic",            "Rave",
-  "Showtunes",          "Trailer",                "Lo-Fi",
-  "Tribal",             "Acid Punk",              "Acid Jazz",
-  "Polka",              "Retro",                  "Musical",
-  "Rock & Roll",        "Hard Rock",              "Folk",
-  "Folk-Rock",          "National Folk",          "Swing",
-  "Fast-Fusion",        "Bebop",                  "Latin",
-  "Revival",            "Celtic",                 "Bluegrass",
-  "Avantgarde",         "Gothic Rock",            "Progressive Rock",
-  "Psychedelic Rock",   "Symphonic Rock",         "Slow Rock",
-  "Big Band",           "Chorus",                 "Easy Listening",
-  "Acoustic",           "Humour",                 "Speech",
-  "Chanson",            "Opera",                  "Chamber Music",
-  "Sonata",             "Symphony",               "Booty Bass",
-  "Primus",             "Porn Groove",            "Satire",
-  "Slow Jam",           "Club",                   "Tango",
-  "Samba",              "Folklore",               "Ballad",
-  "Power Ballad",       "Rhythmic Soul",          "Freestyle",
-  "Duet",               "Punk Rock",              "Drum Solo",
-  "A Cappella",         "Euro-House",             "Dance Hall",
-  "Goa",                "Drum & Bass",            "Club-House",
-  "Hardcore",           "Terror",                 "Indie",
-  "BritPop",            "Afro-Punk",              "Polsk Punk",
-  "Beat",               "Christian Gangsta Rap",  "Heavy Metal",
-  "Black Metal",        "Crossover",              "Contemporary Christian",
-  "Christian Rock",     "Merengue",               "Salsa",
-  "Thrash Metal",       "Anime",                  "JPop",
-  "Synthpop",           "Abstract",               "Art Rock",
-  "Baroque",            "Bhangra",                "Big Beat",
-  "Breakbeat",          "Chillout",               "Downtempo",
-  "Dub",                "EBM",                    "Eclectic",
-  "Electro",            "Electroclash",           "Emo",
-  "Experimental",       "Garage",                 "Global",
-  "IDM",                "Illbient",               "Industro-Goth",
-  "Jam Band",           "Krautrock",              "Leftfield",
-  "Lounge",             "Math Rock",              "New Romantic",
-  "Nu-Breakz",          "Post-Punk",              "Post-Rock",
-  "Psytrance",          "Shoegaze",               "Space Rock",
-  "Trop Rock",          "World Music",            "Neoclassical",
-  "Audiobook",          "Audio Theatre",          "Neue Deutsche Welle",
-  "Podcast",            "Indie Rock",             "G-Funk",
-  "Dubstep",            "Garage Rock",            "Psybient",
-};
-
-enum {
-  oldgenrelistsz = sizeof (oldgenrelist) / sizeof (const char *),
-};
-
 static void process_mdhd (libmp4tag_t *libmp4tag, const char *data);
 static void process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *data);
 
@@ -173,6 +99,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
   size_t          skiplen;
   bool            needdata = false;
   bool            processdata = false;
+  bool            done = false;
   bool            inclevel = false;
   int             level = 0;
   size_t          currlen [LEVEL_MAX];
@@ -206,7 +133,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     needdata = false;
     inclevel = false;
 
-    // fprintf (stdout, "%*s %2d %.5s: %8ld\n", level*2, " ", level, bd.nm, bd.len);
+// fprintf (stdout, "%*s %2d %.5s: %8ld %08lx\n", level*2, " ", level, bd.nm, bd.len, bd.len);
 
     /* track the current level's length */
     currlen [level] = bd.len;
@@ -214,8 +141,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 
 //        strcmp (bd.nm, "stbl") == 0 ||
 //        strcmp (bd.nm, "minf") == 0
-// meta ?
-    /* to process an heirarchy, set the skiplen to the size of any */
+    /* to process a heirarchy, set the skiplen to the size of any */
     /* data associated with the current box. */
     if (strcmp (bd.nm, "moov") == 0 ||
         strcmp (bd.nm, "trak") == 0 ||
@@ -293,12 +219,100 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
           usedlen [plevel] += sizeof (boxhead_t);
           usedlen [plevel] += usedlen [level];
         }
+        /* out of ilst, do not process more tags */
+        /* and don't need to process anything else at all */
+        if (processdata) {
+          done = true;
+          processdata = false;
+        }
       }
+    }
+
+    if (done) {
+      break;
     }
 
     inclevel = false;
     rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
   }
+}
+
+int
+mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
+{
+  int         ok = 0;
+  int         rrc;
+  uint32_t    idx;
+  uint32_t    len;
+  boxhead_t   bh;
+  char        *buff;
+
+  rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
+  if (rrc == 1) {
+    /* the total length includes the length and the identifier */
+    len = be32toh (bh.len) - sizeof (boxhead_t);
+    if (memcmp (bh.nm, "ftyp", 4) != 0) {
+      return -1;
+    }
+    ++ok;
+
+    buff = malloc (len);
+    if (buff == NULL) {
+      return -1;
+    }
+    rrc = fread (buff, len, 1, libmp4tag->fh);
+
+    idx = 0;
+    while (idx < len && rrc == 1) {
+      if (idx == 0) {
+        /* major brand, generally M4A */
+        memcpy (libmp4tag->maintype, buff + idx, 4);
+        libmp4tag->maintype [4] = '\0';
+      }
+      if (idx == 4) {
+        /* version */
+        uint32_t    vers;
+
+        memcpy (&vers, buff + idx, sizeof (uint32_t));
+	vers = be32toh (vers);
+      }
+      if (idx >= 8) {
+        if (memcmp (buff + idx, "mp41", 4) == 0 ||
+            memcmp (buff + idx, "mp42", 4) == 0) {
+          memcpy (libmp4tag->mp4version, buff + idx, 4);
+          libmp4tag->mp4version [4] = '\0';
+          ++ok;
+        }
+        if (memcmp (buff + idx, "M4A ", 4) == 0) {
+          /* aac audio w/itunes info */
+          // fprintf (stdout, "== m4a \n");
+          ++ok;
+        }
+        if (memcmp (buff + idx, "M4B ", 4) == 0) {
+          /* aac audio w/itunes position */
+          // fprintf (stdout, "== m4b \n");
+          ++ok;
+        }
+        if (memcmp (buff + idx, "M4P ", 4) == 0) {
+          /* aes encrypted audio */
+          // fprintf (stdout, "== m4p \n");
+          /* is this in addition to m4a/m4b or instead of ? */
+        }
+        if (memcmp (buff + idx, "mp71", 4) == 0 ||
+            memcmp (buff + idx, "mp7b", 4) == 0) {
+          /* mpeg-7 meta data */
+          fprintf (stdout, "== mpeg-7 meta data\n");
+          libmp4tag->mp7meta = true;
+        }
+        /* isom, iso2, qt, avc1, 3gp, mmp4 */
+      }
+      idx += 4;
+    }
+  }
+
+  /* it's definitely possible for the file to */
+  /* not have an 'mp41' or 'mp42' */
+  return ok >= 2 ? 0 : -1;
 }
 
 static void
@@ -356,8 +370,6 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
   p = data;
 
   if (strcmp (nm, "free") == 0) {
-    /* this needs to be tracked */
-    /* the length of the free block needs to passed in */
     return;
   }
 
@@ -412,16 +424,20 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
   /* 4 bytes flags + reserved value */
   p += sizeof (uint32_t) + sizeof (uint32_t);
 
-fprintf (stdout, "  %s %02x %d\n", tnm, (tflag & 0x00ffffff), (int) tlen);
+  // fprintf (stdout, "  %s %02x %d\n", tnm, (tflag & 0x00ffffff), (int) tlen);
+
   /* general data */
-  if ((tflag & 0x00ffffff) == 0 ||
-      (tflag & 0x00ffffff) == 0x15) {
+  if ((tflag & 0x00ffffff) == MP4TAG_ID_DATA ||
+      (tflag & 0x00ffffff) == MP4TAG_ID_NUM) {
     /* what follows depends on the identifier */
 
-    if (strcmp (tnm, "disk") == 0 ||
+    if (strcmp (tnm, "covr") == 0) {
+      /* a cover image w/o a proper identifier, mark as jpeg */
+      tflag = 0x0d;
+      mp4tag_add_tag (libmp4tag, tnm, p, tlen, tflag, tlen);
+    } else if (strcmp (tnm, "disk") == 0 ||
         strcmp (tnm, "trkn") == 0) {
       /* pair of 32 bit and 16 bit numbers */
-      /* why did they put the potentially larger number in the smaller field */
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);
       p += sizeof (uint32_t);
@@ -467,17 +483,17 @@ fprintf (stdout, "  %s %02x %d\n", tnm, (tflag & 0x00ffffff), (int) tlen);
     }
   }
 
-  if ((tflag & 0x00ffffff) == 0x0d) {
+  if ((tflag & 0x00ffffff) == MP4TAG_ID_JPG) {
     /* jpeg */
     mp4tag_add_tag (libmp4tag, tnm, p, tlen, tflag, tlen);
   }
-  if ((tflag & 0x00ffffff) == 0x0e) {
+  if ((tflag & 0x00ffffff) == MP4TAG_ID_PNG) {
     /* png */
     mp4tag_add_tag (libmp4tag, tnm, p, tlen, tflag, tlen);
   }
 
   /* string type */
-  if ((tflag & 0x00ffffff) == 1 && tlen > 0) {
+  if ((tflag & 0x00ffffff) == MP4TAG_ID_STRING && tlen > 0) {
     /* pass as negative len to indicate a string that needs a terminator */
     mp4tag_add_tag (libmp4tag, tnm, p, - (ssize_t) tlen, tflag, tlen);
   }

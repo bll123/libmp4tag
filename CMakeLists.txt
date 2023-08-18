@@ -154,7 +154,7 @@ add_library (libmp4tag SHARED
   libmp4tag.c
   mp4tagparse.c
   mp4tagutil.c
-  tagdef.c
+  mp4const.c
 )
 if (WIN32)
   target_link_libraries (libmp4tag PUBLIC ws2_32)

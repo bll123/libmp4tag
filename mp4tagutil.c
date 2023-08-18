@@ -62,34 +62,24 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag)
   return idx;
 }
 
-bool
+mp4tagdef_t *
 mp4tag_check_tag (libmp4tag_t *libmp4tag, const char *tag)
 {
   mp4tagdef_t key;
   mp4tagdef_t *result;
-  bool        rc = false;
 
   if (libmp4tag == NULL) {
-    return rc;
+    return NULL;
   }
   if (tag == NULL) {
-    return rc;
-  }
-
-  /* custom tags are always valid */
-  if (strncmp (tag, "----", 4) == 0) {
-    return true;
+    return NULL;
   }
 
   key.name = tag;
   result = bsearch (&key, mp4taglist, mp4taglistlen,
       sizeof (mp4tagdef_t), mp4tag_compare_list);
 
-  if (result != NULL) {
-    rc = true;
-  }
-
-  return rc;
+  return result;
 }
 
 int

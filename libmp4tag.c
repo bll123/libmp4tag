@@ -37,6 +37,7 @@ libmp4tag_t *
 mp4tag_open (const char *fn)
 {
   libmp4tag_t *libmp4tag = NULL;
+  int         rc;
 
   if (fn == NULL) {
     return NULL;
@@ -46,17 +47,7 @@ mp4tag_open (const char *fn)
   if (libmp4tag == NULL) {
     return NULL;
   }
-  libmp4tag->fh = mp4tag_fopen (fn, "rb");
-  if (libmp4tag->fh == NULL) {
-    free (libmp4tag);
-    return NULL;
-  }
-  libmp4tag->fn = strdup (fn);
-  if (libmp4tag->fn == NULL) {
-    fclose (libmp4tag->fh);
-    free (libmp4tag);
-    return NULL;
-  }
+
   libmp4tag->tags = NULL;
   libmp4tag->creationdate = 0;
   libmp4tag->modifieddate = 0;
@@ -69,6 +60,29 @@ mp4tag_open (const char *fn)
   libmp4tag->tagcount = 0;
   libmp4tag->tagalloccount = 0;
   libmp4tag->iterator = 0;
+  libmp4tag->maintype [0] = '\0';
+  libmp4tag->mp4version [0] = '\0';
+  libmp4tag->mp7meta = false;
+
+  libmp4tag->fh = mp4tag_fopen (fn, "rb");
+  if (libmp4tag->fh == NULL) {
+    free (libmp4tag);
+    return NULL;
+  }
+
+  rc = mp4tag_parse_ftyp (libmp4tag);
+  if (rc < 0) {
+    fclose (libmp4tag->fh);
+    free (libmp4tag);
+    return NULL;
+  }
+
+  libmp4tag->fn = strdup (fn);
+  if (libmp4tag->fn == NULL) {
+    fclose (libmp4tag->fh);
+    free (libmp4tag);
+    return NULL;
+  }
 
   return libmp4tag;
 }
@@ -230,8 +244,31 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
     mp4tag->datalen = strlen (data);
     mp4tag->internallen = mp4tag->datalen;
   } else {
-    if (mp4tag_check_tag (libmp4tag, tag)) {
-      mp4tag_add_tag (libmp4tag, tag, data, strlen (data), 0x01, strlen (data));
+    const mp4tagdef_t *tagdef = NULL;
+    int               ok = false;
+
+    /* custom tags are always valid */
+    if (memcmp (tag, "----", 4) == 0) {
+      ok = true;
+    }
+    if ((tagdef = mp4tag_check_tag (libmp4tag, tag)) != NULL) {
+      ok = true;
+    }
+
+    if (ok) {
+      uint32_t    tflag;
+      uint32_t    tlen;
+
+      tflag = MP4TAG_ID_STRING;
+      if (tagdef != NULL) {
+	tflag = tagdef->identtype;
+	tlen = tagdef->len;
+      }
+      if (tflag == MP4TAG_ID_STRING) {
+        tlen = strlen (data);
+      }
+
+      mp4tag_add_tag (libmp4tag, tag, data, strlen (data), tflag, tlen);
       mp4tag_sort_tags (libmp4tag);
     }
   }

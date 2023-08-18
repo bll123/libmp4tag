@@ -1,17 +1,23 @@
-libmp4tag Change Log
+### libmp4tag Change Log
 
-1.0.2 alpha 2023-8---
+**1.0.2 alpha 2023-8---**
 
-- fixed genre tags.
-  tags cannot be written
+* Bug Fixes
+    * fixed genre tags.
+    * validate file type
+* Notes
+    * tags cannot be written
 
-1.0.1 alpha 2023-8-17
+**1.0.1 alpha 2023-8-17**
 
-- implemented set-tag, delete-tag, clean
-- updated cli tool.
-  tags cannot be written
+* Changes
+    * implemented set-tag, delete-tag, clean
+    * updated cli tool.
+* Notes
+    * tags cannot be written
 
-1.0.0 alpha 2023-8-17
+**1.0.0 alpha 2023-8-17**
 
-- initial release
-  tags cannot be written
+* Notes
+   initial release
+    tags cannot be written

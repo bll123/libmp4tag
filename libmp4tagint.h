@@ -46,11 +46,15 @@ typedef struct libmp4tag {
   int       tagcount;
   int       tagalloccount;
   int       iterator;
+  char      maintype [5];
+  char      mp4version [5];
+  bool      mp7meta : 1;
 } libmp4tag_t;
 
-/* tagdef.c */
+/* mp4const.c */
 
 typedef struct {
+  int         priority;
   const char  *name;
   int         identtype;
   int         len;
@@ -58,16 +62,19 @@ typedef struct {
 
 extern const mp4tagdef_t mp4taglist [];
 extern const int mp4taglistlen;
+extern const char *oldgenrelist [];
+extern const int oldgenrelistsz;
 
 /* mp4tagparse.c */
 
 void mp4tag_parse_file (libmp4tag_t *libmp4tag);
+int  mp4tag_parse_ftyp (libmp4tag_t *libmp4tag);
 
 /* mp4tagutil.c */
 
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
 int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag);
-bool mp4tag_check_tag (libmp4tag_t *libmp4tag, const char *tag);
+mp4tagdef_t *mp4tag_check_tag (libmp4tag_t *libmp4tag, const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
 void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz, uint32_t origflag, size_t origlen);
