@@ -242,7 +242,9 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
     }
     mp4tag->data = strdup (data);
     mp4tag->datalen = strlen (data);
-    mp4tag->internallen = mp4tag->datalen;
+    if (mp4tag->internalflags == MP4TAG_ID_STRING) {
+      mp4tag->internallen = mp4tag->datalen;
+    }
   } else {
     const mp4tagdef_t *tagdef = NULL;
     int               ok = false;

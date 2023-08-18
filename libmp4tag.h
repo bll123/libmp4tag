@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#define COPYRIGHT_STR   "\xc2\xa9"
+#define PREFIX_STR   "\xc2\xa9"
 
 typedef struct libmp4tag libmp4tag_t;
 typedef struct libmp4tagpreserve libmp4tagpreserve_t;

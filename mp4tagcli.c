@@ -185,7 +185,7 @@ static void
 setTagName (const char *tag, char *buff, size_t sz)
 {
   if (strlen (tag) == 3) {
-    snprintf (buff, sz, "%s%s", COPYRIGHT_STR, tag);
+    snprintf (buff, sz, "%s%s", PREFIX_STR, tag);
   } else {
     strcpy (buff, tag);
   }

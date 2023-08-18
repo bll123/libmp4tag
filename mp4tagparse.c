@@ -96,9 +96,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     bd.len = be32toh (bh.len) - sizeof (boxhead_t);
     if (*bh.nm == '\xa9') {
       /* maximum 5 bytes */
-      strcpy (bd.nm, COPYRIGHT_STR);
-      memcpy (bd.nm + strlen (COPYRIGHT_STR), bh.nm + 1, MP4TAG_ID_LEN - 1);
-      bd.nm [MP4TAG_ID_LEN + strlen (COPYRIGHT_STR) - 1] = '\0';
+      strcpy (bd.nm, PREFIX_STR);
+      memcpy (bd.nm + strlen (PREFIX_STR), bh.nm + 1, MP4TAG_ID_LEN - 1);
+      bd.nm [MP4TAG_ID_LEN + strlen (PREFIX_STR) - 1] = '\0';
     } else {
       memcpy (bd.nm, bh.nm, MP4TAG_ID_LEN);
       bd.nm [MP4TAG_ID_LEN] = '\0';
@@ -245,6 +245,10 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
         /* major brand, generally M4A */
         memcpy (libmp4tag->maintype, buff + idx, 4);
         libmp4tag->maintype [4] = '\0';
+	if (strcmp (libmp4tag->maintype, "M4A ") == 0 ||
+	    strcmp (libmp4tag->maintype, "M4V ") == 0) {
+	  ++ok;
+	}
       }
       if (idx == 4) {
         /* version */
@@ -252,6 +256,9 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
 
         memcpy (&vers, buff + idx, sizeof (uint32_t));
 	vers = be32toh (vers);
+        if (((vers & 0x0000ff00) >> 8) == 0x02) {
+	  ++ok;
+	}
       }
       if (idx >= 8) {
         if (memcmp (buff + idx, "mp41", 4) == 0 ||
@@ -288,9 +295,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
     free (buff);
   }
 
-  /* it's definitely possible for the file to */
-  /* not have an 'mp41' or 'mp42' */
-  return ok >= 2 ? 0 : -1;
+  return ok >= 3 ? 0 : -1;
 }
 
 static void
@@ -399,14 +404,15 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
   p += MP4TAG_ID_LEN;
   memcpy (&tflag, p, sizeof (uint32_t));
   tflag = be32toh (tflag);
+  tflag = tflag & 0x00ffffff;
   /* 4 bytes flags + reserved value */
   p += sizeof (uint32_t) + sizeof (uint32_t);
 
-  // fprintf (stdout, "  %s %02x %d\n", tnm, (tflag & 0x00ffffff), (int) tlen);
+// fprintf (stdout, "  %s %02x %d\n", tnm, tflag, (int) tlen);
 
   /* general data */
-  if ((tflag & 0x00ffffff) == MP4TAG_ID_DATA ||
-      (tflag & 0x00ffffff) == MP4TAG_ID_NUM) {
+  if (tflag == MP4TAG_ID_DATA ||
+      tflag == MP4TAG_ID_NUM) {
     /* what follows depends on the identifier */
 
     if (strcmp (tnm, MP4TAG_COVR) == 0) {
@@ -438,9 +444,10 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
         t16 -= 1;
         if (t16 < oldgenrelistsz) {
           /* do not use the 'gnre' identifier */
-          strcpy (tnm, COPYRIGHT_STR "gen");
+          strcpy (tnm, PREFIX_STR "gen");
+          tflag = MP4TAG_ID_STRING;
           mp4tag_add_tag (libmp4tag, tnm, oldgenrelist [t16],
-              MP4TAG_STRING, tflag, tlen);
+              MP4TAG_STRING, tflag, strlen (oldgenrelist [t16]));
         }
       } else {
         snprintf (tmp, sizeof (tmp), "%d", (int) t16);
@@ -461,17 +468,17 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
     }
   }
 
-  if ((tflag & 0x00ffffff) == MP4TAG_ID_JPG) {
+  if (tflag == MP4TAG_ID_JPG) {
     /* jpeg */
     mp4tag_add_tag (libmp4tag, tnm, p, tlen, tflag, tlen);
   }
-  if ((tflag & 0x00ffffff) == MP4TAG_ID_PNG) {
+  if (tflag == MP4TAG_ID_PNG) {
     /* png */
     mp4tag_add_tag (libmp4tag, tnm, p, tlen, tflag, tlen);
   }
 
   /* string type */
-  if ((tflag & 0x00ffffff) == MP4TAG_ID_STRING && tlen > 0) {
+  if (tflag == MP4TAG_ID_STRING && tlen > 0) {
     /* pass as negative len to indicate a string that needs a terminator */
     mp4tag_add_tag (libmp4tag, tnm, p, - (ssize_t) tlen, tflag, tlen);
   }
