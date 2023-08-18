@@ -104,7 +104,7 @@ main (int argc, char *argv [])
         ! dump &&
         mp4tagpub.binary &&
         mp4tagpub.name != NULL) {
-      fprintf (stdout, "%s (binary data: %" PRId64 ")\n",
+      fprintf (stdout, "%s=data: (%" PRId64 " bytes)\n",
           mp4tagpub.name, (uint64_t) mp4tagpub.datalen);
     }
     if (rc == MP4TAG_OK &&
@@ -155,6 +155,10 @@ main (int argc, char *argv [])
           mp4tagpub.name != NULL &&
           mp4tagpub.data != NULL) {
         fprintf (stdout, "%s=%s\n", mp4tagpub.name, mp4tagpub.data);
+      }
+      if (mp4tagpub.binary &&
+          mp4tagpub.name != NULL) {
+        fprintf (stdout, "%s=data: (%" PRId64 " bytes)\n", mp4tagpub.name, mp4tagpub.datalen);
       }
     }
   }

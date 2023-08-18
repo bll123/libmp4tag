@@ -53,7 +53,7 @@ const mp4tagdef_t mp4taglist [] = {
   { "tven", MP4TAG_ID_STRING, 0 },
   { "tves", MP4TAG_ID_NUM, 1 },       // 1 byte (tv episode)
   { "tvnn", MP4TAG_ID_STRING, 0 },
-  { "tvsh", MP4TAG_ID_STRING, 0 },
+  { "tvsh", MP4TAG_ID_STRING, 0 },    // string (tv show name)
   { "tvsn", MP4TAG_ID_NUM, 1 },       // 1 byte (tv season)
   { "©ART", MP4TAG_ID_STRING, 0 },    // string
   { "©alb", MP4TAG_ID_STRING, 0 },    // string
@@ -64,10 +64,10 @@ const mp4tagdef_t mp4taglist [] = {
   { "©gen", MP4TAG_ID_STRING, 0 },    // string
   { "©grp", MP4TAG_ID_STRING, 0 },    // string
   { "©lyr", MP4TAG_ID_STRING, 0 },    // string
-  { "©mvc", MP4TAG_ID_NUM, 2 },       // 2-byte
-  { "©mvi", MP4TAG_ID_NUM, 2 },       // 2-byte
-  { "©mvn", MP4TAG_ID_STRING, 0 },    // string
-  { "©nam", MP4TAG_ID_STRING, 0 },    // string
+  { "©mvc", MP4TAG_ID_NUM, 2 },       // 2-byte (movement total)
+  { "©mvi", MP4TAG_ID_NUM, 2 },       // 2-byte (movement number)
+  { "©mvn", MP4TAG_ID_STRING, 0 },    // string (movement name)
+  { "©nam", MP4TAG_ID_STRING, 0 },    // string (title)
   { "©nrt", MP4TAG_ID_STRING, 0 },
   { "©pub", MP4TAG_ID_STRING, 0 },
   { "©too", MP4TAG_ID_STRING, 0 },    // string
