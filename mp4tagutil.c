@@ -63,14 +63,11 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag)
 }
 
 mp4tagdef_t *
-mp4tag_check_tag (libmp4tag_t *libmp4tag, const char *tag)
+mp4tag_check_tag (const char *tag)
 {
   mp4tagdef_t key;
   mp4tagdef_t *result;
 
-  if (libmp4tag == NULL) {
-    return NULL;
-  }
   if (tag == NULL) {
     return NULL;
   }

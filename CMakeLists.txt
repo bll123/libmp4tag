@@ -153,6 +153,7 @@ configure_file (config.h.in config.h)
 add_library (libmp4tag SHARED
   libmp4tag.c
   mp4tagparse.c
+  mp4tagwrite.c
   mp4tagutil.c
   mp4const.c
 )

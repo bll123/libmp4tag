@@ -248,10 +248,10 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
     int               ok = false;
 
     /* custom tags are always valid */
-    if (memcmp (tag, "----", 4) == 0) {
+    if (memcmp (tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
       ok = true;
     }
-    if ((tagdef = mp4tag_check_tag (libmp4tag, tag)) != NULL) {
+    if ((tagdef = mp4tag_check_tag (tag)) != NULL) {
       ok = true;
     }
 
@@ -311,7 +311,7 @@ mp4tag_set_tag_binary (libmp4tag_t *libmp4tag,
     mp4tag->datalen = sz;
     mp4tag->internallen = sz;
   } else {
-    if (mp4tag_check_tag (libmp4tag, tag)) {
+    if (mp4tag_check_tag (tag) != NULL) {
       mp4tag_add_tag (libmp4tag, tag, data, sz, 0x00, sz);
       mp4tag_sort_tags (libmp4tag);
     }
@@ -348,6 +348,7 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 int
 mp4tag_write_tags (libmp4tag_t *libmp4tag)
 {
+  mp4tag_build_data (libmp4tag);
   /* a stub for future development */
   return MP4TAG_ERROR;
 }

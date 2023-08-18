@@ -11,42 +11,18 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <ctype.h>
-#include <assert.h>
-
-#if _hdr_endian
-# include <endian.h>
-#endif
-#if ! _hdr_endian && _hdr_arpa_inet
-# include <arpa/inet.h>
-# define be32toh ntohl
-# define be16toh ntohs
-# define be64toh ntohll
-#endif
-#if ! _hdr_endian && _hdr_winsock2
-# include <winsock2.h>
-# define be32toh ntohl
-# define be16toh ntohs
-/* it appears that the msys2 winsock2 header file does not define ntohll */
-/* but this will get all mucked up if ntohll is defined */
-static inline uint64_t ntohll (uint64_t v)
-{
-  return (((uint64_t) ntohl((uint32_t) (v & 0xFFFFFFFFUL))) << 32) |
-      (uint64_t) ntohl ((uint32_t) (v >> 32));
-}
-# define be64toh ntohll
-#endif
+// #include <assert.h>
 
 #include "libmp4tag.h"
 #include "libmp4tagint.h"
 
 enum {
-  IDENT_LEN = 4,
   LEVEL_MAX = 300,
 };
 
 typedef struct {
   uint32_t    len;
-  char        nm [IDENT_LEN];
+  char        nm [MP4TAG_ID_LEN];
 } boxhead_t;
 
 typedef struct {
@@ -105,9 +81,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
   size_t          currlen [LEVEL_MAX];
   size_t          usedlen [LEVEL_MAX];
 
-  assert (sizeof (boxhead_t) == 8);
-  assert (sizeof (boxmdhd4_t) == 24);
-  assert (sizeof (boxmdhd8pack_t) == 36);
+  // assert (sizeof (boxhead_t) == 8);
+  // assert (sizeof (boxmdhd4_t) == 24);
+  // assert (sizeof (boxmdhd8pack_t) == 36);
 
   for (int i = 0; i < LEVEL_MAX; ++i) {
     currlen [i] = 0;
@@ -121,11 +97,11 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     if (*bh.nm == '\xa9') {
       /* maximum 5 bytes */
       strcpy (bd.nm, COPYRIGHT_STR);
-      memcpy (bd.nm + strlen (COPYRIGHT_STR), bh.nm + 1, IDENT_LEN - 1);
-      bd.nm [IDENT_LEN + strlen (COPYRIGHT_STR) - 1] = '\0';
+      memcpy (bd.nm + strlen (COPYRIGHT_STR), bh.nm + 1, MP4TAG_ID_LEN - 1);
+      bd.nm [MP4TAG_ID_LEN + strlen (COPYRIGHT_STR) - 1] = '\0';
     } else {
-      memcpy (bd.nm, bh.nm, IDENT_LEN);
-      bd.nm [IDENT_LEN] = '\0';
+      memcpy (bd.nm, bh.nm, MP4TAG_ID_LEN);
+      bd.nm [MP4TAG_ID_LEN] = '\0';
     }
 
     bd.data = NULL;
@@ -143,23 +119,23 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 //        strcmp (bd.nm, "minf") == 0
     /* to process a heirarchy, set the skiplen to the size of any */
     /* data associated with the current box. */
-    if (strcmp (bd.nm, "moov") == 0 ||
-        strcmp (bd.nm, "trak") == 0 ||
-        strcmp (bd.nm, "udta") == 0 ||
-        strcmp (bd.nm, "mdia") == 0 ||
-        strcmp (bd.nm, "ilst") == 0) {
+    if (strcmp (bd.nm, MP4TAG_MOOV) == 0 ||
+        strcmp (bd.nm, MP4TAG_TRAK) == 0 ||
+        strcmp (bd.nm, MP4TAG_UDTA) == 0 ||
+        strcmp (bd.nm, MP4TAG_MDIA) == 0 ||
+        strcmp (bd.nm, MP4TAG_ILST) == 0) {
       /* want to descend into this hierarchy */
       /* there is no data associated, don't need to skip anything */
       skiplen = 0;
       inclevel = true;
     }
-    if (strcmp (bd.nm, "meta") == 0) {
+    if (strcmp (bd.nm, MP4TAG_META) == 0) {
       /* want to descend into this hierarchy */
       /* skip the 4 bytes of flags */
-      skiplen = 4;
+      skiplen = sizeof (uint32_t);
       inclevel = true;
     }
-    if (strcmp (bd.nm, "mdhd") == 0) {
+    if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
       needdata = true;
     }
     if (processdata) {
@@ -167,7 +143,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (needdata && bd.len > 0) {
-      if (strcmp (bd.nm, "ilst") == 0) {
+      if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
         libmp4tag->taglist_begin = ftell (libmp4tag->fh);
       }
       bd.data = malloc (bd.len);
@@ -184,19 +160,20 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (needdata && bd.data != NULL && bd.len > 0) {
-      if (strcmp (bd.nm, "mdhd") == 0) {
+      if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
         process_mdhd (libmp4tag, bd.data);
       }
       if (processdata) {
         process_tag (libmp4tag, bd.nm, bd.len, bd.data);
       }
+      free (bd.data);
     }
 
-    if (processdata && strcmp (bd.nm, "data") == 0) {
+    if (processdata && strcmp (bd.nm, MP4TAG_DATA) == 0) {
       inclevel = false;
     }
 
-    if (strcmp (bd.nm, "ilst") == 0) {
+    if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
       processdata = true;
     }
 
@@ -251,7 +228,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
   if (rrc == 1) {
     /* the total length includes the length and the identifier */
     len = be32toh (bh.len) - sizeof (boxhead_t);
-    if (memcmp (bh.nm, "ftyp", 4) != 0) {
+    if (memcmp (bh.nm, MP4TAG_FTYP, MP4TAG_ID_LEN) != 0) {
       return -1;
     }
     ++ok;
@@ -296,7 +273,6 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
         if (memcmp (buff + idx, "M4P ", 4) == 0) {
           /* aes encrypted audio */
           // fprintf (stdout, "== m4p \n");
-          /* is this in addition to m4a/m4b or instead of ? */
         }
         if (memcmp (buff + idx, "mp71", 4) == 0 ||
             memcmp (buff + idx, "mp7b", 4) == 0) {
@@ -308,6 +284,8 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
       }
       idx += 4;
     }
+
+    free (buff);
   }
 
   /* it's definitely possible for the file to */
@@ -389,7 +367,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
     /* what does 'mean' stand for? i would call it 'vendor' */
     /* ident len + ident (== "mean") + 4 bytes flags */
     p += sizeof (uint32_t);
-    p += IDENT_LEN;
+    p += MP4TAG_ID_LEN;
     p += sizeof (uint32_t);
     memcpy (tnm + len, p, tlen);
     len += tlen;
@@ -403,7 +381,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
     tlen -= sizeof (uint32_t);
     /* ident len + ident (== "name") + 4 bytes flags */
     p += sizeof (uint32_t);
-    p += IDENT_LEN;
+    p += MP4TAG_ID_LEN;
     p += sizeof (uint32_t);
     memcpy (tnm + len, p, tlen);
     len += tlen;
@@ -418,7 +396,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
   tlen -= sizeof (uint32_t);  // reserved
   /* ident len + ident (== "data") */
   p += sizeof (uint32_t);
-  p += IDENT_LEN;
+  p += MP4TAG_ID_LEN;
   memcpy (&tflag, p, sizeof (uint32_t));
   tflag = be32toh (tflag);
   /* 4 bytes flags + reserved value */
@@ -431,12 +409,12 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
       (tflag & 0x00ffffff) == MP4TAG_ID_NUM) {
     /* what follows depends on the identifier */
 
-    if (strcmp (tnm, "covr") == 0) {
+    if (strcmp (tnm, MP4TAG_COVR) == 0) {
       /* a cover image w/o a proper identifier, mark as jpeg */
       tflag = 0x0d;
       mp4tag_add_tag (libmp4tag, tnm, p, tlen, tflag, tlen);
-    } else if (strcmp (tnm, "disk") == 0 ||
-        strcmp (tnm, "trkn") == 0) {
+    } else if (strcmp (tnm, MP4TAG_DISK) == 0 ||
+        strcmp (tnm, MP4TAG_TRKN) == 0) {
       /* pair of 32 bit and 16 bit numbers */
       memcpy (&t32, p, sizeof (uint32_t));
       t32 = be32toh (t32);

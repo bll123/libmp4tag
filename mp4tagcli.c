@@ -28,6 +28,7 @@ main (int argc, char *argv [])
   bool          duration = false;
   bool          binary = false;
   bool          clean = false;
+  bool          write = false;
   int           fnidx = -1;
 
   static struct option mp4tagcli_options [] = {
@@ -118,29 +119,42 @@ main (int argc, char *argv [])
     mp4tag_clean_tags (libmp4tag);
   }
 
-  for (int i = fnidx + 1; i < argc; ++i) {
-    char    *tstr;
-    char    *tokstr;
-    char    *p;
+  if (! clean) {
+    for (int i = fnidx + 1; i < argc; ++i) {
+      char    *tstr;
+      char    *tokstr;
+      char    *p;
 
-    tstr = strdup (argv [i]);
-    if (tstr != NULL) {
+      tstr = strdup (argv [i]);
+      if (tstr == NULL) {
+	continue;
+      }
+
       p = strtok_r (tstr, "=", &tokstr);
       setTagName (tstr, tagname, sizeof (tagname));
       if (p != NULL) {
         p = strtok_r (NULL, "=", &tokstr);
         if (p == NULL) {
           mp4tag_delete_tag (libmp4tag, tagname);
+          write = true;
 	}
         if (p != NULL) {
           if (! binary) {
             setTagName (tstr, tagname, sizeof (tagname));
             mp4tag_set_tag_str (libmp4tag, tagname, p);
+            write = true;
           }
+          if (binary) {
+	  }
         }
       }
       free (tstr);
-    }
+
+    } /* for each argument on the command line */
+  } /* not clean */
+
+  if (write) {
+    mp4tag_write_tags (libmp4tag);
   }
 
   if (duration) {
