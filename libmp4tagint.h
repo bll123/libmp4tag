@@ -71,10 +71,8 @@ typedef struct libmp4tag {
   int64_t   modifieddate;
   int64_t   duration;
   int32_t   samplerate;
-  off_t     taglist_offset;
+  ssize_t     taglist_offset;
   size_t    taglist_len;
-  off_t     free_begin;
-  size_t    free_len;
   int       tagcount;
   int       tagalloccount;
   int       iterator;
@@ -82,6 +80,7 @@ typedef struct libmp4tag {
   char      maintype [5];
   char      mp4version [5];
   bool      mp7meta : 1;
+  bool      unlimited : 1;
 } libmp4tag_t;
 
 /* mp4const.c */

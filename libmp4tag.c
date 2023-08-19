@@ -59,14 +59,13 @@ mp4tag_open (const char *fn, int *errornum)
   libmp4tag->samplerate = 0;
   libmp4tag->taglist_offset = 0;
   libmp4tag->taglist_len = 0;
-  libmp4tag->free_begin = 0;
-  libmp4tag->free_len = 0;
   libmp4tag->tagcount = 0;
   libmp4tag->tagalloccount = 0;
   libmp4tag->iterator = 0;
   libmp4tag->maintype [0] = '\0';
   libmp4tag->mp4version [0] = '\0';
   libmp4tag->mp7meta = false;
+  libmp4tag->unlimited = false;
 
   libmp4tag->fh = mp4tag_fopen (fn, "rb+");
   if (libmp4tag->fh == NULL) {

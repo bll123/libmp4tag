@@ -73,13 +73,15 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
   boxdata_t       bd;
   size_t          rrc;
   size_t          skiplen;
+  size_t          currlen [LEVEL_MAX];
+  size_t          usedlen [LEVEL_MAX];
+  int             level = 0;
   bool            needdata = false;
   bool            processdata = false;
   bool            done = false;
   bool            inclevel = false;
-  int             level = 0;
-  size_t          currlen [LEVEL_MAX];
-  size_t          usedlen [LEVEL_MAX];
+  bool            checkforfree = false;
+  bool            checkforend = false;
 
   // assert (sizeof (boxhead_t) == 8);
   // assert (sizeof (boxmdhd4_t) == 24);
@@ -143,12 +145,20 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
-fprintf (stdout, "have ilst\n");
       libmp4tag->taglist_offset = ftell (libmp4tag->fh);
-fprintf (stdout, "  offset: %ld\n", (long) libmp4tag->taglist_offset);
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
-fprintf (stdout, "  len: %ld\n", (long) libmp4tag->taglist_len);
+fprintf (stdout, "found ilst: %ld %ld\n", (long) libmp4tag->taglist_offset, (long) libmp4tag->taglist_len);
+    }
+
+    if (checkforfree &&
+        strcmp (bd.nm, MP4TAG_FREE) == 0) {
+fprintf (stdout, "found following free box\n");
+fprintf (stdout, "  old-len: %ld\n", libmp4tag->taglist_len);
+fprintf (stdout, "  free-len: %ld+8\n", bd.len);
+      libmp4tag->taglist_len += bd.len + sizeof (uint32_t) + MP4TAG_ID_LEN;
+fprintf (stdout, "  new-len: %ld\n", libmp4tag->taglist_len);
+      checkforend = true;
     }
 
     if (needdata && bd.len > 0) {
@@ -207,10 +217,24 @@ fprintf (stdout, "  len: %ld\n", (long) libmp4tag->taglist_len);
         /* out of ilst, do not process more tags */
         /* and don't need to process anything else at all */
         if (processdata) {
-          done = true;
           processdata = false;
+          checkforfree = true;    // not quite done yet
         }
       }
+    }
+
+    if (checkforend) {
+      ssize_t     currpos;
+      ssize_t     sz;
+
+      currpos = ftell (libmp4tag->fh);
+      sz = mp4tag_file_size (libmp4tag->fn);
+      if (currpos == sz) {
+fprintf (stdout, "cfe: at end\n");
+        libmp4tag->unlimited = true;
+      }
+      checkforend = false;
+      done = true;
     }
 
     if (done) {
