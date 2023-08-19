@@ -134,7 +134,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm,
   libmp4tag->tags [tagidx].data = NULL;
   libmp4tag->tags [tagidx].binary = false;
   /* save these off so that writing the tags back out is easier */
-  libmp4tag->tags [tagidx].internalflags = origflag;
+  libmp4tag->tags [tagidx].identtype = origflag;
   libmp4tag->tags [tagidx].internallen = origlen;
 
   libmp4tag->tags [tagidx].name = strdup (nm);

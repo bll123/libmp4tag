@@ -140,11 +140,16 @@ endif()
 #### configuration
 
 include (CheckIncludeFile)
+include (CheckFunctionExists)
 
 check_include_file (arpa/inet.h _hdr_arpa_inet)
 check_include_file (endian.h _hdr_endian)
 check_include_file (windows.h _hdr_windows)
 check_include_file (winsock2.h _hdr_winsock2)
+
+set (CMAKE_REQUIRED_INCLUDES windows.h)
+check_function_exists (_wstat _lib__wstat)
+set (CMAKE_REQUIRED_INCLUDES "")
 
 configure_file (config.h.in config.h)
 

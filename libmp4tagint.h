@@ -54,8 +54,8 @@ typedef struct mp4tag {
   char      *data;
   uint32_t  datalen;
   int       idx;
-  /* internalflags is the flag value from the original data */
-  int       internalflags;
+  /* identtype is the flag value from the original data */
+  int       identtype;
   /* internallen is the length of the original data */
   int       internallen;
   /* priority is used to order the tags for writing */
@@ -78,6 +78,7 @@ typedef struct libmp4tag {
   int       tagcount;
   int       tagalloccount;
   int       iterator;
+  int       errornum;
   char      maintype [5];
   char      mp4version [5];
   bool      mp7meta : 1;

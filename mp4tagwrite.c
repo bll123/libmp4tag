@@ -84,14 +84,12 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen
     return data;
   }
 
-// ### FIX custom tag ---- has to be handled differently
-
   /* idlen + ident + dlen + data-ident + data-flags + data-reserved = 6 */
-fprintf (stdout, "name: %s\n", mp4tag->name);
-fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
-fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
+// fprintf (stdout, "name: %s type: %02x\n", mp4tag->name, mp4tag->identtype);
+// fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
+// fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
   savelen = mp4tag->internallen;
-  if (mp4tag->internalflags == MP4TAG_ID_STRING) {
+  if (mp4tag->identtype == MP4TAG_ID_STRING) {
     savelen = mp4tag->datalen;
   }
   tlen = sizeof (uint32_t) * 6 + savelen;
@@ -203,7 +201,7 @@ fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
   dptr += MP4TAG_ID_LEN;
 
   /* data flags */
-  t32 = htobe32 (mp4tag->internalflags);
+  t32 = htobe32 (mp4tag->identtype);
   memcpy (dptr, &t32, sizeof (uint32_t));
   dptr += sizeof (uint32_t);
 
@@ -212,11 +210,11 @@ fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
   memcpy (dptr, &t32, sizeof (uint32_t));
   dptr += sizeof (uint32_t);
 
-  if ((mp4tag->internalflags & 0x00FFFFFF) == MP4TAG_ID_STRING) {
+  if (mp4tag->identtype == MP4TAG_ID_STRING) {
     memcpy (dptr, mp4tag->data, mp4tag->datalen);
     dptr += mp4tag->datalen;
   }
-  if ((mp4tag->internalflags & 0x00FFFFFF) == MP4TAG_ID_NUM) {
+  if (mp4tag->identtype == MP4TAG_ID_NUM) {
     t64 = 0;
     if (mp4tag->data != NULL) {
       t64 = atoll (mp4tag->data);
@@ -244,7 +242,7 @@ fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
       dptr += sizeof (uint64_t);
     }
   }
-  if ((mp4tag->internalflags & 0x00FFFFFF) == MP4TAG_ID_DATA) {
+  if (mp4tag->identtype == MP4TAG_ID_DATA) {
     int   ta = 0;
     int   tb = 0;
 
@@ -281,8 +279,8 @@ fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
       dptr += mp4tag->datalen;
     }
   }
-  if ((mp4tag->internalflags & 0x00FFFFFF) == MP4TAG_ID_JPG ||
-      (mp4tag->internalflags & 0x00FFFFFF) == MP4TAG_ID_PNG) {
+  if (mp4tag->identtype == MP4TAG_ID_JPG ||
+      mp4tag->identtype == MP4TAG_ID_PNG) {
     memcpy (dptr, mp4tag->data, mp4tag->datalen);
     dptr += mp4tag->datalen;
   }

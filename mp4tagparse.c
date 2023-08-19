@@ -245,8 +245,12 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
         /* major brand, generally M4A */
         memcpy (libmp4tag->maintype, buff + idx, 4);
         libmp4tag->maintype [4] = '\0';
+        /* ran into a .m4a file where mp42 was put into the maintype field */
+	/* may as well check for mp41 also */
         if (strcmp (libmp4tag->maintype, "M4A ") == 0 ||
-            strcmp (libmp4tag->maintype, "M4V ") == 0) {
+            strcmp (libmp4tag->maintype, "M4V ") == 0 ||
+            strcmp (libmp4tag->maintype, "mp41") == 0 ||
+            strcmp (libmp4tag->maintype, "mp42") == 0) {
           ++ok;
         }
       }
@@ -416,9 +420,8 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
     /* what follows depends on the identifier */
 
     if (strcmp (tnm, MP4TAG_COVR) == 0) {
-      /* a cover image w/o a proper identifier, mark as jpeg */
-      tflag = 0x0d;
-      mp4tag_add_tag (libmp4tag, tnm, p, tlen, tflag, tlen);
+      /* a cover image without a proper identifier, mark as jpeg */
+      mp4tag_add_tag (libmp4tag, tnm, p, tlen, MP4TAG_ID_JPG, tlen);
     } else if (strcmp (tnm, MP4TAG_DISK) == 0 ||
         strcmp (tnm, MP4TAG_TRKN) == 0) {
       /* pair of 32 bit and 16 bit numbers */
@@ -484,4 +487,3 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
 
   mp4tag_sort_tags (libmp4tag);
 }
-

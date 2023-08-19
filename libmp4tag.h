@@ -26,11 +26,22 @@ typedef struct {
   bool        binary;
 } mp4tagpub_t;
 
-/* return values for the iterator */
+/* possible errors */
 enum {
+  /* the iterator returns the first three values */
+  /* other routines return MP4TAG_OK/MP4TAG_ERROR */
   MP4TAG_OK,
-  MP4TAG_ERROR,
   MP4TAG_FINISH,
+  MP4TAG_ERR_BAD_STRUCT,    // null structure
+  MP4TAG_ERR_OUT_OF_MEMORY,
+  MP4TAG_ERR_UNABLE_TO_OPEN,
+  MP4TAG_ERR_NOT_MP4,
+  MP4TAG_ERR_NOT_OPEN,
+  MP4TAG_ERR_NULL_VALUE,
+  MP4TAG_ERR_NO_TAGS,
+  MP4TAG_ERR_MISMATCH,      // mismatch between string and binary
+  MP4TAG_ERR_NOT_FOUND,
+  MP4TAG_ERR_NOT_IMPLEMENTED,
 };
 
 enum {
@@ -38,7 +49,7 @@ enum {
   MP4TAG_ID_MAX = 255,
 };
 
-libmp4tag_t   * mp4tag_open (const char *fn);
+libmp4tag_t   * mp4tag_open (const char *fn, int *errornum);
 void            mp4tag_close (libmp4tag_t *libmp4tag);
 void            mp4tag_free (libmp4tag_t *libmp4tag);
 void            mp4tag_parse (libmp4tag_t *libmp4tag);
@@ -47,14 +58,19 @@ int             mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag,
 void            mp4tag_iterate_init (libmp4tag_t *libmp4tag);
 int             mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub);
 int             mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, const char *data);
-int             mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz);
+int             mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz, const char *fn);
 int             mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name);
 int             mp4tag_write_tags (libmp4tag_t *libmp4tag);
 int             mp4tag_clean_tags (libmp4tag_t *libmp4tag);
 libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
 int             mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
 int             mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
+int             mp4tag_error (libmp4tag_t *libmp4tag);
 const char    * mp4tag_version (void);
+/* mp4tag_fopen and mp4tag_file_size are used by mp4tagcli to process */
+/* binary files */
+FILE          * mp4tag_fopen (const char *fn, const char *mode);
+ssize_t         mp4tag_file_size (const char *fn);
 
 /* versioning */
 
