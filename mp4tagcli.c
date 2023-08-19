@@ -127,7 +127,7 @@ main (int argc, char *argv [])
 
       tstr = strdup (argv [i]);
       if (tstr == NULL) {
-	continue;
+        continue;
       }
 
       p = strtok_r (tstr, "=", &tokstr);
@@ -137,7 +137,7 @@ main (int argc, char *argv [])
         if (p == NULL) {
           mp4tag_delete_tag (libmp4tag, tagname);
           write = true;
-	}
+        }
         if (p != NULL) {
           if (! binary) {
             setTagName (tstr, tagname, sizeof (tagname));
@@ -145,7 +145,7 @@ main (int argc, char *argv [])
             write = true;
           }
           if (binary) {
-	  }
+          }
         }
       }
       free (tstr);

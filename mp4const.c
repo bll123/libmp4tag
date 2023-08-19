@@ -13,14 +13,16 @@
 
 /* must be sorted in ascii order */
 /* this list is only needed to verify that the tag being set is valid */
+/* if the priority field is updated, be sure to check MP4TAG_PRI_MAX */
+/* libmp4tagint.h */
 const mp4tagdef_t mp4taglist [] = {
-  {  7, "aART", MP4TAG_ID_STRING, 0 },    // string (album artist)
+  {  2, "aART", MP4TAG_ID_STRING, 0 },    // string (album artist)
   {  6, "akID", MP4TAG_ID_NUM, 1 },       // 1-byte (?)
   {  6, "atID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes artist id)
   {  7, "catg", MP4TAG_ID_STRING, 0 },    // string
   {  6, "cmID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes composer id)
   {  6, "cnID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes catalog id)
-  { 10, "covr", MP4TAG_ID_PNG, 0 },      // or jpg
+  { 10, "covr", MP4TAG_ID_PNG, 0 },       // or jpg
   {  5, "cpil", MP4TAG_ID_NUM, 1 },       // boolean, 1-byte
   {  7, "cprt", MP4TAG_ID_STRING, 0 },    // string
   {  7, "desc", MP4TAG_ID_STRING, 0 },    // string
@@ -41,14 +43,14 @@ const mp4tagdef_t mp4taglist [] = {
   {  6, "rtng", MP4TAG_ID_NUM, 1 },       // 1-byte (advisory rating)
   {  6, "sfID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes country id)
   {  6, "shwm", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
-  {  7, "soaa", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "soal", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "soar", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "soco", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "sonm", MP4TAG_ID_STRING, 0 },    // string
+  {  7, "soaa", MP4TAG_ID_STRING, 0 },    // string (album artist sort)
+  {  7, "soal", MP4TAG_ID_STRING, 0 },    // string (album sort)
+  {  7, "soar", MP4TAG_ID_STRING, 0 },    // string (artist sort)
+  {  7, "soco", MP4TAG_ID_STRING, 0 },    // string (composer sort)
+  {  7, "sonm", MP4TAG_ID_STRING, 0 },    // string (title sort)
   {  7, "sosn", MP4TAG_ID_STRING, 0 },    // string (tv show sort)
-  {  6, "stik", MP4TAG_ID_NUM, 1 },       // 1 byte  (media type)
-  {  5, "tmpo", MP4TAG_ID_NUM, 2 },       // 2 byte
+  {  6, "stik", MP4TAG_ID_NUM, 1 },       // 1 byte (media type)
+  {  5, "tmpo", MP4TAG_ID_NUM, 2 },       // 2 byte (bpm)
   {  4, "trkn", MP4TAG_ID_DATA, 8 },      // data 4+2+2-unused
   {  7, "tven", MP4TAG_ID_STRING, 0 },    // string (tv episode name)
   {  6, "tves", MP4TAG_ID_NUM, 4 },       // 4 byte (tv episode)
@@ -77,7 +79,7 @@ const mp4tagdef_t mp4taglist [] = {
 const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);
 
 /* an idiotic way to do things, */
-/* but we must convert any old gnre data to -gen. */
+/* but we must convert any old gnre data to ©gen. */
 /* itunes still puts data into the gnre field, yick. */
 const char *oldgenrelist [] = {
   "Blues",              "Classic Rock",           "Country",

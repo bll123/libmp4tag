@@ -242,9 +242,6 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
     }
     mp4tag->data = strdup (data);
     mp4tag->datalen = strlen (data);
-    if (mp4tag->internalflags == MP4TAG_ID_STRING) {
-      mp4tag->internallen = mp4tag->datalen;
-    }
   } else {
     const mp4tagdef_t *tagdef = NULL;
     int               ok = false;
@@ -263,8 +260,8 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
 
       tflag = MP4TAG_ID_STRING;
       if (tagdef != NULL) {
-	tflag = tagdef->identtype;
-	tlen = tagdef->len;
+        tflag = tagdef->identtype;
+        tlen = tagdef->len;
       }
       if (tflag == MP4TAG_ID_STRING) {
         tlen = strlen (data);

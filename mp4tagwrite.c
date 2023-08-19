@@ -64,12 +64,19 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen
 {
   mp4tag_t    *mp4tag;
   uint32_t    tlen;
+  uint32_t    savelen;
   uint64_t    t64;
   uint32_t    t32;
   uint16_t    t16;
   uint8_t     t8;
   char        *dptr;
   char        tnm [MP4TAG_ID_LEN + 1];
+  bool        iscustom = false;
+  char        *vendor = NULL;
+  size_t      vendorlen;
+  char        *customname = NULL;
+  size_t      customnamelen;
+  char        *custom = NULL;
 
   mp4tag = &libmp4tag->tags [idx];
 
@@ -79,11 +86,54 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen
 
 // ### FIX custom tag ---- has to be handled differently
 
-  /* idlen, ident ; dlen, data-ident, data-flags, data-reserved ; data */
+  /* idlen + ident + dlen + data-ident + data-flags + data-reserved = 6 */
 fprintf (stdout, "name: %s\n", mp4tag->name);
 fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
 fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
-  tlen = sizeof (uint32_t) * 6 + mp4tag->internallen;
+  savelen = mp4tag->internallen;
+  if (mp4tag->internalflags == MP4TAG_ID_STRING) {
+    savelen = mp4tag->datalen;
+  }
+  tlen = sizeof (uint32_t) * 6 + savelen;
+
+  if (memcmp (mp4tag->name, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+    char    *p;
+    char    *tokstr;
+
+    iscustom = true;
+    custom = strdup (mp4tag->name);
+
+    /* the ident, don't need to save this */
+    p = strtok_r (custom, MP4TAG_CUSTOM_DELIM, &tokstr);
+    if (p == NULL) {
+      free (custom);
+      return data;
+    }
+
+    /* the vendor (my name) string */
+    p = strtok_r (NULL, MP4TAG_CUSTOM_DELIM, &tokstr);
+    if (p == NULL) {
+      free (custom);
+      return data;
+    }
+    vendor = p;
+
+    /* the custom name */
+    p = strtok_r (NULL, MP4TAG_CUSTOM_DELIM, &tokstr);
+    if (p == NULL) {
+      free (custom);
+      return data;
+    }
+    customname = p;
+
+    tlen += sizeof (uint32_t) * 3;    /* 'mean' len, 'mean' id, flags */
+    vendorlen = strlen (vendor);
+    tlen += vendorlen;
+    tlen += sizeof (uint32_t) * 3;    /* 'name' len, 'name' id, flags */
+    customnamelen = strlen (customname);
+    tlen += customnamelen;
+  }
+
   data = realloc (data, *dlen + tlen);
   dptr = data + *dlen;
   *dlen += tlen;
@@ -99,12 +149,50 @@ fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
     memcpy (tnm + 1, mp4tag->name + strlen (PREFIX_STR), 3);
     tnm [MP4TAG_ID_LEN] = '\0';
   } else {
-    strcpy (tnm, mp4tag->name);
+    /* mp4tag->name may be custom and much longer than 4 chars */
+    memcpy (tnm, mp4tag->name, MP4TAG_ID_LEN);
   }
+  tnm [MP4TAG_ID_LEN] = '\0';
   memcpy (dptr, tnm, MP4TAG_ID_LEN);
   dptr += MP4TAG_ID_LEN;
 
-  /* data length */
+  if (iscustom) {
+    size_t      tmplen;
+
+    /* update tlen to remove 'mean' */
+    tlen -= sizeof (uint32_t) * 3;
+    tlen -= vendorlen;
+
+    tmplen = sizeof (uint32_t) * 3 + vendorlen;
+    t32 = htobe32 (tmplen);
+    memcpy (dptr, &t32, sizeof (uint32_t));
+    dptr += sizeof (uint32_t);
+    memcpy (dptr, MP4TAG_MEAN, MP4TAG_ID_LEN);
+    dptr += sizeof (uint32_t);
+    t32 = 0;
+    memcpy (dptr, &t32, sizeof (uint32_t));
+    dptr += sizeof (uint32_t);
+    memcpy (dptr, vendor, vendorlen);
+    dptr += vendorlen;
+
+    /* update tlen to remove 'name' */
+    tlen -= sizeof (uint32_t) * 3;
+    tlen -= customnamelen;
+
+    tmplen = sizeof (uint32_t) * 3 + customnamelen;
+    t32 = htobe32 (tmplen);
+    memcpy (dptr, &t32, sizeof (uint32_t));
+    dptr += sizeof (uint32_t);
+    memcpy (dptr, MP4TAG_NAME, MP4TAG_ID_LEN);
+    dptr += sizeof (uint32_t);
+    t32 = 0;
+    memcpy (dptr, &t32, sizeof (uint32_t));
+    dptr += sizeof (uint32_t);
+    memcpy (dptr, customname, customnamelen);
+    dptr += customnamelen;
+  }
+
+  /* data length does not include ident len and ident */
   tlen -= sizeof (uint32_t) * 2;
   t32 = htobe32 (tlen);
   memcpy (dptr, &t32, sizeof (uint32_t));
@@ -197,6 +285,10 @@ fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
       (mp4tag->internalflags & 0x00FFFFFF) == MP4TAG_ID_PNG) {
     memcpy (dptr, mp4tag->data, mp4tag->datalen);
     dptr += mp4tag->datalen;
+  }
+
+  if (iscustom) {
+    free (custom);
   }
 
   return data;

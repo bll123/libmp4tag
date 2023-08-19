@@ -245,20 +245,20 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
         /* major brand, generally M4A */
         memcpy (libmp4tag->maintype, buff + idx, 4);
         libmp4tag->maintype [4] = '\0';
-	if (strcmp (libmp4tag->maintype, "M4A ") == 0 ||
-	    strcmp (libmp4tag->maintype, "M4V ") == 0) {
-	  ++ok;
-	}
+        if (strcmp (libmp4tag->maintype, "M4A ") == 0 ||
+            strcmp (libmp4tag->maintype, "M4V ") == 0) {
+          ++ok;
+        }
       }
       if (idx == 4) {
         /* version */
         uint32_t    vers;
 
         memcpy (&vers, buff + idx, sizeof (uint32_t));
-	vers = be32toh (vers);
+        vers = be32toh (vers);
         if (((vers & 0x0000ff00) >> 8) == 0x02) {
-	  ++ok;
-	}
+          ++ok;
+        }
       }
       if (idx >= 8) {
         if (memcmp (buff + idx, "mp41", 4) == 0 ||
@@ -439,15 +439,14 @@ process_tag (libmp4tag_t *libmp4tag, const char *nm, size_t blen, const char *da
     } else if (tlen == 2) {
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
-      if (strcmp (tnm, MP4TAG_GENR) == 0) {
+      if (strcmp (tnm, MP4TAG_GNRE) == 0) {
         /* the itunes value is offset by 1 */
         t16 -= 1;
         if (t16 < oldgenrelistsz) {
-          /* do not use the 'genr' identifier */
+          /* do not use the 'gnre' identifier */
           strcpy (tnm, PREFIX_STR MP4TAG_GEN);
-          tflag = MP4TAG_ID_STRING;
           mp4tag_add_tag (libmp4tag, tnm, oldgenrelist [t16],
-              MP4TAG_STRING, tflag, strlen (oldgenrelist [t16]));
+              MP4TAG_STRING, MP4TAG_ID_STRING, strlen (oldgenrelist [t16]));
         }
       } else {
         snprintf (tmp, sizeof (tmp), "%d", (int) t16);

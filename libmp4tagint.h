@@ -26,9 +26,14 @@
 #define MP4TAG_TRKN   "trkn"
 #define MP4TAG_DISK   "disk"
 #define MP4TAG_COVR   "covr"
-#define MP4TAG_GENR   "genr"
+#define MP4TAG_GNRE   "gnre"
 #define MP4TAG_GEN    "gen"
+/* used by idents */
 #define MP4TAG_DATA   "data"
+#define MP4TAG_MEAN   "mean"
+#define MP4TAG_NAME   "name"
+
+#define MP4TAG_CUSTOM_DELIM ":"
 
 enum {
   MP4TAG_ID_LEN = 4,
