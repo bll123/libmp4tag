@@ -11,10 +11,13 @@
 
 #include "libmp4tagint.h"
 
-/* must be sorted in ascii order */
-/* this list is only needed to verify that the tag being set is valid */
-/* if the priority field is updated, be sure to check MP4TAG_PRI_MAX */
-/* libmp4tagint.h */
+/* Must be sorted in ascii order. */
+/* This list is used to verify that a tag is valid if it is not found */
+/* in the current tag list. */
+/* The identifier type and length for a tag are stored here. */
+/* If the priority field is updated, be sure to check MP4TAG_PRI_MAX */
+/* in libmp4tagint.h */
+/* The priorities do not exactly match iTunes */
 const mp4tagdef_t mp4taglist [] = {
   {  2, "aART", MP4TAG_ID_STRING, 0 },    // string (album artist)
   {  6, "akID", MP4TAG_ID_NUM, 1 },       // 1-byte (?)
@@ -80,7 +83,7 @@ const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);
 
 /* an idiotic way to do things, */
 /* but we must convert any old gnre data to ©gen. */
-/* itunes still puts data into the gnre field, yick. */
+/* itunes still puts data into the 'gnre' field, yick. */
 const char *oldgenrelist [] = {
   "Blues",              "Classic Rock",           "Country",
   "Dance",              "Disco",                  "Funk",

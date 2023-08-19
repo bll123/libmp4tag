@@ -91,7 +91,7 @@ main (int argc, char *argv [])
   mp4tag_parse (libmp4tag);
 
   if (clean) {
-    mp4tag_clean_tags (libmp4tag);
+    mp4tag_clean_tags (libmp4tag, MP4TAG_WRITE_NO_FLAGS);
   }
 
   if (! clean) {
@@ -147,7 +147,7 @@ main (int argc, char *argv [])
                 fclose (fh);
               } /* file is opened */
 
-	      free (data);
+              free (data);
 
             } /* file has a valid size */
           } /* binary tag */
@@ -159,8 +159,8 @@ main (int argc, char *argv [])
     } /* for each argument on the command line */
   } /* not clean */
 
-  if (write) {
-    mp4tag_write_tags (libmp4tag);
+  if (write && ! clean) {
+    mp4tag_write_tags (libmp4tag, MP4TAG_WRITE_NO_FLAGS);
   }
 
   if (display && ! clean) {

@@ -71,7 +71,7 @@ typedef struct libmp4tag {
   int64_t   modifieddate;
   int64_t   duration;
   int32_t   samplerate;
-  off_t     taglist_begin;
+  off_t     taglist_offset;
   size_t    taglist_len;
   off_t     free_begin;
   size_t    free_len;
@@ -105,7 +105,8 @@ int  mp4tag_parse_ftyp (libmp4tag_t *libmp4tag);
 
 /* mp4tagwrite.c */
 
-char * mp4tag_build_data (libmp4tag_t *libmp4tag);
+char  * mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *dlen);
+int   mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen, int flags);
 
 /* mp4tagutil.c */
 

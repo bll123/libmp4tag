@@ -127,6 +127,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm,
     libmp4tag->tags = realloc (libmp4tag->tags,
         sizeof (mp4tag_t) * libmp4tag->tagalloccount);
     if (libmp4tag->tags == NULL) {
+      libmp4tag->errornum = MP4TAG_ERR_OUT_OF_MEMORY;
       return;
     }
   }
@@ -138,6 +139,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm,
   libmp4tag->tags [tagidx].internallen = origlen;
 
   libmp4tag->tags [tagidx].name = strdup (nm);
+
   if (sz == MP4TAG_STRING) {
     /* string with null terminator */
     libmp4tag->tags [tagidx].data = strdup (data);
@@ -170,6 +172,7 @@ mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx)
     return;
   }
   if (idx < 0 || idx >= libmp4tag->tagcount) {
+    libmp4tag->errornum = MP4TAG_ERR_NO_TAGS;
     return;
   }
 
@@ -199,6 +202,7 @@ mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx)
     return;
   }
   if (libmp4tag->tags == NULL) {
+    libmp4tag->errornum = MP4TAG_ERR_NO_TAGS;
     return;
   }
   if (idx < 0 || idx >= libmp4tag->tagcount) {

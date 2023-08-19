@@ -57,7 +57,7 @@ mp4tag_open (const char *fn, int *errornum)
   libmp4tag->modifieddate = 0;
   libmp4tag->duration = 0;
   libmp4tag->samplerate = 0;
-  libmp4tag->taglist_begin = 0;
+  libmp4tag->taglist_offset = 0;
   libmp4tag->taglist_len = 0;
   libmp4tag->free_begin = 0;
   libmp4tag->free_len = 0;
@@ -68,7 +68,7 @@ mp4tag_open (const char *fn, int *errornum)
   libmp4tag->mp4version [0] = '\0';
   libmp4tag->mp7meta = false;
 
-  libmp4tag->fh = mp4tag_fopen (fn, "rb");
+  libmp4tag->fh = mp4tag_fopen (fn, "rb+");
   if (libmp4tag->fh == NULL) {
     *errornum = MP4TAG_ERR_UNABLE_TO_OPEN;
     free (libmp4tag);
@@ -92,21 +92,6 @@ mp4tag_open (const char *fn, int *errornum)
   }
 
   return libmp4tag;
-}
-
-void
-mp4tag_close (libmp4tag_t *libmp4tag)
-{
-  if (libmp4tag == NULL) {
-    return;
-  }
-  if (libmp4tag->fh == NULL) {
-    libmp4tag->errornum = MP4TAG_OK;
-    return;
-  }
-  fclose (libmp4tag->fh);
-  libmp4tag->fh = NULL;
-  libmp4tag->errornum = MP4TAG_OK;
 }
 
 void
@@ -289,14 +274,14 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
         tlen = tagdef->len;
 
         /* valid: strings, numerics have string representation, trkn, disk */
-	rc = tflag == MP4TAG_ID_STRING ||
-	    tflag == MP4TAG_ID_NUM ||
-	    (tflag == MP4TAG_ID_DATA &&
-	    (strcmp (tag, MP4TAG_TRKN) == 0 || strcmp (tag, MP4TAG_DISK) == 0));
+        rc = tflag == MP4TAG_ID_STRING ||
+            tflag == MP4TAG_ID_NUM ||
+            (tflag == MP4TAG_ID_DATA &&
+            (strcmp (tag, MP4TAG_TRKN) == 0 || strcmp (tag, MP4TAG_DISK) == 0));
         if (! rc) {
-	  libmp4tag->errornum = MP4TAG_ERR_MISMATCH;
+          libmp4tag->errornum = MP4TAG_ERR_MISMATCH;
           return libmp4tag->errornum;
-	}
+        }
       }
       if (tflag == MP4TAG_ID_STRING) {
         tlen = strlen (data);
@@ -414,15 +399,19 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 }
 
 int
-mp4tag_write_tags (libmp4tag_t *libmp4tag)
+mp4tag_write_tags (libmp4tag_t *libmp4tag, int flags)
 {
-  mp4tag_build_data (libmp4tag);
+  char      *data;
+  uint32_t  dlen;
+
+  data = mp4tag_build_data (libmp4tag, &dlen);
+  mp4tag_write_data (libmp4tag, data, dlen, flags);
   /* a stub for future development */
   return MP4TAG_ERR_NOT_IMPLEMENTED;
 }
 
 int
-mp4tag_clean_tags (libmp4tag_t *libmp4tag)
+mp4tag_clean_tags (libmp4tag_t *libmp4tag, int flags)
 {
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
@@ -434,7 +423,7 @@ mp4tag_clean_tags (libmp4tag_t *libmp4tag)
 
   mp4tag_free_tags (libmp4tag);
 
-  return mp4tag_write_tags (libmp4tag);
+  return mp4tag_write_tags (libmp4tag, flags);
 }
 
 libmp4tagpreserve_t *
@@ -661,3 +650,4 @@ mp4tag_towide (const char *buff)
 }
 
 #endif
+

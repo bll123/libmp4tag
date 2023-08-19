@@ -142,14 +142,22 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       needdata = true;
     }
 
+    if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
+fprintf (stdout, "have ilst\n");
+      libmp4tag->taglist_offset = ftell (libmp4tag->fh);
+fprintf (stdout, "  offset: %ld\n", (long) libmp4tag->taglist_offset);
+      /* the block size does not include the ident-len and ident */
+      libmp4tag->taglist_len = bd.len;
+fprintf (stdout, "  len: %ld\n", (long) libmp4tag->taglist_len);
+    }
+
     if (needdata && bd.len > 0) {
-      if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
-        libmp4tag->taglist_begin = ftell (libmp4tag->fh);
-      }
       bd.data = malloc (bd.len);
-      rrc = fread (bd.data, bd.len, 1, libmp4tag->fh);
-      if (rrc != 1) {
-        fprintf (stderr, "failed to read %" PRId64 " bytes\n", bd.len);
+      if (bd.data != NULL) {
+        rrc = fread (bd.data, bd.len, 1, libmp4tag->fh);
+        if (rrc != 1) {
+          fprintf (stderr, "failed to read %" PRId64 " bytes\n", bd.len);
+        }
       }
     }
     if (! needdata && skiplen > 0) {
@@ -235,6 +243,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
 
     buff = malloc (len);
     if (buff == NULL) {
+      libmp4tag->errornum = MP4TAG_ERR_OUT_OF_MEMORY;
       return -1;
     }
     rrc = fread (buff, len, 1, libmp4tag->fh);
@@ -246,7 +255,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
         memcpy (libmp4tag->maintype, buff + idx, 4);
         libmp4tag->maintype [4] = '\0';
         /* ran into a .m4a file where mp42 was put into the maintype field */
-	/* may as well check for mp41 also */
+        /* may as well check for mp41 also */
         if (strcmp (libmp4tag->maintype, "M4A ") == 0 ||
             strcmp (libmp4tag->maintype, "M4V ") == 0 ||
             strcmp (libmp4tag->maintype, "mp41") == 0 ||

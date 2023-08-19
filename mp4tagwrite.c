@@ -19,10 +19,12 @@ static char * mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, 
 static void mp4tag_parse_pair (const char *data, int *a, int *b);
 
 char *
-mp4tag_build_data (libmp4tag_t *libmp4tag)
+mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
 {
   char      *data = NULL;
   uint32_t  dlen = 0;
+
+  *datalen = 0;
 
   if (libmp4tag == NULL) {
     return NULL;
@@ -49,18 +51,76 @@ mp4tag_build_data (libmp4tag_t *libmp4tag)
     }
   }
 
-{
-  FILE *fh;
-  fh = fopen ("out.dat", "wb");
-  fwrite (data, dlen, 1, fh);
-  fclose (fh);
-}
-
+  *datalen = dlen;
   return data;
 }
 
+int
+mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
+    uint32_t datalen, int flags)
+{
+  uint32_t  tlen = 0;
+  int       rc;
+
+  tlen = libmp4tag->taglist_len;
+  tlen -= sizeof (uint32_t) - MP4TAG_ID_LEN;
+
+  /* in order to do an in-place write, the space to receive the data */
+  /* must be exactly equal in size, or must have room for the data and */
+  /* a free space block */
+fprintf (stdout, "offset: %ld\n", (long) libmp4tag->taglist_offset);
+fprintf (stdout, "taglist-len: %ld\n", (long) libmp4tag->taglist_len);
+fprintf (stdout, "datalen: %ld\n", (long) datalen);
+fprintf (stdout, "tlen: %ld\n", (long) tlen);
+  if (libmp4tag->taglist_offset != 0 &&
+      (datalen == libmp4tag->taglist_len ||
+      datalen < tlen)) {
+    FILE *fh;
+fprintf (stdout, "  ok to write\n");
+
+    fh = mp4tag_fopen (libmp4tag->fn, "rb+");
+    if (fh != NULL) {
+fprintf (stdout, "  open ok\n");
+      if (fseek (fh, libmp4tag->taglist_offset, SEEK_SET) == 0) {
+fprintf (stdout, "  seek ok\n");
+        fwrite (data, datalen, 1, fh);
+        if (datalen < libmp4tag->taglist_len) {
+          int     freelen;
+          char    *buff;
+
+          freelen = libmp4tag->taglist_len - datalen;
+          buff = malloc (freelen);
+          if (buff != NULL) {
+            uint32_t    t32;
+
+            memset (buff, '\0', freelen);
+            t32 = htobe32 (freelen);
+            memcpy (buff, &t32, sizeof (uint32_t));
+            memcpy (buff + sizeof (uint32_t), MP4TAG_FREE, MP4TAG_ID_LEN);
+            fwrite (buff, freelen, 1, fh);
+          }
+        }
+      }
+      fclose (fh);
+    }
+    rc = MP4TAG_OK;
+  } else {
+    rc = MP4TAG_ERR_NOT_IMPLEMENTED;
+  }
+
+{
+  FILE *fh;
+  fh = fopen ("out.dat", "wb");
+  fwrite (data, datalen, 1, fh);
+  fclose (fh);
+}
+
+  return rc;
+}
+
 static char *
-mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen)
+mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
+    char *data, uint32_t *dlen)
 {
   mp4tag_t    *mp4tag;
   uint32_t    tlen;
@@ -133,6 +193,10 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen
   }
 
   data = realloc (data, *dlen + tlen);
+  if (data == NULL) {
+    libmp4tag->errornum = MP4TAG_ERR_OUT_OF_MEMORY;
+    return NULL;
+  }
   dptr = data + *dlen;
   *dlen += tlen;
 

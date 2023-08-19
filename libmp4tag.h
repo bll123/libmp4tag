@@ -47,10 +47,12 @@ enum {
 enum {
   MP4TAG_NOTFOUND = -1,
   MP4TAG_ID_MAX = 255,
+  /* write flags */
+  MP4TAG_WRITE_NO_FLAGS = 0x0000,
+  MP4TAG_WRITE_PRESERVE_TIMESTAMP = 0x0001,
 };
 
 libmp4tag_t   * mp4tag_open (const char *fn, int *errornum);
-void            mp4tag_close (libmp4tag_t *libmp4tag);
 void            mp4tag_free (libmp4tag_t *libmp4tag);
 void            mp4tag_parse (libmp4tag_t *libmp4tag);
 int64_t         mp4tag_duration (libmp4tag_t *libmp4tag);
@@ -60,8 +62,8 @@ int             mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub);
 int             mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, const char *data);
 int             mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz, const char *fn);
 int             mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name);
-int             mp4tag_write_tags (libmp4tag_t *libmp4tag);
-int             mp4tag_clean_tags (libmp4tag_t *libmp4tag);
+int             mp4tag_write_tags (libmp4tag_t *libmp4tag, int flags);
+int             mp4tag_clean_tags (libmp4tag_t *libmp4tag, int flags);
 libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
 int             mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
 int             mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
