@@ -68,21 +68,21 @@ mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
   /* in order to do an in-place write, the space to receive the data */
   /* must be exactly equal in size, or must have room for the data and */
   /* a free space block, or the 'ilst/free' is at the end of the file. */
-fprintf (stdout, "offset: %ld\n", (long) libmp4tag->taglist_offset);
-fprintf (stdout, "taglist-len: %ld\n", (long) libmp4tag->taglist_len);
-fprintf (stdout, "datalen: %ld\n", (long) datalen);
-fprintf (stdout, "tlen: %ld\n", (long) tlen);
-fprintf (stdout, "unlimited: %ld\n", (long) libmp4tag->unlimited);
+// fprintf (stdout, "offset: %ld\n", (long) libmp4tag->taglist_offset);
+// fprintf (stdout, "taglist-len: %ld\n", (long) libmp4tag->taglist_len);
+// fprintf (stdout, "datalen: %ld\n", (long) datalen);
+// fprintf (stdout, "tlen: %ld\n", (long) tlen);
+// fprintf (stdout, "unlimited: %ld\n", (long) libmp4tag->unlimited);
   if (libmp4tag->taglist_offset != 0 &&
       (libmp4tag->unlimited ||
       datalen == libmp4tag->taglist_len ||
       datalen < tlen)) {
-fprintf (stdout, "  ok to write\n");
+// fprintf (stdout, "  ok to write\n");
 
     if (libmp4tag->fh != NULL) {
-fprintf (stdout, "  fh is ok\n");
+// fprintf (stdout, "  fh is ok\n");
       if (fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) == 0) {
-fprintf (stdout, "  seek ok\n");
+// fprintf (stdout, "  seek ok\n");
         fwrite (data, datalen, 1, libmp4tag->fh);
 
         if (datalen < libmp4tag->taglist_len) {

@@ -84,7 +84,7 @@ ssize_t         mp4tag_file_size (const char *fn);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 1
+#define LIBMP4TAG_VERS_REVISION 2
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \

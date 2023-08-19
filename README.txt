@@ -22,7 +22,8 @@ Current Status:
   Alpha software is under development.  There is no guarantee that the
   API will be preserved or that anything works correctly.
 
-  At this time, libmp4tag can read tags.  Tags cannot be written.
+  At this time, libmp4tag can read tags.
+  Tags can be written if there is space available.
 
   I only work with audio files, so this software will need testing
   against video files.
@@ -32,7 +33,9 @@ Current Status:
 
 Notes:
 
-  The 'genr' tag is always converted to '©gen' when writing the tag data.
+  The 'gnre' tag is always converted to '©gen' when writing the tag data.
+
+  Duration is in milliseconds.
 
 Using the mp4tagcli executable:
 
@@ -55,7 +58,8 @@ Using the mp4tagcli executable:
   Dump binary data:
     mp4tagcli filename.m4a --display covr --dump > picture-data
 
-  The following are not yet implemented:
+[ The following may or may not work.  At this time, writing tags to the MP4
+  file works if there is enough space available. ]
 
   Setting a tag:
     mp4tagcli filename.m4a nam=My-Title

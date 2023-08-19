@@ -1,5 +1,6 @@
 syntax: regexp
 ^build/
+^dev/wikibearer\.txt$
 ^tmp/
 \.m4a$
 \.png$
