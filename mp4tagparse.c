@@ -146,18 +146,21 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
       libmp4tag->taglist_offset = ftell (libmp4tag->fh);
+      libmp4tag->taglist_base_offset = libmp4tag->taglist_offset -
+          sizeof (uint32_t) - MP4TAG_ID_LEN;
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
-fprintf (stdout, "found ilst: %ld %ld\n", (long) libmp4tag->taglist_offset, (long) libmp4tag->taglist_len);
+// fprintf (stdout, "found ilst: %ld %ld\n", (long) libmp4tag->taglist_offset, (long) libmp4tag->taglist_len);
     }
 
-    if (checkforfree &&
-        strcmp (bd.nm, MP4TAG_FREE) == 0) {
-fprintf (stdout, "found following free box\n");
-fprintf (stdout, "  old-len: %ld\n", libmp4tag->taglist_len);
-fprintf (stdout, "  free-len: %ld+8\n", bd.len);
-      libmp4tag->taglist_len += bd.len + sizeof (uint32_t) + MP4TAG_ID_LEN;
-fprintf (stdout, "  new-len: %ld\n", libmp4tag->taglist_len);
+    if (checkforfree) {
+      if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
+// fprintf (stdout, "found following free box\n");
+// fprintf (stdout, "  old-len: %ld\n", libmp4tag->taglist_len);
+// fprintf (stdout, "  free-len: %ld+8\n", bd.len);
+        libmp4tag->taglist_len += bd.len + sizeof (uint32_t) + MP4TAG_ID_LEN;
+// fprintf (stdout, "  new-len: %ld\n", libmp4tag->taglist_len);
+      }
       checkforend = true;
     }
 
@@ -223,18 +226,19 @@ fprintf (stdout, "  new-len: %ld\n", libmp4tag->taglist_len);
       }
     }
 
-    if (checkforend) {
+    if (checkforfree || checkforend) {
       ssize_t     currpos;
       ssize_t     sz;
 
       currpos = ftell (libmp4tag->fh);
       sz = mp4tag_file_size (libmp4tag->fn);
       if (currpos == sz) {
-fprintf (stdout, "cfe: at end\n");
+// fprintf (stdout, "cfe: at end\n");
         libmp4tag->unlimited = true;
       }
-      checkforend = false;
-      done = true;
+      if (checkforend) {
+        done = true;
+      }
     }
 
     if (done) {

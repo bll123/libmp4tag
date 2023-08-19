@@ -57,6 +57,7 @@ mp4tag_open (const char *fn, int *errornum)
   libmp4tag->modifieddate = 0;
   libmp4tag->duration = 0;
   libmp4tag->samplerate = 0;
+  libmp4tag->taglist_base_offset = 0;
   libmp4tag->taglist_offset = 0;
   libmp4tag->taglist_len = 0;
   libmp4tag->tagcount = 0;

@@ -67,7 +67,7 @@ mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
 
   /* in order to do an in-place write, the space to receive the data */
   /* must be exactly equal in size, or must have room for the data and */
-  /* a free space block, or the 'ilst' is at the end of the file. */
+  /* a free space block, or the 'ilst/free' is at the end of the file. */
 fprintf (stdout, "offset: %ld\n", (long) libmp4tag->taglist_offset);
 fprintf (stdout, "taglist-len: %ld\n", (long) libmp4tag->taglist_len);
 fprintf (stdout, "datalen: %ld\n", (long) datalen);
@@ -77,15 +77,13 @@ fprintf (stdout, "unlimited: %ld\n", (long) libmp4tag->unlimited);
       (libmp4tag->unlimited ||
       datalen == libmp4tag->taglist_len ||
       datalen < tlen)) {
-    FILE *fh;
 fprintf (stdout, "  ok to write\n");
 
-    fh = mp4tag_fopen (libmp4tag->fn, "rb+");
-    if (fh != NULL) {
-fprintf (stdout, "  open ok\n");
-      if (fseek (fh, libmp4tag->taglist_offset, SEEK_SET) == 0) {
+    if (libmp4tag->fh != NULL) {
+fprintf (stdout, "  fh is ok\n");
+      if (fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) == 0) {
 fprintf (stdout, "  seek ok\n");
-        fwrite (data, datalen, 1, fh);
+        fwrite (data, datalen, 1, libmp4tag->fh);
 
         if (datalen < libmp4tag->taglist_len) {
           int     freelen;
@@ -101,13 +99,20 @@ fprintf (stdout, "  seek ok\n");
               t32 = htobe32 (freelen);
               memcpy (buff, &t32, sizeof (uint32_t));
               memcpy (buff + sizeof (uint32_t), MP4TAG_FREE, MP4TAG_ID_LEN);
-              fwrite (buff, freelen, 1, fh);
+              fwrite (buff, freelen, 1, libmp4tag->fh);
               free (buff);
             }
           }
+        }  /* if a free box needs to be added */
+
+        if (fseek (libmp4tag->fh, libmp4tag->taglist_base_offset, SEEK_SET) == 0) {
+          uint32_t    t32;
+
+          t32 = datalen + sizeof (uint32_t) + MP4TAG_ID_LEN;
+          t32 = htobe32 (t32);
+          fwrite (&t32, sizeof (uint32_t), 1, libmp4tag->fh);
         }
-      }
-      fclose (fh);
+      } /* fseek is ok */
     }
     rc = MP4TAG_OK;
   } else {

@@ -2,8 +2,11 @@ syntax: regexp
 ^build/
 ^tmp/
 \.m4a$
+\.png$
+\.jpg$
 ~$
 ^w$
 ^ww$
+^www$
 ^TODO$
 ^libmp4tag-src-[0-9.]*\.tar\.gz$
