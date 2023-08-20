@@ -47,9 +47,6 @@ enum {
 enum {
   MP4TAG_NOTFOUND = -1,
   MP4TAG_ID_MAX = 255,
-  /* write flags */
-  MP4TAG_WRITE_NO_FLAGS = 0x0000,
-  MP4TAG_WRITE_PRESERVE_TIMESTAMP = 0x0001,
 };
 
 libmp4tag_t   * mp4tag_open (const char *fn, int *errornum);
@@ -70,8 +67,8 @@ int             mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
 int             mp4tag_error (libmp4tag_t *libmp4tag);
 const char    * mp4tag_version (void);
 /* these routines are useful for the application */
-FILE * mp4tag_fopen (const char *fn, const char *mode);
-ssize_t mp4tag_file_size (const char *fn);
+FILE          * mp4tag_fopen (const char *fn, const char *mode);
+ssize_t         mp4tag_file_size (const char *fn);
 
 /* versioning */
 

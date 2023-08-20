@@ -115,6 +115,7 @@ install:
 
 # source
 
+# the wiki/ directory has the changelog in it
 .PHONY: sourcetar
 sourcetar: $(VERSFN)
 	@$(MAKE) tclean
@@ -123,8 +124,8 @@ sourcetar: $(VERSFN)
 	tar -c -z -f libmp4tag-src-$${VERS}.tar.gz \
 		--exclude wikibearer.txt \
 		*.c *.h CMakeLists.txt Makefile config.h.in \
-		README.txt LICENSE.txt \
-		dev wiki 
+		DEVNOTES.txt README.txt LICENSE.txt \
+		wiki
 
 # cleaning
 

@@ -30,6 +30,7 @@ Current Status:
 
   To Do:
     - updating tags: update tags when there is not enough space.
+    - port to *bsd
 
 Notes:
 
