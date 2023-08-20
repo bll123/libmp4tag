@@ -91,7 +91,8 @@ main (int argc, char *argv [])
   mp4tag_parse (libmp4tag);
 
   if (clean) {
-    mp4tag_clean_tags (libmp4tag, MP4TAG_WRITE_NO_FLAGS);
+    mp4tag_clean_tags (libmp4tag);
+    write = true;
   }
 
   if (! clean) {
@@ -159,8 +160,8 @@ main (int argc, char *argv [])
     } /* for each argument on the command line */
   } /* not clean */
 
-  if (write && ! clean) {
-    mp4tag_write_tags (libmp4tag, MP4TAG_WRITE_NO_FLAGS);
+  if (write) {
+    mp4tag_write_tags (libmp4tag);
   }
 
   if (display && ! clean) {

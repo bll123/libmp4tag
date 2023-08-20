@@ -9,14 +9,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "libmp4tagint.h"
+#include "mp4tagint.h"
 
 /* Must be sorted in ascii order. */
 /* This list is used to verify that a tag is valid if it is not found */
 /* in the current tag list. */
 /* The identifier type and length for a tag are stored here. */
 /* If the priority field is updated, be sure to check MP4TAG_PRI_MAX */
-/* in libmp4tagint.h */
+/* in mp4tagint.h */
 /* The priorities do not exactly match iTunes */
 const mp4tagdef_t mp4taglist [] = {
   {  2, "aART", MP4TAG_ID_STRING, 0 },    // string (album artist)

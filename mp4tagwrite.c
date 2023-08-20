@@ -13,7 +13,8 @@
 #include <ctype.h>
 
 #include "libmp4tag.h"
-#include "libmp4tagint.h"
+#include "mp4tagint.h"
+#include "mp4tagbe.h"
 
 static char * mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen);
 static void mp4tag_parse_pair (const char *data, int *a, int *b);
@@ -57,7 +58,7 @@ mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
 
 int
 mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
-    uint32_t datalen, int flags)
+    uint32_t datalen)
 {
   uint32_t  tlen = 0;
   int       rc;

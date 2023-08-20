@@ -62,17 +62,16 @@ int             mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub);
 int             mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, const char *data);
 int             mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz, const char *fn);
 int             mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name);
-int             mp4tag_write_tags (libmp4tag_t *libmp4tag, int flags);
-int             mp4tag_clean_tags (libmp4tag_t *libmp4tag, int flags);
+int             mp4tag_write_tags (libmp4tag_t *libmp4tag);
+int             mp4tag_clean_tags (libmp4tag_t *libmp4tag);
 libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
 int             mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
 int             mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
 int             mp4tag_error (libmp4tag_t *libmp4tag);
 const char    * mp4tag_version (void);
-/* mp4tag_fopen and mp4tag_file_size are used by mp4tagcli to process */
-/* binary files */
-FILE          * mp4tag_fopen (const char *fn, const char *mode);
-ssize_t         mp4tag_file_size (const char *fn);
+/* these routines are useful for the application */
+FILE * mp4tag_fopen (const char *fn, const char *mode);
+ssize_t mp4tag_file_size (const char *fn);
 
 /* versioning */
 
@@ -84,7 +83,7 @@ ssize_t         mp4tag_file_size (const char *fn);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 2
+#define LIBMP4TAG_VERS_REVISION 3
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \

@@ -14,7 +14,8 @@
 // #include <assert.h>
 
 #include "libmp4tag.h"
-#include "libmp4tagint.h"
+#include "mp4tagint.h"
+#include "mp4tagbe.h"
 
 enum {
   LEVEL_MAX = 300,

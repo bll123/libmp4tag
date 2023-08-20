@@ -15,20 +15,16 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <wchar.h>
 
 #if _hdr_windows
 # include <windows.h>
 #endif
 
 #include "libmp4tag.h"
-#include "libmp4tagint.h"
+#include "mp4tagint.h"
 
 static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
-int         mp4tag_check_covr (const char *tag, const char *fn);
-#ifdef _WIN32
-static void * mp4tag_towide (const char *buff);
-#endif
+static int  mp4tag_check_covr (const char *tag, const char *fn);
 
 typedef struct libmp4tagpreserve {
   mp4tag_t  *tags;
@@ -399,19 +395,19 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 }
 
 int
-mp4tag_write_tags (libmp4tag_t *libmp4tag, int flags)
+mp4tag_write_tags (libmp4tag_t *libmp4tag)
 {
   char      *data;
   uint32_t  dlen;
 
   data = mp4tag_build_data (libmp4tag, &dlen);
-  mp4tag_write_data (libmp4tag, data, dlen, flags);
+  mp4tag_write_data (libmp4tag, data, dlen);
   /* a stub for future development */
   return MP4TAG_ERR_NOT_IMPLEMENTED;
 }
 
 int
-mp4tag_clean_tags (libmp4tag_t *libmp4tag, int flags)
+mp4tag_clean_tags (libmp4tag_t *libmp4tag)
 {
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
@@ -422,8 +418,7 @@ mp4tag_clean_tags (libmp4tag_t *libmp4tag, int flags)
   }
 
   mp4tag_free_tags (libmp4tag);
-
-  return mp4tag_write_tags (libmp4tag, flags);
+  return MP4TAG_OK;
 }
 
 libmp4tagpreserve_t *
@@ -525,7 +520,6 @@ mp4tag_version (void)
   return LIBMP4TAG_VERSION;
 }
 
-
 FILE *
 mp4tag_fopen (const char *fname, const char *mode)
 {
@@ -561,7 +555,7 @@ mp4tag_file_size (const char *fname)
     wchar_t       *tfname = NULL;
     int           rc;
 
-    tfname = osToWideChar (fname);
+    tfname = mp4tag_towide (fname);
     rc = _wstat (tfname, &statbuf);
     if (rc == 0) {
       sz = statbuf.st_size;
@@ -604,7 +598,7 @@ mp4tag_free_tags (libmp4tag_t *libmp4tag)
 }
 
 /* returns MP4TAG_ID_DATA if not a 'covr' tag */
-int
+static int
 mp4tag_check_covr (const char *tag, const char *fn)
 {
   int     identtype = MP4TAG_ID_DATA;
@@ -629,25 +623,4 @@ mp4tag_check_covr (const char *tag, const char *fn)
 
   return identtype;
 }
-
-
-#ifdef _WIN32
-
-static void *
-mp4tag_towide (const char *buff)
-{
-    wchar_t     *tbuff = NULL;
-    size_t      len;
-
-    /* the documentation lies; len does not include room for the null byte */
-    len = MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), NULL, 0);
-    tbuff = malloc ((len + 1) * sizeof (wchar_t));
-    if (tbuff != NULL) {
-      MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), tbuff, len);
-      tbuff [len] = L'\0';
-    }
-    return tbuff;
-}
-
-#endif
 

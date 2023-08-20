@@ -9,9 +9,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <wchar.h>
+
+#if _hdr_windows
+# include <windows.h>
+#endif
 
 #include "libmp4tag.h"
-#include "libmp4tagint.h"
+#include "mp4tagint.h"
 
 void
 mp4tag_sort_tags (libmp4tag_t *libmp4tag)
@@ -216,3 +221,24 @@ mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx)
     free (libmp4tag->tags [idx].data);
   }
 }
+
+#ifdef _WIN32
+
+void *
+mp4tag_towide (const char *buff)
+{
+    wchar_t     *tbuff = NULL;
+    size_t      len;
+
+    /* the documentation lies; len does not include room for the null byte */
+    len = MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), NULL, 0);
+    tbuff = malloc ((len + 1) * sizeof (wchar_t));
+    if (tbuff != NULL) {
+      MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), tbuff, len);
+      tbuff [len] = L'\0';
+    }
+    return tbuff;
+}
+
+#endif
+
