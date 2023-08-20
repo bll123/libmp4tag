@@ -179,6 +179,8 @@ function dispfilelist {
   cat ${filelist}
 }
 
+test -d tmp || mkdir tmp
+
 getaccesstoken
 
 case $1 in
