@@ -47,12 +47,15 @@ enum {
   MP4TAG_PRI_CUSTOM = 8,
   MP4TAG_PRI_NOWRITE = -1,
   MP4TAG_PRI_MAX = 11,
+  MP4TAG_BASE_OFF_MAX = 10,
 };
 
 typedef struct mp4tag {
-  char      *name;
+  char      *tag;
   char      *data;
+  char      *covername;
   uint32_t  datalen;
+  int       coveridx;
   int       idx;
   /* identtype is the flag value from the original data */
   int       identtype;
@@ -71,13 +74,18 @@ typedef struct libmp4tag {
   int64_t   modifieddate;
   int64_t   duration;
   int32_t   samplerate;
-  ssize_t   taglist_base_offset;
+  uint32_t  base_lengths [MP4TAG_BASE_OFF_MAX];
+  ssize_t   base_offsets [MP4TAG_BASE_OFF_MAX];
+  int       base_offset_count;
   ssize_t   taglist_offset;
-  size_t    taglist_len;
+  uint32_t  taglist_len;
+  /* coverstart is a temporary variable used by the write process */
+  int32_t   coverstart_offset;
   int       tagcount;
   int       tagalloccount;
   int       iterator;
   int       errornum;
+  int       covercount;
   char      maintype [5];
   char      mp4version [5];
   bool      mp7meta : 1;
@@ -88,7 +96,7 @@ typedef struct libmp4tag {
 
 typedef struct {
   int         priority;
-  const char  *name;
+  const char  *tag;
   int         identtype;
   int         len;
 } mp4tagdef_t;
@@ -112,10 +120,11 @@ int   mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data, uint32_t data
 
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
 int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag);
+int  mp4tag_parse_cover_tag (const char *tag, int *coveridx);
 mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
-void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *nm, const char *data, ssize_t sz, uint32_t origflag, size_t origlen);
+void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, ssize_t sz, uint32_t origflag, size_t origlen, const char *covername);
 void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
 #ifdef _WIN32

@@ -59,7 +59,8 @@ Using the mp4tagcli executable:
   Dump binary data:
     mp4tagcli filename.m4a --display covr --dump > picture-data
 
-[ The following may or may not work.  At this time, writing tags to the MP4
+[ The following may or may not work.
+  At this time, writing tags to the MP4
   file works if there is enough space available. ]
 
   Setting a tag:

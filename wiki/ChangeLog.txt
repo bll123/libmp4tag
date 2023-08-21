@@ -6,36 +6,42 @@
 
 **1.0.4 alpha 2023-8---**
 
+* Bug Fixes:
+    * Fix parse of 64-bit mdhd box.
+    * Handle multiple cover images and cover names.
+* Changes:
+    * mp4tagcli: Re-work command line argument handling (PENDING)
+
 -->
 
 **1.0.3 alpha 2023-8-20**
 
-* Bug Fixes
+* Bug Fixes:
     * Fix compilation on Windows.
     * Cleanup.
 
 **1.0.2 alpha 2023-8-19**
 
-* Bug Fixes
+* Bug Fixes:
     * fixed genre tags.
     * validate file type
     * mp4tagcli: implement set of binary data.
-* Changes
+* Changes:
     * can now write tags in-place if there is enough space.
     * return error codes.
-* Notes
+* Notes:
     * tags cannot be written when there is not enough space.
 
 **1.0.1 alpha 2023-8-17**
 
-* Changes
+* Changes:
     * implemented set-tag, delete-tag, clean
     * updated cli tool.
-* Notes
+* Notes:
     * tags cannot be written
 
 **1.0.0 alpha 2023-8-17**
 
-* Notes
+* Notes:
    initial release
     tags cannot be written

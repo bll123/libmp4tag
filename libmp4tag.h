@@ -20,9 +20,11 @@ typedef struct libmp4tagpreserve libmp4tagpreserve_t;
 /* libmp4tag.c */
 
 typedef struct {
-  const char  *name;
+  const char  *tag;
   const char  *data;
+  const char  *covername;
   size_t      datalen;
+  int         coveridx;
   bool        binary;
 } mp4tagpub_t;
 
@@ -56,6 +58,7 @@ int64_t         mp4tag_duration (libmp4tag_t *libmp4tag);
 int             mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag, mp4tagpub_t *mp4tagpub);
 void            mp4tag_iterate_init (libmp4tag_t *libmp4tag);
 int             mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub);
+int             mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, uint32_t sz, const char *fn, bool forcebinary);
 int             mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, const char *data);
 int             mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, const char *data, size_t sz, const char *fn);
 int             mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name);
@@ -80,7 +83,7 @@ ssize_t         mp4tag_file_size (const char *fn);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 3
+#define LIBMP4TAG_VERS_REVISION 4
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \

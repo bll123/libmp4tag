@@ -17,7 +17,7 @@
 /* The identifier type and length for a tag are stored here. */
 /* If the priority field is updated, be sure to check MP4TAG_PRI_MAX */
 /* in mp4tagint.h */
-/* The priorities do not exactly match iTunes */
+/* The priorities do not exactly match iTunes or mutagen */
 const mp4tagdef_t mp4taglist [] = {
   {  2, "aART", MP4TAG_ID_STRING, 0 },    // string (album artist)
   {  6, "akID", MP4TAG_ID_NUM, 1 },       // 1-byte (?)
@@ -42,7 +42,6 @@ const mp4tagdef_t mp4taglist [] = {
   {  6, "plID", MP4TAG_ID_NUM, 8 },       // 8-byte (itunes album id)
   {  7, "purd", MP4TAG_ID_STRING, 0 },    // string (purchase date)
   {  7, "purl", MP4TAG_ID_STRING, 0 },    // string (podcast url)
-  {  6, "rate", MP4TAG_ID_NUM, 2 },       // ??? need to verify if this is valid
   {  6, "rtng", MP4TAG_ID_NUM, 1 },       // 1-byte (advisory rating)
   {  6, "sfID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes country id)
   {  6, "shwm", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
@@ -73,7 +72,7 @@ const mp4tagdef_t mp4taglist [] = {
   {  7, "©mvn", MP4TAG_ID_STRING, 0 },    // string (movement name)
   {  0, "©nam", MP4TAG_ID_STRING, 0 },    // string (title)
   {  7, "©nrt", MP4TAG_ID_STRING, 0 },
-  {  7, "©pub", MP4TAG_ID_STRING, 0 },
+  {  7, "©pub", MP4TAG_ID_STRING, 0 },    // string (publisher)
   {  5, "©too", MP4TAG_ID_STRING, 0 },    // string
   {  7, "©wrk", MP4TAG_ID_STRING, 0 },    // string
   {  2, "©wrt", MP4TAG_ID_STRING, 0 },    // string

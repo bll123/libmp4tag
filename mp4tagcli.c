@@ -15,6 +15,7 @@
 #include "libmp4tag.h"
 
 static void setTagName (const char *tag, char *buff, size_t sz);
+static void displayTag (mp4tagpub_t *mp4tagpub);
 
 int
 main (int argc, char *argv [])
@@ -141,12 +142,14 @@ main (int argc, char *argv [])
                 if (rc == 1) {
                   /* the filename is passed so that in the case of 'covr' */
                   /* the internal identifier type can be set correctly */
-                  /* it is only used for 'covr' */
+                  /* the filename is only used for 'covr' */
                   mp4tag_set_tag_binary (libmp4tag, tagname, data, sz, p);
                   write = true;
                 }
                 fclose (fh);
-              } /* file is opened */
+              } else {
+		fprintf (stderr, "file %s not found\n", p);
+	      }
 
               free (data);
 
@@ -171,24 +174,15 @@ main (int argc, char *argv [])
     if (rc != MP4TAG_OK) {
       fprintf (stdout, "%s not found\n", tagname);
     }
-    if (rc == MP4TAG_OK &&
-        ! mp4tagpub.binary &&
-        mp4tagpub.name != NULL &&
-        mp4tagpub.data != NULL) {
-      fprintf (stdout, "%s=%s\n", mp4tagpub.name, mp4tagpub.data);
-    }
-    if (rc == MP4TAG_OK &&
-        ! dump &&
-        mp4tagpub.binary &&
-        mp4tagpub.name != NULL) {
-      fprintf (stdout, "%s=data: (%" PRId64 " bytes)\n",
-          mp4tagpub.name, (uint64_t) mp4tagpub.datalen);
-    }
-    if (rc == MP4TAG_OK &&
-        dump &&
-        mp4tagpub.binary &&
-        mp4tagpub.name != NULL) {
-      fwrite (mp4tagpub.data, mp4tagpub.datalen, 1, stdout);
+    if (rc == MP4TAG_OK) {
+      if (! dump) {
+        displayTag (&mp4tagpub);
+      }
+      if (dump &&
+          mp4tagpub.binary &&
+          mp4tagpub.tag != NULL) {
+        fwrite (mp4tagpub.data, mp4tagpub.datalen, 1, stdout);
+      }
     }
   }
 
@@ -201,15 +195,7 @@ main (int argc, char *argv [])
 
     mp4tag_iterate_init (libmp4tag);
     while (mp4tag_iterate (libmp4tag, &mp4tagpub) == MP4TAG_OK) {
-      if (! mp4tagpub.binary &&
-          mp4tagpub.name != NULL &&
-          mp4tagpub.data != NULL) {
-        fprintf (stdout, "%s=%s\n", mp4tagpub.name, mp4tagpub.data);
-      }
-      if (mp4tagpub.binary &&
-          mp4tagpub.name != NULL) {
-        fprintf (stdout, "%s=data: (%" PRId64 " bytes)\n", mp4tagpub.name, mp4tagpub.datalen);
-      }
+      displayTag (&mp4tagpub);
     }
   }
 
@@ -224,5 +210,31 @@ setTagName (const char *tag, char *buff, size_t sz)
     snprintf (buff, sz, "%s%s", PREFIX_STR, tag);
   } else {
     strcpy (buff, tag);
+  }
+}
+
+static void
+displayTag (mp4tagpub_t *mp4tagpub)
+{
+  if (! mp4tagpub->binary &&
+      mp4tagpub->tag != NULL &&
+      mp4tagpub->data != NULL) {
+    fprintf (stdout, "%s=%s\n", mp4tagpub->tag, mp4tagpub->data);
+  }
+  if (mp4tagpub->binary &&
+      mp4tagpub->tag != NULL) {
+    if (mp4tagpub->coveridx > 0) {
+      fprintf (stdout, "%s:%d=(data: %" PRId64 " bytes)\n",
+          mp4tagpub->tag, mp4tagpub->coveridx, (uint64_t) mp4tagpub->datalen);
+    } else {
+      fprintf (stdout, "%s=(data: %" PRId64 " bytes)\n",
+          mp4tagpub->tag, (uint64_t) mp4tagpub->datalen);
+    }
+    if (mp4tagpub->covername != NULL &&
+        *mp4tagpub->covername) {
+      /* cover name */
+      fprintf (stdout, "%s:%d:name=%s\n",
+          mp4tagpub->tag, mp4tagpub->coveridx, mp4tagpub->covername);
+    }
   }
 }

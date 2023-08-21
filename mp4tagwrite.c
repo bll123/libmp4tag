@@ -16,14 +16,22 @@
 #include "mp4tagint.h"
 #include "mp4tagbe.h"
 
+static void mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen);
+static void mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen);
+static void mp4tag_update_parent_offsets (libmp4tag_t *libmp4tag, int32_t delta, int idx);
 static char * mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen);
 static void mp4tag_parse_pair (const char *data, int *a, int *b);
+static char * append_data (char *dptr, const char *tnm, uint32_t sz);
+static char * append_len_8 (char *dptr, uint64_t val);
+static char * append_len_16 (char *dptr, uint64_t val);
+static char * append_len_32 (char *dptr, uint64_t val);
+static char * append_len_64 (char *dptr, uint64_t val);
+static void update_cover_len (libmp4tag_t *libmp4tag, char *data, uint32_t len);
 
 char *
 mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
 {
   char      *data = NULL;
-  uint32_t  dlen = 0;
 
   *datalen = 0;
 
@@ -34,25 +42,29 @@ mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
   for (int i = 0; i < libmp4tag->tagcount; ++i) {
     const mp4tagdef_t   *result = NULL;
 
-    if (memcmp (libmp4tag->tags [i].name, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+    if (memcmp (libmp4tag->tags [i].tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
       libmp4tag->tags [i].priority = MP4TAG_PRI_CUSTOM;
     } else {
-      result = mp4tag_check_tag (libmp4tag->tags [i].name);
+      result = mp4tag_check_tag (libmp4tag->tags [i].tag);
       if (result != NULL) {
         libmp4tag->tags [i].priority = result->priority;
+      } else {
+        /* unknown tag */
+        libmp4tag->tags [i].priority = MP4TAG_PRI_CUSTOM;
       }
     }
   }
 
+  libmp4tag->coverstart_offset = -1;
   for (int pri = 0; pri < MP4TAG_PRI_MAX; ++pri) {
     for (int i = 0; i < libmp4tag->tagcount; ++i) {
       if (libmp4tag->tags [i].priority == pri) {
-        data = mp4tag_build_append (libmp4tag, i, data, &dlen);
+        data = mp4tag_build_append (libmp4tag, i, data, datalen);
       }
     }
   }
 
-  *datalen = dlen;
+fprintf (stdout, "build-data: len: %d\n", *datalen);
   return data;
 }
 
@@ -70,64 +82,118 @@ mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
   /* must be exactly equal in size, or must have room for the data and */
   /* a free space block, or the 'ilst/free' is at the end of the file. */
 // fprintf (stdout, "offset: %ld\n", (long) libmp4tag->taglist_offset);
-// fprintf (stdout, "taglist-len: %ld\n", (long) libmp4tag->taglist_len);
-// fprintf (stdout, "datalen: %ld\n", (long) datalen);
-// fprintf (stdout, "tlen: %ld\n", (long) tlen);
-// fprintf (stdout, "unlimited: %ld\n", (long) libmp4tag->unlimited);
+fprintf (stdout, "taglist-len: %ld\n", (long) libmp4tag->taglist_len);
+fprintf (stdout, "datalen: %ld\n", (long) datalen);
+fprintf (stdout, "tlen: %ld\n", (long) tlen);
+fprintf (stdout, "unlimited: %ld\n", (long) libmp4tag->unlimited);
   if (libmp4tag->taglist_offset != 0 &&
       (libmp4tag->unlimited ||
       datalen == libmp4tag->taglist_len ||
       datalen < tlen)) {
-// fprintf (stdout, "  ok to write\n");
-
-    if (libmp4tag->fh != NULL) {
-// fprintf (stdout, "  fh is ok\n");
-      if (fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) == 0) {
-// fprintf (stdout, "  seek ok\n");
-        fwrite (data, datalen, 1, libmp4tag->fh);
-
-        if (datalen < libmp4tag->taglist_len) {
-          int     freelen;
-          char    *buff;
-
-          freelen = libmp4tag->taglist_len - datalen;
-          if (freelen > 8) {
-            buff = malloc (freelen);
-            if (buff != NULL) {
-              uint32_t    t32;
-
-              memset (buff, '\0', freelen);
-              t32 = htobe32 (freelen);
-              memcpy (buff, &t32, sizeof (uint32_t));
-              memcpy (buff + sizeof (uint32_t), MP4TAG_FREE, MP4TAG_ID_LEN);
-              fwrite (buff, freelen, 1, libmp4tag->fh);
-              free (buff);
-            }
-          }
-        }  /* if a free box needs to be added */
-
-        if (fseek (libmp4tag->fh, libmp4tag->taglist_base_offset, SEEK_SET) == 0) {
-          uint32_t    t32;
-
-          t32 = datalen + sizeof (uint32_t) + MP4TAG_ID_LEN;
-          t32 = htobe32 (t32);
-          fwrite (&t32, sizeof (uint32_t), 1, libmp4tag->fh);
-        }
-      } /* fseek is ok */
-    }
+// fprintf (stdout, "  -- in-place\n");
+    mp4tag_write_inplace (libmp4tag, data, datalen);
     rc = MP4TAG_OK;
   } else {
+// fprintf (stdout, "  -- rewrite\n");
+    mp4tag_write_rewrite (libmp4tag, data, datalen);
     rc = MP4TAG_ERR_NOT_IMPLEMENTED;
   }
 
+#if 0 // DEBUGGING
 {
   FILE *fh;
   fh = fopen ("out.dat", "wb");
   fwrite (data, datalen, 1, fh);
   fclose (fh);
 }
+#endif
 
   return rc;
+}
+
+static void
+mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
+    uint32_t datalen)
+{
+  if (libmp4tag->fh != NULL) {
+    if (fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) == 0) {
+      int32_t   delta;
+      int       idx;
+
+      fwrite (data, datalen, 1, libmp4tag->fh);
+
+      delta = (int32_t) datalen - (int32_t) libmp4tag->taglist_len;
+fprintf (stdout, "taglist-len: %d\n", libmp4tag->taglist_len);
+fprintf (stdout, "    datalen: %d\n", datalen);
+fprintf (stdout, "      delta: %d\n", delta);
+      if (delta < 0) {
+        int     freelen;
+        char    *buff;
+
+        freelen = libmp4tag->taglist_len - datalen;
+fprintf (stdout, "    freelen: %d\n", freelen);
+        delta += freelen;
+fprintf (stdout, "    delta-f: %d\n", delta);
+        if (freelen > 8) {
+          buff = malloc (freelen);
+          if (buff != NULL) {
+            uint32_t    t32;
+
+            memset (buff, '\0', freelen);
+            t32 = htobe32 (freelen);
+            memcpy (buff, &t32, sizeof (uint32_t));
+            memcpy (buff + sizeof (uint32_t), MP4TAG_FREE, MP4TAG_ID_LEN);
+            fwrite (buff, freelen, 1, libmp4tag->fh);
+            free (buff);
+          }
+        }
+      } /* if a free box needs to be added */
+
+      if (delta != 0) {
+        /* the base offset count is currently pointing at a tag, one level */
+        /* higher than the ilst tag. */
+        idx = libmp4tag->base_offset_count - 2;
+        if (fseek (libmp4tag->fh, libmp4tag->base_offsets [idx], SEEK_SET) == 0) {
+          uint32_t    t32;
+
+          t32 = datalen + sizeof (uint32_t) + MP4TAG_ID_LEN;
+// fprintf (stdout, "    upd-ilst: %d\n", t32);
+          t32 = htobe32 (t32);
+          fwrite (&t32, sizeof (uint32_t), 1, libmp4tag->fh);
+        }
+      }
+
+      /* if the 'ilst' has grown in size, the parent offsets must be updated */
+      if (delta > 0) {
+        idx = libmp4tag->base_offset_count - 3;
+        mp4tag_update_parent_offsets (libmp4tag, delta, idx);
+      }
+
+    } /* fseek is ok */
+  }
+}
+
+static void
+mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
+    uint32_t datalen)
+{
+}
+
+static void
+mp4tag_update_parent_offsets (libmp4tag_t *libmp4tag, int32_t delta, int idx)
+{
+  while (idx >= 0) {
+    if (fseek (libmp4tag->fh, libmp4tag->base_offsets [idx], SEEK_SET) == 0) {
+      uint32_t    t32;
+
+// fprintf (stdout, "p: idx: %d old-len: %d\n", idx, libmp4tag->base_lengths [idx]);
+      t32 = libmp4tag->base_lengths [idx] + delta;
+// fprintf (stdout, "p: idx: %d new-len: %d\n", idx, t32);
+      t32 = htobe32 (t32);
+      fwrite (&t32, sizeof (uint32_t), 1, libmp4tag->fh);
+    }
+    --idx;
+  }
 }
 
 static char *
@@ -138,9 +204,6 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   uint32_t    tlen;
   uint32_t    savelen;
   uint64_t    t64;
-  uint32_t    t32;
-  uint16_t    t16;
-  uint8_t     t8;
   char        *dptr;
   char        tnm [MP4TAG_ID_LEN + 1];
   bool        iscustom = false;
@@ -152,28 +215,28 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
   mp4tag = &libmp4tag->tags [idx];
 
-  if (mp4tag->name == NULL) {
+  if (mp4tag->tag == NULL) {
     return data;
   }
 
   /* idlen + ident + dlen + data-ident + data-flags + data-reserved = 6 */
-// fprintf (stdout, "name: %s type: %02x\n", mp4tag->name, mp4tag->identtype);
+// fprintf (stdout, "name: %s type: %02x\n", mp4tag->tag, mp4tag->identtype);
 // fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
 // fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
   savelen = mp4tag->internallen;
   if (mp4tag->identtype == MP4TAG_ID_STRING) {
     savelen = mp4tag->datalen;
   }
-  tlen = sizeof (uint32_t) * 6 + savelen;
+  tlen = sizeof (uint32_t) * 4 + MP4TAG_ID_LEN * 2 + savelen;
 
-  if (memcmp (mp4tag->name, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+  if (memcmp (mp4tag->tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
     char    *p;
     char    *tokstr;
 
     iscustom = true;
-    custom = strdup (mp4tag->name);
+    custom = strdup (mp4tag->tag);
 
-    /* the ident, don't need to save this */
+    /* the ident, don't need to save this, handled below */
     p = strtok_r (custom, MP4TAG_CUSTOM_DELIM, &tokstr);
     if (p == NULL) {
       free (custom);
@@ -196,12 +259,26 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     }
     customname = p;
 
-    tlen += sizeof (uint32_t) * 3;    /* 'mean' len, 'mean' id, flags */
+    /* 'mean' len, 'mean' id, flags */
+    tlen += sizeof (uint32_t) * 2 + MP4TAG_ID_LEN;
     vendorlen = strlen (vendor);
     tlen += vendorlen;
-    tlen += sizeof (uint32_t) * 3;    /* 'name' len, 'name' id, flags */
+    /* 'name' len, 'name' id, flags */
+    tlen += sizeof (uint32_t) * 2 + MP4TAG_ID_LEN;
     customnamelen = strlen (customname);
     tlen += customnamelen;
+  }
+
+  if (mp4tag->coveridx > 0) {
+    /* if processing a second cover, do not allocate extra space for the */
+    /* ident-len and ident */
+    tlen -= sizeof (uint32_t);
+    tlen -= MP4TAG_ID_LEN;
+  }
+
+  if (mp4tag->covername != NULL) {
+    /* if a cover name is present, include that length for the realloc */
+    tlen += strlen (mp4tag->covername) + sizeof (uint32_t) + MP4TAG_ID_LEN;
   }
 
   data = realloc (data, *dlen + tlen);
@@ -212,83 +289,76 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   dptr = data + *dlen;
   *dlen += tlen;
 
-  t32 = htobe32 (tlen);
-  /* box length */
-  memcpy (dptr, &t32, sizeof (uint32_t));
-  dptr += sizeof (uint32_t);
+  if (mp4tag->covername != NULL) {
+    /* back out the cover name size change */
+    /* so it is not included in the datalen */
+    tlen -= strlen (mp4tag->covername) + sizeof (uint32_t) + MP4TAG_ID_LEN;
+  }
 
-  /* ident */
-  if (memcmp (mp4tag->name, PREFIX_STR, strlen (PREFIX_STR)) == 0) {
-    tnm [0] = '\xa9';
-    memcpy (tnm + 1, mp4tag->name + strlen (PREFIX_STR), 3);
+  if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0 &&
+      libmp4tag->coverstart_offset == -1) {
+    libmp4tag->coverstart_offset = (int32_t) (dptr - data);
+fprintf (stdout, "cover-offset: %d\n", (int32_t) (dptr - data));
+  }
+
+  /* if this is a second cover, the identifier is not added */
+  if (mp4tag->coveridx == 0) {
+    /* box length */
+    dptr = append_len_32 (dptr, tlen);
+
+    /* ident */
+    if (memcmp (mp4tag->tag, PREFIX_STR, strlen (PREFIX_STR)) == 0) {
+      tnm [0] = '\xa9';
+      memcpy (tnm + 1, mp4tag->tag + strlen (PREFIX_STR), 3);
+      tnm [MP4TAG_ID_LEN] = '\0';
+    } else {
+      /* mp4tag->tag may be custom and much longer than 4 chars */
+      memcpy (tnm, mp4tag->tag, MP4TAG_ID_LEN);
+    }
     tnm [MP4TAG_ID_LEN] = '\0';
-  } else {
-    /* mp4tag->name may be custom and much longer than 4 chars */
-    memcpy (tnm, mp4tag->name, MP4TAG_ID_LEN);
-  }
-  tnm [MP4TAG_ID_LEN] = '\0';
-  memcpy (dptr, tnm, MP4TAG_ID_LEN);
-  dptr += MP4TAG_ID_LEN;
+    dptr = append_data (dptr, tnm, MP4TAG_ID_LEN);
 
-  if (iscustom) {
-    size_t      tmplen;
+    if (iscustom) {
+      size_t      tmplen;
 
-    /* update tlen to remove 'mean' */
-    tlen -= sizeof (uint32_t) * 3;
-    tlen -= vendorlen;
+      /* update tlen to remove 'mean' */
+      tlen -= sizeof (uint32_t) * 3;
+      tlen -= vendorlen;
 
-    tmplen = sizeof (uint32_t) * 3 + vendorlen;
-    t32 = htobe32 (tmplen);
-    memcpy (dptr, &t32, sizeof (uint32_t));
-    dptr += sizeof (uint32_t);
-    memcpy (dptr, MP4TAG_MEAN, MP4TAG_ID_LEN);
-    dptr += sizeof (uint32_t);
-    t32 = 0;
-    memcpy (dptr, &t32, sizeof (uint32_t));
-    dptr += sizeof (uint32_t);
-    memcpy (dptr, vendor, vendorlen);
-    dptr += vendorlen;
+      tmplen = sizeof (uint32_t) * 3 + vendorlen;
+      dptr = append_len_32 (dptr, tmplen);
+      dptr = append_data (dptr, MP4TAG_MEAN, MP4TAG_ID_LEN);
+      dptr = append_len_32 (dptr, 0);
+      dptr = append_data (dptr, vendor, vendorlen);
 
-    /* update tlen to remove 'name' */
-    tlen -= sizeof (uint32_t) * 3;
-    tlen -= customnamelen;
+      /* update tlen to remove 'name' */
+      tlen -= sizeof (uint32_t) * 3;
+      tlen -= customnamelen;
 
-    tmplen = sizeof (uint32_t) * 3 + customnamelen;
-    t32 = htobe32 (tmplen);
-    memcpy (dptr, &t32, sizeof (uint32_t));
-    dptr += sizeof (uint32_t);
-    memcpy (dptr, MP4TAG_NAME, MP4TAG_ID_LEN);
-    dptr += sizeof (uint32_t);
-    t32 = 0;
-    memcpy (dptr, &t32, sizeof (uint32_t));
-    dptr += sizeof (uint32_t);
-    memcpy (dptr, customname, customnamelen);
-    dptr += customnamelen;
+      tmplen = sizeof (uint32_t) * 3 + customnamelen;
+      dptr = append_len_32 (dptr, tmplen);
+      dptr = append_data (dptr, MP4TAG_NAME, MP4TAG_ID_LEN);
+      dptr = append_len_32 (dptr, 0);
+      dptr = append_data (dptr, customname, customnamelen);
+    }
+
+    /* data length does not include ident len and ident */
+    tlen -= sizeof (uint32_t);
+    tlen -= MP4TAG_ID_LEN;
   }
 
-  /* data length does not include ident len and ident */
-  tlen -= sizeof (uint32_t) * 2;
-  t32 = htobe32 (tlen);
-  memcpy (dptr, &t32, sizeof (uint32_t));
-  dptr += sizeof (uint32_t);
-
-  /* data ident */
-  memcpy (dptr, MP4TAG_DATA, MP4TAG_ID_LEN);
-  dptr += MP4TAG_ID_LEN;
+fprintf (stdout, "%s datalen: %d\n", tnm, mp4tag->datalen);
+fprintf (stdout, "%s tot datalen: %d\n", tnm, tlen);
+  dptr = append_len_32 (dptr, tlen);
+  dptr = append_data (dptr, MP4TAG_DATA, MP4TAG_ID_LEN);
 
   /* data flags */
-  t32 = htobe32 (mp4tag->identtype);
-  memcpy (dptr, &t32, sizeof (uint32_t));
-  dptr += sizeof (uint32_t);
-
+  dptr = append_len_32 (dptr, mp4tag->identtype);
   /* data reserved */
-  t32 = 0;
-  memcpy (dptr, &t32, sizeof (uint32_t));
-  dptr += sizeof (uint32_t);
+  dptr = append_len_32 (dptr, 0);
 
   if (mp4tag->identtype == MP4TAG_ID_STRING) {
-    memcpy (dptr, mp4tag->data, mp4tag->datalen);
-    dptr += mp4tag->datalen;
+    dptr = append_data (dptr, mp4tag->data, mp4tag->datalen);
   }
   if (mp4tag->identtype == MP4TAG_ID_NUM) {
     t64 = 0;
@@ -296,69 +366,58 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
       t64 = atoll (mp4tag->data);
     }
     if (mp4tag->internallen == 1) {
-      t8 = (uint8_t) t64;
-      memcpy (dptr, &t8, sizeof (uint8_t));
-      dptr += sizeof (uint8_t);
+      dptr = append_len_8 (dptr, t64);
     }
     if (mp4tag->internallen == 2) {
-      t16 = (uint16_t) t64;
-      t16 = htobe16 (t16);
-      memcpy (dptr, &t16, sizeof (uint16_t));
-      dptr += sizeof (uint16_t);
+      dptr = append_len_16 (dptr, t64);
     }
     if (mp4tag->internallen == 4) {
-      t32 = (uint32_t) t64;
-      t32 = htobe16 (t32);
-      memcpy (dptr, &t32, sizeof (uint32_t));
-      dptr += sizeof (uint32_t);
+      dptr = append_len_16 (dptr, t64);
     }
     if (mp4tag->internallen == 8) {
-      t64 = htobe64 (t64);
-      memcpy (dptr, &t64, sizeof (uint64_t));
-      dptr += sizeof (uint64_t);
+      dptr = append_len_64 (dptr, t64);
     }
   }
   if (mp4tag->identtype == MP4TAG_ID_DATA) {
     int   ta = 0;
     int   tb = 0;
 
-    if (strcmp (mp4tag->name, MP4TAG_TRKN) == 0) {
+    if (strcmp (mp4tag->tag, MP4TAG_TRKN) == 0) {
       mp4tag_parse_pair (mp4tag->data, &ta, &tb);
-      t32 = (uint32_t) ta;
-      t32 = htobe32 (t32);
-      memcpy (dptr, &t32, sizeof (uint32_t));
-      dptr += sizeof (uint32_t);
-
-      t16 = (uint16_t) tb;
-      t16 = htobe16 (t16);
-      memcpy (dptr, &t16, sizeof (uint16_t));
-      dptr += sizeof (uint16_t);
-
+      dptr = append_len_32 (dptr, ta);
+      dptr = append_len_16 (dptr, tb);
       /* trkn has an extra two bytes */
-      t16 = 0;
-      memcpy (dptr, &t16, sizeof (uint16_t));
-      dptr += sizeof (uint16_t);
-    } else if (strcmp (mp4tag->name, MP4TAG_DISK) == 0) {
+      dptr = append_len_16 (dptr, 0);
+    } else if (strcmp (mp4tag->tag, MP4TAG_DISK) == 0) {
       mp4tag_parse_pair (mp4tag->data, &ta, &tb);
 
-      t32 = (uint32_t) ta;
-      t32 = htobe32 (t32);
-      memcpy (dptr, &t32, sizeof (uint32_t));
-      dptr += sizeof (uint32_t);
-
-      t16 = (uint16_t) tb;
-      t16 = htobe16 (t16);
-      memcpy (dptr, &t16, sizeof (uint16_t));
-      dptr += sizeof (uint16_t);
+      dptr = append_len_32 (dptr, ta);
+      dptr = append_len_16 (dptr, tb);
     } else {
-      memcpy (dptr, mp4tag->data, mp4tag->datalen);
-      dptr += mp4tag->datalen;
+      dptr = append_data (dptr, mp4tag->data, mp4tag->datalen);
     }
   }
   if (mp4tag->identtype == MP4TAG_ID_JPG ||
       mp4tag->identtype == MP4TAG_ID_PNG) {
-    memcpy (dptr, mp4tag->data, mp4tag->datalen);
-    dptr += mp4tag->datalen;
+    dptr = append_data (dptr, mp4tag->data, mp4tag->datalen);
+    if (mp4tag->coveridx > 0 && libmp4tag->coverstart_offset != -1) {
+      /* datalen + size of a data box */
+      update_cover_len (libmp4tag, data,
+          mp4tag->datalen + sizeof (uint32_t) * 3 + MP4TAG_ID_LEN);
+    }
+    if (mp4tag->covername != NULL && *mp4tag->covername) {
+      uint32_t    cnlen;
+      uint32_t    tcnlen;
+
+      cnlen = strlen (mp4tag->covername);
+      tcnlen = cnlen + sizeof (uint32_t) + MP4TAG_ID_LEN;
+fprintf (stdout, "cnlen: %d tcnlen: %d\n", cnlen, tcnlen);
+      dptr = append_len_32 (dptr, tcnlen);
+      dptr = append_data (dptr, MP4TAG_NAME, MP4TAG_ID_LEN);
+      dptr = append_data (dptr, mp4tag->covername, cnlen);
+
+      update_cover_len (libmp4tag, data, tcnlen);
+    }
   }
 
   if (iscustom) {
@@ -373,10 +432,82 @@ mp4tag_parse_pair (const char *data, int *a, int *b)
 {
   int   rc;
 
-  rc = sscanf (data, "(%d,%d)", a, b);
+  rc = sscanf (data, "%d/%d", a, b);
   if (rc == 2) {
     return;
   }
-  /* try with a slash */
-  rc = sscanf (data, "%d/%d", a, b);
+  /* try using mutagen output format */
+  rc = sscanf (data, "(%d,%d)", a, b);
+}
+
+static char *
+append_data (char *dptr, const char *tnm, uint32_t sz)
+{
+  memcpy (dptr, tnm, sz);
+  dptr += sz;
+  return dptr;
+}
+
+static char *
+append_len_8 (char *dptr, uint64_t val)
+{
+  uint8_t    t8;
+
+  t8 = (uint8_t) val;
+  memcpy (dptr, &t8, sizeof (uint8_t));
+  dptr += sizeof (uint8_t);
+  return dptr;
+}
+
+static char *
+append_len_16 (char *dptr, uint64_t val)
+{
+  uint16_t    t16;
+
+  t16 = htobe16 (val);
+  memcpy (dptr, &t16, sizeof (uint16_t));
+  dptr += sizeof (uint16_t);
+  return dptr;
+}
+
+static char *
+append_len_32 (char *dptr, uint64_t val)
+{
+  uint32_t    t32;
+
+  t32 = htobe32 (val);
+  memcpy (dptr, &t32, sizeof (uint32_t));
+  dptr += sizeof (uint32_t);
+  return dptr;
+}
+
+static char *
+append_len_64 (char *dptr, uint64_t val)
+{
+  uint64_t    t64;
+
+  t64 = htobe64 (val);
+  memcpy (dptr, &t64, sizeof (uint64_t));
+  dptr += sizeof (uint64_t);
+  return dptr;
+}
+
+static void
+update_cover_len (libmp4tag_t *libmp4tag, char *data, uint32_t len)
+{
+  uint32_t    t32;
+  char        *coverstart;
+
+  if (libmp4tag->coverstart_offset == -1) {
+    return;
+  }
+
+  coverstart = data + libmp4tag->coverstart_offset;
+  memcpy (&t32, coverstart, sizeof (uint32_t));
+  t32 = be32toh (t32);
+fprintf (stdout, "old-len: %d\n", t32);
+  t32 += len;
+fprintf (stdout, "new-len: %d\n", t32);
+  t32 = htobe32 (t32);
+  memcpy (coverstart, &t32, sizeof (uint32_t));
 }
