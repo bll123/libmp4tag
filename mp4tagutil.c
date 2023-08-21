@@ -99,13 +99,11 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag)
     key.tag = (char *) MP4TAG_COVR;
   }
   key.coveridx = coveridx;
-fprintf (stdout, "find: tag: %s cidx: %d\n", key.tag, key.coveridx);
   result = bsearch (&key, libmp4tag->tags, libmp4tag->tagcount,
       sizeof (mp4tag_t), mp4tag_compare);
 
   if (result != NULL) {
     idx = result->idx;
-// fprintf (stdout, "ft: found at idx: %d\n", idx);
   }
 
   return idx;
@@ -213,18 +211,14 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     libmp4tag->tags [tagidx].tag = strdup (MP4TAG_COVR);
 
     if (covername != NULL) {
-fprintf (stdout, "tagidx: %d covername: %s\n", tagidx, covername);
       libmp4tag->tags [tagidx].covername = strdup (covername);
     }
     if (coveridx == -1) {
       libmp4tag->tags [tagidx].coveridx = libmp4tag->covercount;
       libmp4tag->covercount += 1;
-// fprintf (stdout, "cidx: new\n");
     } else {
       libmp4tag->tags [tagidx].coveridx = coveridx;
-// fprintf (stdout, "cidx: exist: %d\n", coveridx);
     }
-fprintf (stdout, "tag: %s cidx: %d\n", tag, libmp4tag->tags [tagidx].coveridx);
   }
 
   if (sz == MP4TAG_STRING) {

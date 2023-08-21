@@ -119,7 +119,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     needdata = false;
     inclevel = false;
 
-fprintf (stdout, "%*s %2d %.5s: %8ld %08lx\n", level*2, " ", level, bd.nm, bd.len, bd.len);
+// fprintf (stdout, "%*s %2d %.5s: %8ld %08lx\n", level*2, " ", level, bd.nm, bd.len, bd.len);
 
     /* track the current level's length */
     currlen [level] = bd.len;
@@ -532,10 +532,8 @@ process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char
   const char  *cname = NULL;
 
   while (blen > 0) {
-fprintf (stdout, "c0: blen: %d\n", blen);
     memcpy (&tlen, p, sizeof (uint32_t));
     tlen = be32toh (tlen);
-fprintf (stdout, "c1: tlen: %d\n", tlen);
     blen -= tlen;
     if (memcmp (p + sizeof (uint32_t), MP4TAG_DATA, MP4TAG_ID_LEN) == 0) {
       if (cflag > 0 && cdata != NULL) {

@@ -278,7 +278,6 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, const char *data)
   }
 
   idx = mp4tag_find_tag (libmp4tag, tag);
-fprintf (stderr, "l-find: %s %d %s\n", tag, idx, data);
   if (idx >= 0 && idx < libmp4tag->tagcount) {
     mp4tag_t  *mp4tag;
 
@@ -289,7 +288,6 @@ fprintf (stderr, "l-find: %s %d %s\n", tag, idx, data);
       int     coveridx;
 
       offset = mp4tag_parse_cover_tag (tag, &coveridx);
-fprintf (stdout, "have-covr offset:%d\n", offset);
       if (offset > 0) {
 	if (mp4tag->covername != NULL) {
 	  free (mp4tag->covername);
