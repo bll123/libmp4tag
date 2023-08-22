@@ -19,6 +19,7 @@ Current Status:
 
   1.0.4 2023-8-22
     I believe that in-place writing of tag is now working correctly.
+    Writing multiple cover images and cover names are working.
 
   Alpha
 
@@ -28,7 +29,7 @@ Current Status:
   At this time, libmp4tag can read tags.
   Tags can be written if there is space available.
 
-  I only work with audio files, so this software will need testing
+  I only work with audio files, so this software will need more testing
   against video files.
 
   To Do:
@@ -87,6 +88,7 @@ Using the mp4tagcli executable:
 
   Binary Data:
     # existing tags and cover images do not need the --binary argument.
+    # specify a filename holding the binary data as the argument
     mp4tagcli filename.m4a covr=pic.png
     # setting a new tag that is unknown and needs to be binary data.
     mp4tagcli filename.m4a --binary -- ----:MYAPP:ALTERNATE=filename.dat
