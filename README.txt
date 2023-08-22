@@ -17,6 +17,9 @@ About
 
 Current Status:
 
+  1.0.4 2023-8-22
+    I believe that in-place writing of tag is now working correctly.
+
   Alpha
 
   Alpha software is under development.  There is no guarantee that the

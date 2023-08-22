@@ -83,7 +83,7 @@ const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);
 /* an idiotic way to do things, */
 /* but we must convert any old gnre data to ©gen. */
 /* itunes still puts data into the 'gnre' field, yick. */
-const char *oldgenrelist [] = {
+const char *mp4tagoldgenrelist [] = {
   "Blues",              "Classic Rock",           "Country",
   "Dance",              "Disco",                  "Funk",
   "Grunge",             "Hip-Hop",                "Jazz",
@@ -150,5 +150,5 @@ const char *oldgenrelist [] = {
   "Dubstep",            "Garage Rock",            "Psybient",
 };
 
-const int oldgenrelistsz = sizeof (oldgenrelist) / sizeof (const char *);
+const int mp4tagoldgenrelistsz = sizeof (mp4tagoldgenrelist) / sizeof (const char *);
 

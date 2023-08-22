@@ -4,6 +4,10 @@
 
 <!--
 
+**1.0.5 alpha 2023-8---**
+
+-->
+
 **1.0.4 alpha 2023-8---**
 
 * Bug Fixes:
@@ -11,8 +15,6 @@
     * Handle multiple cover images and cover names.
 * Changes:
     * mp4tagcli: Re-work command line argument handling
-
--->
 
 **1.0.3 alpha 2023-8-20**
 

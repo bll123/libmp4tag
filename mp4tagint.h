@@ -110,8 +110,8 @@ typedef struct {
 
 extern const mp4tagdef_t mp4taglist [];
 extern const int mp4taglistlen;
-extern const char *oldgenrelist [];
-extern const int oldgenrelistsz;
+extern const char *mp4tagoldgenrelist [];
+extern const int mp4tagoldgenrelistsz;
 
 /* mp4tagparse.c */
 

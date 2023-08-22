@@ -69,11 +69,11 @@ enum {
   MP4TAG_DATA_SZ = sizeof (boxhead_t) + sizeof (uint32_t) + sizeof (uint32_t),
 };
 
-static void process_mdhd (libmp4tag_t *libmp4tag, const char *data);
-static void process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
-static void process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
-static void process_data (const char *p, uint32_t *tlen, uint32_t *flags);
-static void parse_check_end (libmp4tag_t *libmp4tag);
+static void mp4tag_process_mdhd (libmp4tag_t *libmp4tag, const char *data);
+static void mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
+static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
+static void mp4tag_process_data (const char *p, uint32_t *tlen, uint32_t *flags);
+static void mp4tag_parse_check_end (libmp4tag_t *libmp4tag);
 
 void
 mp4tag_parse_file (libmp4tag_t *libmp4tag)
@@ -206,13 +206,13 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 
     if (needdata && bd.data != NULL && bd.len > 0) {
       if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
-        process_mdhd (libmp4tag, bd.data);
+        mp4tag_process_mdhd (libmp4tag, bd.data);
       }
       if (processdata) {
         if (strcmp (bd.nm, MP4TAG_COVR) == 0) {
-          process_covr (libmp4tag, bd.nm, bd.len, bd.data);
+          mp4tag_process_covr (libmp4tag, bd.nm, bd.len, bd.data);
         } else {
-          process_tag (libmp4tag, bd.nm, bd.len, bd.data);
+          mp4tag_process_tag (libmp4tag, bd.nm, bd.len, bd.data);
         }
       }
       free (bd.data);
@@ -255,7 +255,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (checkforfree || checkforend) {
-      parse_check_end (libmp4tag);
+      mp4tag_parse_check_end (libmp4tag);
       if (checkforend) {
         done = true;
       }
@@ -280,7 +280,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 // fprintf (stdout, "fread: rrc: %d\n", (int) rrc);
   }
 
-  parse_check_end (libmp4tag);
+  mp4tag_parse_check_end (libmp4tag);
 
   mp4tag_sort_tags (libmp4tag);
 }
@@ -374,7 +374,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
 }
 
 static void
-process_mdhd (libmp4tag_t *libmp4tag, const char *data)
+mp4tag_process_mdhd (libmp4tag_t *libmp4tag, const char *data)
 {
   boxmdhd_t       mdhd;
   boxmdhd4_t      mdhd4;
@@ -413,7 +413,8 @@ process_mdhd (libmp4tag_t *libmp4tag, const char *data)
 }
 
 static void
-process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data)
+mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
+    uint32_t blen, const char *data)
 {
   const char  *p;
   char        tnm [MP4TAG_ID_MAX];
@@ -469,7 +470,7 @@ process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char 
     p += tlen;
   }
 
-  process_data (p, &tlen, &tflag);
+  mp4tag_process_data (p, &tlen, &tflag);
 
   /* ident len + ident (== "data") */
   p += sizeof (uint32_t) + MP4TAG_ID_LEN;
@@ -506,11 +507,11 @@ process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char 
       if (strcmp (tnm, MP4TAG_GNRE) == 0) {
         /* the itunes value is offset by 1 */
         t16 -= 1;
-        if (t16 < oldgenrelistsz) {
+        if (t16 < mp4tagoldgenrelistsz) {
           /* do not use the 'gnre' identifier */
           strcpy (tnm, PREFIX_STR MP4TAG_GEN);
-          mp4tag_add_tag (libmp4tag, tnm, oldgenrelist [t16],
-              MP4TAG_STRING, MP4TAG_ID_STRING, strlen (oldgenrelist [t16]), NULL);
+          mp4tag_add_tag (libmp4tag, tnm, mp4tagoldgenrelist [t16],
+              MP4TAG_STRING, MP4TAG_ID_STRING, strlen (mp4tagoldgenrelist [t16]), NULL);
         }
       } else {
         snprintf (tmp, sizeof (tmp), "%d", (int) t16);
@@ -541,7 +542,8 @@ process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char 
 /* 'covr' can have additional data */
 /* there can be multiple images, and names present */
 static void
-process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data)
+mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag,
+    uint32_t blen, const char *data)
 {
   uint32_t    tlen;
   uint32_t    clen = 0;
@@ -562,7 +564,7 @@ process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char
         cdata = NULL;
         cflag = 0;
       }
-      process_data (p, &tlen, &tflag);
+      mp4tag_process_data (p, &tlen, &tflag);
       if (tflag == 0) {
         tflag = MP4TAG_ID_JPG;
       }
@@ -582,7 +584,7 @@ process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char
 }
 
 static void
-process_data (const char *p, uint32_t *plen, uint32_t *pflag)
+mp4tag_process_data (const char *p, uint32_t *plen, uint32_t *pflag)
 {
   uint32_t    tlen;
   uint32_t    tflag;
@@ -601,7 +603,7 @@ process_data (const char *p, uint32_t *plen, uint32_t *pflag)
 }
 
 static void
-parse_check_end (libmp4tag_t *libmp4tag)
+mp4tag_parse_check_end (libmp4tag_t *libmp4tag)
 {
   ssize_t     currpos;
   ssize_t     sz;

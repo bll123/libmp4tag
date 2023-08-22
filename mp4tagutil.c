@@ -116,12 +116,15 @@ mp4tag_check_tag (const char *tag)
 {
   mp4tagdef_t key;
   mp4tagdef_t *result;
+  char        tmp [MP4TAG_ID_LEN + 1];
 
   if (tag == NULL) {
     return NULL;
   }
 
-  key.tag = tag;
+  strncpy (tmp, tag, MP4TAG_ID_LEN);
+  tmp [MP4TAG_ID_LEN] = '\0';
+  key.tag = tmp;
   result = bsearch (&key, mp4taglist, mp4taglistlen,
       sizeof (mp4tagdef_t), mp4tag_compare_list);
 
@@ -540,7 +543,7 @@ mp4tag_check_covr (const char *tag, const char *fn)
   int     identtype = MP4TAG_ID_DATA;
   size_t  len;
 
-  if (strcmp (tag, MP4TAG_COVR) != 0) {
+  if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) != 0) {
     return identtype;
   }
 
@@ -549,11 +552,11 @@ mp4tag_check_covr (const char *tag, const char *fn)
   }
 
   len = strlen (fn);
-  if (strcmp (fn + len - 4, ".png") == 0) {
+  if (len >= 5 && strcmp (fn + len - 4, ".png") == 0) {
     identtype = MP4TAG_ID_PNG;
-  } else if (strcmp (fn + len - 4, ".jpg") == 0) {
+  } else if (len >= 5 && strcmp (fn + len - 4, ".jpg") == 0) {
     identtype = MP4TAG_ID_JPG;
-  } else if (strcmp (fn + len - 5, ".jpeg") == 0) {
+  } else if (len >= 6 && strcmp (fn + len - 5, ".jpeg") == 0) {
     identtype = MP4TAG_ID_JPG;
   }
 
