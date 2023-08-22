@@ -12,22 +12,26 @@
 #include "libmp4tag.h"
 
 /* idents */
+#define MP4TAG_CO64   "co64"
+#define MP4TAG_FREE   "free"
 #define MP4TAG_FTYP   "ftyp"
+#define MP4TAG_ILST   "ilst"
+#define MP4TAG_MDHD   "mdhd"
+#define MP4TAG_MDIA   "mdia"
+#define MP4TAG_META   "meta"
+#define MP4TAG_MINF   "minf"
 #define MP4TAG_MOOV   "moov"
+#define MP4TAG_STBL   "stbl"
+#define MP4TAG_STCO   "stco"
 #define MP4TAG_TRAK   "trak"
 #define MP4TAG_UDTA   "udta"
-#define MP4TAG_MDIA   "mdia"
-#define MP4TAG_ILST   "ilst"
-#define MP4TAG_META   "meta"
-#define MP4TAG_MDHD   "mdhd"
-#define MP4TAG_FREE   "free"
 /* tags */
-#define MP4TAG_CUSTOM "----"
-#define MP4TAG_TRKN   "trkn"
-#define MP4TAG_DISK   "disk"
 #define MP4TAG_COVR   "covr"
-#define MP4TAG_GNRE   "gnre"
+#define MP4TAG_CUSTOM "----"
+#define MP4TAG_DISK   "disk"
 #define MP4TAG_GEN    "gen"
+#define MP4TAG_GNRE   "gnre"
+#define MP4TAG_TRKN   "trkn"
 /* used by idents */
 #define MP4TAG_DATA   "data"
 #define MP4TAG_MEAN   "mean"
@@ -74,20 +78,23 @@ typedef struct libmp4tag {
   int64_t   modifieddate;
   int64_t   duration;
   int32_t   samplerate;
+  /* used by the parser and writer */
   uint32_t  base_lengths [MP4TAG_BASE_OFF_MAX];
   ssize_t   base_offsets [MP4TAG_BASE_OFF_MAX];
+  /* for debugging, otherwise not needed */
+  char      base_name [MP4TAG_BASE_OFF_MAX][MP4TAG_ID_LEN + 1];
   int       base_offset_count;
+  ssize_t   taglist_base_offset;
   ssize_t   taglist_offset;
   uint32_t  taglist_len;
+  int       covercount;
   /* coverstart is a temporary variable used by the write process */
   int32_t   coverstart_offset;
+  /* tag list */
   int       tagcount;
   int       tagalloccount;
   int       iterator;
   int       errornum;
-  int       covercount;
-  char      maintype [5];
-  char      mp4version [5];
   bool      mp7meta : 1;
   bool      unlimited : 1;
 } libmp4tag_t;
@@ -125,8 +132,11 @@ mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
 void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, ssize_t sz, uint32_t origflag, size_t origlen, const char *covername);
+int  mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data);
+int  mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data, size_t sz, const char *fn);
 void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
+char * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz);
 #ifdef _WIN32
 void * mp4tag_towide (const char *buff);
 #endif

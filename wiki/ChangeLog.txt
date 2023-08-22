@@ -10,7 +10,7 @@
     * Fix parse of 64-bit mdhd box.
     * Handle multiple cover images and cover names.
 * Changes:
-    * mp4tagcli: Re-work command line argument handling (PENDING)
+    * mp4tagcli: Re-work command line argument handling
 
 -->
 

@@ -28,7 +28,7 @@ main (int argc, char *argv [])
   bool          display = false;
   bool          dump = false;
   bool          duration = false;
-  bool          binary = false;
+  bool          forcebinary = false;
   bool          clean = false;
   bool          write = false;
   int           fnidx = -1;
@@ -49,7 +49,7 @@ main (int argc, char *argv [])
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'b': {
-        binary = true;
+        forcebinary = true;
         break;
       }
       case 'c': {
@@ -112,49 +112,18 @@ main (int argc, char *argv [])
       if (p != NULL) {
         p = strtok_r (NULL, "=", &tokstr);
         if (p == NULL) {
-          mp4tag_delete_tag (libmp4tag, tagname);
-          write = true;
+          if (mp4tag_delete_tag (libmp4tag, tagname) == MP4TAG_OK) {
+            write = true;
+          } else {
+            fprintf (stderr, "Unable to delete tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
+          }
         }
         if (p != NULL) {
-          if (! binary) {
-            mp4tag_set_tag_str (libmp4tag, tagname, p);
+          if (mp4tag_set_tag (libmp4tag, tagname, p, forcebinary) == MP4TAG_OK) {
             write = true;
+          } else {
+            fprintf (stderr, "Unable to set tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
           }
-          if (binary) {
-            ssize_t sz = -1;
-
-            /* p is pointing to a filename argument */
-
-            sz = mp4tag_file_size (p);
-            if (sz > 0) {
-              char    *data = NULL;
-              FILE    *fh;
-              int     rc;
-
-              data = malloc (sz);
-              if (data == NULL) {
-                return -1;
-              }
-
-              fh = mp4tag_fopen (p, "rb");
-              if (fh != NULL) {
-                rc = fread (data, sz, 1, fh);
-                if (rc == 1) {
-                  /* the filename is passed so that in the case of 'covr' */
-                  /* the internal identifier type can be set correctly */
-                  /* the filename is only used for 'covr' */
-                  mp4tag_set_tag_binary (libmp4tag, tagname, data, sz, p);
-                  write = true;
-                }
-                fclose (fh);
-              } else {
-		fprintf (stderr, "file %s not found\n", p);
-	      }
-
-              free (data);
-
-            } /* file has a valid size */
-          } /* binary tag */
         } /* data is being set for the tag */
       } /* there is a tag name */
 
@@ -164,7 +133,9 @@ main (int argc, char *argv [])
   } /* not clean */
 
   if (write) {
-    mp4tag_write_tags (libmp4tag);
+    if (mp4tag_write_tags (libmp4tag) != MP4TAG_OK) {
+      fprintf (stderr, "Unable to write tags (%s)\n", mp4tag_error_str (libmp4tag));
+    }
   }
 
   if (display && ! clean) {

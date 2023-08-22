@@ -65,7 +65,7 @@ Using the mp4tagcli executable:
 
   Setting a tag:
     mp4tagcli filename.m4a nam=My-Title
-    mp4tagcli filename.m4a trkn='(2,5)'
+    mp4tagcli filename.m4a trkn=2/5
 
   Set a tag and display the value:
     # this will display the set value afterwards.
@@ -82,8 +82,10 @@ Using the mp4tagcli executable:
     mp4tagcli filename.m4a -- \
         '----:com.apple.iTunes:MusicBrainz Track Id'=1234
 
-  Setting binary data:
-    mp4tagcli filename.m4a --binary covr=pic.png
+  Binary Data:
+    # existing tags and cover images do not need the --binary argument.
+    mp4tagcli filename.m4a covr=pic.png
+    # setting a new tag that is unknown and needs to be binary data.
     mp4tagcli filename.m4a --binary -- ----:MYAPP:ALTERNATE=filename.dat
 
   Deleting a tag:

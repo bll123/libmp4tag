@@ -143,5 +143,5 @@ clean:
 
 .PHONY: tclean
 tclean:
-	@-$(RM) -f w ww www *~ core
+	@-$(RM) -f w ww www *~ core *.orig
 	@-$(RM) -f wiki/*~ dev/*~

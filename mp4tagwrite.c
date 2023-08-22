@@ -72,15 +72,16 @@ mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
     uint32_t datalen)
 {
   uint32_t  tlen = 0;
-  int       rc;
 
   tlen = libmp4tag->taglist_len;
   tlen -= sizeof (uint32_t) - MP4TAG_ID_LEN;
 
+  libmp4tag->errornum = MP4TAG_ERR_NOT_IMPLEMENTED;
+
   /* in order to do an in-place write, the space to receive the data */
   /* must be exactly equal in size, or must have room for the data and */
   /* a free space block, or the 'ilst/free' is at the end of the file. */
-// fprintf (stdout, "offset: %ld\n", (long) libmp4tag->taglist_offset);
+// fprintf (stdout, "offset: %08lx\n", (long) libmp4tag->taglist_offset);
 // fprintf (stdout, "taglist-len: %ld\n", (long) libmp4tag->taglist_len);
 // fprintf (stdout, "datalen: %ld\n", (long) datalen);
 // fprintf (stdout, "tlen: %ld\n", (long) tlen);
@@ -91,11 +92,11 @@ mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
       datalen < tlen)) {
 // fprintf (stdout, "  -- in-place\n");
     mp4tag_write_inplace (libmp4tag, data, datalen);
-    rc = MP4TAG_OK;
+    libmp4tag->errornum = MP4TAG_OK;
   } else {
 // fprintf (stdout, "  -- rewrite\n");
     mp4tag_write_rewrite (libmp4tag, data, datalen);
-    rc = MP4TAG_ERR_NOT_IMPLEMENTED;
+    libmp4tag->errornum = MP4TAG_ERR_NOT_IMPLEMENTED;
   }
 
 #if 0 // DEBUGGING
@@ -107,7 +108,7 @@ mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
 }
 #endif
 
-  return rc;
+  return libmp4tag->errornum;
 }
 
 static void
@@ -151,10 +152,12 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
       if (delta != 0) {
         /* the base offset count is currently pointing at a tag, one level */
         /* higher than the ilst tag. */
-        idx = libmp4tag->base_offset_count - 2;
-        if (fseek (libmp4tag->fh, libmp4tag->base_offsets [idx], SEEK_SET) == 0) {
+// fprintf (stdout, "taglist-base-offset: %08lx\n", libmp4tag->taglist_base_offset);
+        if (fseek (libmp4tag->fh, libmp4tag->taglist_base_offset, SEEK_SET) == 0) {
           uint32_t    t32;
 
+t32 = libmp4tag->taglist_len + sizeof (uint32_t) + MP4TAG_ID_LEN;
+// fprintf (stdout, "old-ilst-len: %d\n", t32);
           t32 = datalen + sizeof (uint32_t) + MP4TAG_ID_LEN;
 // fprintf (stdout, "    upd-ilst: %d\n", t32);
           t32 = htobe32 (t32);
@@ -164,7 +167,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
 
       /* if the 'ilst' has grown in size, the parent offsets must be updated */
       if (delta > 0) {
-        idx = libmp4tag->base_offset_count - 3;
+        idx = libmp4tag->base_offset_count - 2;
         mp4tag_update_parent_offsets (libmp4tag, delta, idx);
       }
 
@@ -185,9 +188,9 @@ mp4tag_update_parent_offsets (libmp4tag_t *libmp4tag, int32_t delta, int idx)
     if (fseek (libmp4tag->fh, libmp4tag->base_offsets [idx], SEEK_SET) == 0) {
       uint32_t    t32;
 
-// fprintf (stdout, "p: idx: %d old-len: %d\n", idx, libmp4tag->base_lengths [idx]);
+// fprintf (stdout, "p: idx: %d %s old-len: %d\n", idx, libmp4tag->base_name [idx], libmp4tag->base_lengths [idx]);
       t32 = libmp4tag->base_lengths [idx] + delta;
-// fprintf (stdout, "p: idx: %d new-len: %d\n", idx, t32);
+// fprintf (stdout, "p: idx: %d %s new-len: %d\n", idx, libmp4tag->base_name [idx], t32);
       t32 = htobe32 (t32);
       fwrite (&t32, sizeof (uint32_t), 1, libmp4tag->fh);
     }
@@ -287,6 +290,7 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   }
   dptr = data + *dlen;
   *dlen += tlen;
+// fprintf (stdout, "tot-datalen: %d\n", *dlen);
 
   if (mp4tag->covername != NULL) {
     /* back out the cover name size change */
@@ -299,7 +303,11 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     /* save the offset for the start of the cover box */
     /* if there are multiple covers or cover names, it is needed */
     libmp4tag->coverstart_offset = (int32_t) (dptr - data);
+// fprintf (stdout, "save cover-start: %ld\n", (long) libmp4tag->coverstart_offset);
   }
+if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+// fprintf (stdout, "cover-idx: %d\n", mp4tag->coveridx);
+}
 
   /* if this is a second cover, the identifier is not added */
   if (mp4tag->coveridx == 0) {

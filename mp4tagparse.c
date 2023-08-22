@@ -73,6 +73,7 @@ static void process_mdhd (libmp4tag_t *libmp4tag, const char *data);
 static void process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void process_data (const char *p, uint32_t *tlen, uint32_t *flags);
+static void parse_check_end (libmp4tag_t *libmp4tag);
 
 void
 mp4tag_parse_file (libmp4tag_t *libmp4tag)
@@ -129,11 +130,15 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     /* data associated with the current box. */
     /* hierarchies used: */
     /*   moov.trak.mdia.mdhd  (has duration) */
+    /*   moov.trak.mdia.minf.stbl.stco  (offset table) */
+    /*   moov.trak.mdia.minf.stbl.co64  (offset table) */
     /*   moov.udta.meta.ilst.*  (tags) */
     if (strcmp (bd.nm, MP4TAG_MOOV) == 0 ||
         strcmp (bd.nm, MP4TAG_TRAK) == 0 ||
         strcmp (bd.nm, MP4TAG_UDTA) == 0 ||
         strcmp (bd.nm, MP4TAG_MDIA) == 0 ||
+        strcmp (bd.nm, MP4TAG_STBL) == 0 ||
+        strcmp (bd.nm, MP4TAG_MINF) == 0 ||
         strcmp (bd.nm, MP4TAG_ILST) == 0) {
       /* want to descend into this hierarchy */
       /* there is no data associated, don't need to skip anything */
@@ -149,19 +154,29 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
       needdata = true;
     }
+    if (strcmp (bd.nm, MP4TAG_STCO) == 0) {
+// fprintf (stdout, "found stco\n");
+    }
+    if (strcmp (bd.nm, MP4TAG_CO64) == 0) {
+// fprintf (stdout, "found co64\n");
+    }
     if (processdata) {
       needdata = true;
     }
 
     if (level < MP4TAG_BASE_OFF_MAX) {
       libmp4tag->base_lengths [level] = bd.len;
+      strcpy (libmp4tag->base_name [level], bd.nm);
       libmp4tag->base_offsets [level] = ftell (libmp4tag->fh) -
             sizeof (uint32_t) - MP4TAG_ID_LEN;
+// fprintf (stdout, "store base: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->base_offsets [level]);
       libmp4tag->base_offset_count = level + 1;
     }
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
       libmp4tag->taglist_offset = ftell (libmp4tag->fh);
+      libmp4tag->taglist_base_offset = libmp4tag->taglist_offset -
+            sizeof (uint32_t) - MP4TAG_ID_LEN;
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
     }
@@ -196,9 +211,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       if (processdata) {
         if (strcmp (bd.nm, MP4TAG_COVR) == 0) {
           process_covr (libmp4tag, bd.nm, bd.len, bd.data);
-	} else {
+        } else {
           process_tag (libmp4tag, bd.nm, bd.len, bd.data);
-	}
+        }
       }
       free (bd.data);
     }
@@ -240,14 +255,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (checkforfree || checkforend) {
-      ssize_t     currpos;
-      ssize_t     sz;
-
-      currpos = ftell (libmp4tag->fh);
-      sz = mp4tag_file_size (libmp4tag->fn);
-      if (currpos == sz) {
-        libmp4tag->unlimited = true;
-      }
+      parse_check_end (libmp4tag);
       if (checkforend) {
         done = true;
       }
@@ -258,8 +266,21 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     inclevel = false;
+#if 0
+{
+  ssize_t     currpos;
+  ssize_t     sz;
+
+  currpos = ftell (libmp4tag->fh);
+  sz = mp4tag_file_size (libmp4tag->fn);
+// fprintf (stdout, "b4-read currpos: %ld sz: %ld\n", (long) currpos, (long) sz);
+}
+#endif
     rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
+// fprintf (stdout, "fread: rrc: %d\n", (int) rrc);
   }
+
+  parse_check_end (libmp4tag);
 
   mp4tag_sort_tags (libmp4tag);
 }
@@ -273,6 +294,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
   uint32_t    len;
   boxhead_t   bh;
   char        *buff;
+  char        tmp [MP4TAG_ID_LEN + 1];
 
   rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
   if (rrc == 1) {
@@ -294,14 +316,14 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
     while (idx < len && rrc == 1) {
       if (idx == 0) {
         /* major brand, generally M4A */
-        memcpy (libmp4tag->maintype, buff + idx, 4);
-        libmp4tag->maintype [4] = '\0';
-        /* ran into a .m4a file where mp42 was put into the maintype field */
+        memcpy (tmp, buff + idx, MP4TAG_ID_LEN);
+        tmp [MP4TAG_ID_LEN] = '\0';
+        /* ran into a .m4a file where mp42 was put into the tmp field */
         /* may as well check for mp41 also */
-        if (strcmp (libmp4tag->maintype, "M4A ") == 0 ||
-            strcmp (libmp4tag->maintype, "M4V ") == 0 ||
-            strcmp (libmp4tag->maintype, "mp41") == 0 ||
-            strcmp (libmp4tag->maintype, "mp42") == 0) {
+        if (strcmp (tmp, "M4A ") == 0 ||
+            strcmp (tmp, "M4V ") == 0 ||
+            strcmp (tmp, "mp41") == 0 ||
+            strcmp (tmp, "mp42") == 0) {
           ++ok;
         }
       }
@@ -318,8 +340,6 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
       if (idx >= 8) {
         if (memcmp (buff + idx, "mp41", 4) == 0 ||
             memcmp (buff + idx, "mp42", 4) == 0) {
-          memcpy (libmp4tag->mp4version, buff + idx, 4);
-          libmp4tag->mp4version [4] = '\0';
           ++ok;
         }
         if (memcmp (buff + idx, "M4A ", 4) == 0) {
@@ -538,9 +558,9 @@ process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char
     if (memcmp (p + sizeof (uint32_t), MP4TAG_DATA, MP4TAG_ID_LEN) == 0) {
       if (cflag > 0 && cdata != NULL) {
         mp4tag_add_tag (libmp4tag, MP4TAG_COVR, cdata, clen, tflag, clen, cname);
-	cname = NULL;
-	cdata = NULL;
-	cflag = 0;
+        cname = NULL;
+        cdata = NULL;
+        cflag = 0;
       }
       process_data (p, &tlen, &tflag);
       if (tflag == 0) {
@@ -578,4 +598,18 @@ process_data (const char *p, uint32_t *plen, uint32_t *pflag)
   tflag = tflag & 0x00ffffff;
   *plen = tlen;
   *pflag = tflag;
+}
+
+static void
+parse_check_end (libmp4tag_t *libmp4tag)
+{
+  ssize_t     currpos;
+  ssize_t     sz;
+
+  currpos = ftell (libmp4tag->fh);
+  sz = mp4tag_file_size (libmp4tag->fn);
+// fprintf (stdout, "currpos: %ld sz: %ld\n", (long) currpos, (long) sz);
+  if (currpos == sz) {
+    libmp4tag->unlimited = true;
+  }
 }
