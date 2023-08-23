@@ -4,7 +4,11 @@
 
 <!--
 
-**1.0.5 alpha 2023-8---**
+**1.0.6 alpha 2023-8---**
+
+-->
+
+**1.0.5 alpha 2023-8-23**
 
 * Bug Fixes:
     * Fix when it is valid to perform an in-place update.
@@ -12,12 +16,11 @@
     * Fix update of 'ilst' block length.
     * Fix packaging.
     * Fix windows build.
+    * Better error propogation.
 * New Features:
-    * Updating an mp4 file without enough space now works (PENDING).
+    * Updating an mp4 file without enough space now works.
 
--->
-
-**1.0.4 alpha 2023-8-21**
+**1.0.4 alpha 2023-8-22**
 
 * Bug Fixes:
     * Fix parse of 64-bit mdhd box.

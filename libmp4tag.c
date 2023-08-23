@@ -31,7 +31,10 @@ const char *mp4tagerrmsgs [] = {
   [MP4TAG_ERR_MISMATCH] = "mismatch",
   [MP4TAG_ERR_NOT_FOUND] = "not found",
   [MP4TAG_ERR_NOT_IMPLEMENTED] = "not implemented",
-  [MP4TAG_ERR_FILE_ERROR] = "file error",
+  [MP4TAG_ERR_FILE_READ_ERROR] = "file read error",
+  [MP4TAG_ERR_FILE_WRITE_ERROR] = "file write error",
+  [MP4TAG_ERR_FILE_SEEK_ERROR] = "file seek error",
+  [MP4TAG_ERR_FILE_TELL_ERROR] = "file tell error",
   [MP4TAG_ERR_UNABLE_TO_PROCESS] = "unable to process",
 };
 
@@ -91,10 +94,9 @@ mp4tag_open (const char *fn, int *mp4error)
   /* needed for parse, write */
   libmp4tag->filesz = mp4tag_file_size (fn);
 
-// ### FIX return value from parse_ftyp
   rc = mp4tag_parse_ftyp (libmp4tag);
-  if (rc < 0) {
-    *mp4error = MP4TAG_ERR_NOT_MP4;
+  if (rc != MP4TAG_OK) {
+    *mp4error = rc;
     fclose (libmp4tag->fh);
     free (libmp4tag);
     return NULL;

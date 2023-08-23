@@ -127,7 +127,7 @@ extern const int mp4tagoldgenrelistsz;
 
 /* mp4tagparse.c */
 
-void mp4tag_parse_file (libmp4tag_t *libmp4tag);
+int  mp4tag_parse_file (libmp4tag_t *libmp4tag);
 int  mp4tag_parse_ftyp (libmp4tag_t *libmp4tag);
 
 /* mp4tagwrite.c */

@@ -23,6 +23,7 @@ Current Status:
   API will be preserved or that anything works correctly.
 
   To Do:
+    - update stco, co64 offsets
     - port to *bsd
 
 Notes:

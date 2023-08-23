@@ -73,7 +73,7 @@ static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32
 static void mp4tag_process_data (const char *p, uint32_t *tlen, uint32_t *flags);
 static void mp4tag_parse_check_end (libmp4tag_t *libmp4tag);
 
-void
+int
 mp4tag_parse_file (libmp4tag_t *libmp4tag)
 {
   boxhead_t       bh;
@@ -101,6 +101,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
   }
 
   rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
+  if (rrc != 1) {
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_READ_ERROR;
+  }
   while (! feof (libmp4tag->fh) && rrc == 1) {
     /* the total length includes the length and the identifier */
     bd.len = be32toh (bh.len) - MP4TAG_BOXHEAD_SZ;
@@ -119,7 +122,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     needdata = false;
     inclevel = false;
 
-fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, bd.len);
+// fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, bd.len);
 
     /* track the current level's length */
     currlen [level] = bd.len;
@@ -169,7 +172,7 @@ fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) b
 
       offset = ftell (libmp4tag->fh);
       if (offset < 0) {
-	libmp4tag->mp4error = MP4TAG_ERR_FILE_ERROR;
+        libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
       }
 
       libmp4tag->base_lengths [level] = bd.len;
@@ -186,10 +189,9 @@ fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) b
       /* in the audio file */
       offset = ftell (libmp4tag->fh);
       if (offset < 0) {
-	libmp4tag->mp4error = MP4TAG_ERR_FILE_ERROR;
+        libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
       }
       libmp4tag->udta_offset = offset - MP4TAG_BOXHEAD_SZ;
-fprintf (stdout, "udta offset: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->udta_offset);
     }
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
@@ -197,12 +199,11 @@ fprintf (stdout, "udta offset: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.l
 
       offset = ftell (libmp4tag->fh);
       if (offset < 0) {
-	libmp4tag->mp4error = MP4TAG_ERR_FILE_ERROR;
+        libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
       }
 
       libmp4tag->taglist_offset = offset;
       libmp4tag->taglist_base_offset = offset - MP4TAG_BOXHEAD_SZ;
-fprintf (stdout, "tag-base offset: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->taglist_base_offset);
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
     }
@@ -216,17 +217,19 @@ fprintf (stdout, "tag-base offset: %s %d len:%ld offset:%08lx\n", bd.nm, level, 
 
     if (needdata && bd.len > 0) {
       bd.data = malloc (bd.len);
-      if (bd.data != NULL) {
-        rrc = fread (bd.data, bd.len, 1, libmp4tag->fh);
-        if (rrc != 1) {
-          fprintf (stderr, "failed to read %" PRId64 " bytes\n", bd.len);
-        }
+      if (bd.data == NULL) {
+        libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+        return libmp4tag->mp4error;
+      }
+      rrc = fread (bd.data, bd.len, 1, libmp4tag->fh);
+      if (rrc != 1) {
+        libmp4tag->mp4error = MP4TAG_ERR_FILE_READ_ERROR;
       }
     }
     if (! needdata && skiplen > 0) {
       rrc = fseek (libmp4tag->fh, skiplen, SEEK_CUR);
       if (rrc != 0) {
-        fprintf (stderr, "failed to seek %" PRId64 " bytes\n", bd.len);
+        libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
       }
     }
 
@@ -297,8 +300,8 @@ fprintf (stdout, "tag-base offset: %s %d len:%ld offset:%08lx\n", bd.nm, level, 
   }
 
   mp4tag_parse_check_end (libmp4tag);
-
   mp4tag_sort_tags (libmp4tag);
+  return libmp4tag->mp4error;
 }
 
 int
@@ -313,80 +316,88 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
   char        tmp [MP4TAG_ID_LEN + 1];
 
   rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
-  if (rrc == 1) {
-    /* the total length includes the length and the identifier */
-    len = be32toh (bh.len) - MP4TAG_BOXHEAD_SZ;
-    if (memcmp (bh.nm, MP4TAG_FTYP, MP4TAG_ID_LEN) != 0) {
-      return -1;
-    }
-    ++ok;
-
-    buff = malloc (len);
-    if (buff == NULL) {
-      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-      return -1;
-    }
-    rrc = fread (buff, len, 1, libmp4tag->fh);
-
-    idx = 0;
-    while (idx < len && rrc == 1) {
-      if (idx == 0) {
-        /* major brand, generally M4A */
-        memcpy (tmp, buff + idx, MP4TAG_ID_LEN);
-        tmp [MP4TAG_ID_LEN] = '\0';
-        /* ran into a .m4a file where mp42 was put into the tmp field */
-        /* may as well check for mp41 also */
-        if (strcmp (tmp, "M4A ") == 0 ||
-            strcmp (tmp, "M4V ") == 0 ||
-            strcmp (tmp, "mp41") == 0 ||
-            strcmp (tmp, "mp42") == 0) {
-          ++ok;
-        }
-      }
-      if (idx == 4) {
-        /* version */
-        uint32_t    vers;
-
-        memcpy (&vers, buff + idx, sizeof (uint32_t));
-        vers = be32toh (vers);
-        if (((vers & 0x0000ff00) >> 8) == 0x02) {
-          ++ok;
-        }
-      }
-      if (idx >= 8) {
-        if (memcmp (buff + idx, "mp41", 4) == 0 ||
-            memcmp (buff + idx, "mp42", 4) == 0) {
-          ++ok;
-        }
-        if (memcmp (buff + idx, "M4A ", 4) == 0) {
-          /* aac audio w/itunes info */
-          // fprintf (stdout, "== m4a \n");
-          ++ok;
-        }
-        if (memcmp (buff + idx, "M4B ", 4) == 0) {
-          /* aac audio w/itunes position */
-          // fprintf (stdout, "== m4b \n");
-          ++ok;
-        }
-        if (memcmp (buff + idx, "M4P ", 4) == 0) {
-          /* aes encrypted audio */
-          // fprintf (stdout, "== m4p \n");
-        }
-        if (memcmp (buff + idx, "mp71", 4) == 0 ||
-            memcmp (buff + idx, "mp7b", 4) == 0) {
-          /* mpeg-7 meta data */
-          fprintf (stdout, "== mpeg-7 meta data\n");
-          libmp4tag->mp7meta = true;
-        }
-        /* isom, iso2, qt, avc1, 3gp, mmp4 */
-      }
-      idx += 4;
-    }
-
-    free (buff);
+  if (rrc != 1) {
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_READ_ERROR;
+    return libmp4tag->mp4error;
   }
 
-  return ok >= 3 ? 0 : -1;
+  /* the total length includes the length and the identifier */
+  len = be32toh (bh.len) - MP4TAG_BOXHEAD_SZ;
+  if (memcmp (bh.nm, MP4TAG_FTYP, MP4TAG_ID_LEN) != 0) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_MP4;
+    return libmp4tag->mp4error;
+  }
+  ++ok;
+
+  buff = malloc (len);
+  if (buff == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    return libmp4tag->mp4error;
+  }
+  rrc = fread (buff, len, 1, libmp4tag->fh);
+  if (rrc != 1) {
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_READ_ERROR;
+    return libmp4tag->mp4error;
+  }
+
+  idx = 0;
+  while (idx < len && rrc == 1) {
+    if (idx == 0) {
+      /* major brand, generally M4A */
+      memcpy (tmp, buff + idx, MP4TAG_ID_LEN);
+      tmp [MP4TAG_ID_LEN] = '\0';
+      /* ran into a .m4a file where mp42 was put into the tmp field */
+      /* may as well check for mp41 also */
+      if (strcmp (tmp, "M4A ") == 0 ||
+          strcmp (tmp, "M4V ") == 0 ||
+          strcmp (tmp, "mp41") == 0 ||
+          strcmp (tmp, "mp42") == 0) {
+        ++ok;
+      }
+    }
+    if (idx == 4) {
+      /* version */
+      uint32_t    vers;
+
+      memcpy (&vers, buff + idx, sizeof (uint32_t));
+      vers = be32toh (vers);
+      if (((vers & 0x0000ff00) >> 8) == 0x02) {
+        ++ok;
+      }
+    }
+    if (idx >= 8) {
+      if (memcmp (buff + idx, "mp41", 4) == 0 ||
+          memcmp (buff + idx, "mp42", 4) == 0) {
+        ++ok;
+      }
+      if (memcmp (buff + idx, "M4A ", 4) == 0) {
+        /* aac audio w/itunes info */
+        // fprintf (stdout, "== m4a \n");
+        ++ok;
+      }
+      if (memcmp (buff + idx, "M4B ", 4) == 0) {
+        /* aac audio w/itunes position */
+        // fprintf (stdout, "== m4b \n");
+        ++ok;
+      }
+      if (memcmp (buff + idx, "M4P ", 4) == 0) {
+        /* aes encrypted audio */
+        // fprintf (stdout, "== m4p \n");
+      }
+      if (memcmp (buff + idx, "mp71", 4) == 0 ||
+          memcmp (buff + idx, "mp7b", 4) == 0) {
+        /* mpeg-7 meta data */
+        fprintf (stdout, "== mpeg-7 meta data\n");
+        libmp4tag->mp7meta = true;
+      }
+      /* isom, iso2, qt, avc1, 3gp, mmp4 */
+    }
+    idx += 4;
+  }
+
+  free (buff);
+
+  return ok >= 3 ? MP4TAG_OK : MP4TAG_ERR_NOT_MP4;
 }
 
 static void
@@ -617,6 +628,9 @@ mp4tag_parse_check_end (libmp4tag_t *libmp4tag)
   ssize_t     currpos;
 
   currpos = ftell (libmp4tag->fh);
+  if (currpos < 0) {
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
+  }
   if (currpos >= 0 && (size_t) currpos == libmp4tag->filesz) {
     libmp4tag->unlimited = true;
   }
