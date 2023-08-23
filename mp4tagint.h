@@ -11,10 +11,11 @@
 
 #include "libmp4tag.h"
 
-/* idents */
+/* idents that libmp4tag needs to descend into or use */
 #define MP4TAG_CO64   "co64"
 #define MP4TAG_FREE   "free"
 #define MP4TAG_FTYP   "ftyp"
+#define MP4TAG_HDLR   "hdlr"
 #define MP4TAG_ILST   "ilst"
 #define MP4TAG_MDHD   "mdhd"
 #define MP4TAG_MDIA   "mdia"
@@ -32,7 +33,7 @@
 #define MP4TAG_GEN    "gen"
 #define MP4TAG_GNRE   "gnre"
 #define MP4TAG_TRKN   "trkn"
-/* used by idents */
+/* used by tag idents */
 #define MP4TAG_DATA   "data"
 #define MP4TAG_MEAN   "mean"
 #define MP4TAG_NAME   "name"
@@ -56,6 +57,8 @@ enum {
   MP4TAG_BOXHEAD_SZ = sizeof (uint32_t) + MP4TAG_ID_LEN,
   /* data-len + ident + flags + reserved */
   MP4TAG_DATA_SZ = MP4TAG_ID_LEN + sizeof (uint32_t) * 3,
+  MP4TAG_HDLR_SZ = MP4TAG_BOXHEAD_SZ + sizeof (uint32_t) * 6 + sizeof (uint8_t),
+  MP4TAG_META_SZ = MP4TAG_BOXHEAD_SZ + sizeof (uint32_t),
   MP4TAG_COPY_SIZE = 5 * 1024 * 1024,
   MP4TAG_FREE_SPACE_SZ = 256,
 };
@@ -94,6 +97,8 @@ typedef struct libmp4tag {
   ssize_t   taglist_base_offset;
   ssize_t   taglist_offset;
   uint32_t  taglist_len;
+  int       parentidx;
+  ssize_t   udta_offset;
   int       covercount;
   /* coverstart is a temporary variable used by the write process */
   int32_t   coverstart_offset;

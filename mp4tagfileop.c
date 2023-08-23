@@ -154,6 +154,7 @@ mp4tag_file_move (const char *fname, const char *nfn)
     mdfree (wnfn);
   }
 #else
+fprintf (stdout, "rename %s %s\n", fname, nfn);
   rc = rename (fname, nfn);
 #endif
   return rc;

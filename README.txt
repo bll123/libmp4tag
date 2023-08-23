@@ -22,14 +22,7 @@ Current Status:
   Alpha software is under development.  There is no guarantee that the
   API will be preserved or that anything works correctly.
 
-  At this time, libmp4tag can read tags.
-  Tags can be written if there is space available.
-
-  I only work with audio files, so this software will need more testing
-  against video files.
-
   To Do:
-    - updating tags: update tags when there is not enough space.
     - port to *bsd
 
 Notes:
@@ -59,17 +52,13 @@ Using the mp4tagcli executable:
   Dump binary data:
     mp4tagcli filename.m4a --display covr --dump > picture-data
 
-[ The following may or may not work.
-  At this time, writing tags to the MP4
-  file works if there is enough space available. ]
-
   Setting a tag:
     mp4tagcli filename.m4a nam=My-Title
     mp4tagcli filename.m4a trkn=2/5
 
   Set a tag and display the value:
     # this will display the set value afterwards.
-    # this will verify that setting tag was processed.
+    # this will verify that setting the tag was processed.
     # to verify that the tag was actually written, the utility must be re-run.
     mp4tagcli filename.m4a nam=My-Title --display nam
 

@@ -32,6 +32,7 @@ const char *mp4tagerrmsgs [] = {
   [MP4TAG_ERR_NOT_FOUND] = "not found",
   [MP4TAG_ERR_NOT_IMPLEMENTED] = "not implemented",
   [MP4TAG_ERR_FILE_ERROR] = "file error",
+  [MP4TAG_ERR_UNABLE_TO_PROCESS] = "unable to process",
 };
 
 static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
@@ -68,8 +69,10 @@ mp4tag_open (const char *fn, int *mp4error)
   }
   libmp4tag->base_offset_count = 0;
   libmp4tag->taglist_offset = 0;
-  libmp4tag->coverstart_offset = -1;
   libmp4tag->taglist_len = 0;
+  libmp4tag->udta_offset = 0;
+  libmp4tag->parentidx = -1;
+  libmp4tag->coverstart_offset = -1;
   libmp4tag->tagcount = 0;
   libmp4tag->tagalloccount = 0;
   libmp4tag->iterator = 0;

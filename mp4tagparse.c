@@ -100,10 +100,10 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     usedlen [i] = 0;
   }
 
-  rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
+  rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
   while (! feof (libmp4tag->fh) && rrc == 1) {
     /* the total length includes the length and the identifier */
-    bd.len = be32toh (bh.len) - sizeof (boxhead_t);
+    bd.len = be32toh (bh.len) - MP4TAG_BOXHEAD_SZ;
     if (*bh.nm == '\xa9') {
       /* maximum 5 bytes */
       strcpy (bd.nm, PREFIX_STR);
@@ -119,7 +119,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     needdata = false;
     inclevel = false;
 
-// fprintf (stdout, "%*s %2d %.5s: %8ld %08lx\n", level*2, " ", level, bd.nm, bd.len, bd.len);
+fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, bd.len);
 
     /* track the current level's length */
     currlen [level] = bd.len;
@@ -147,8 +147,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     if (strcmp (bd.nm, MP4TAG_META) == 0) {
       /* want to descend into this hierarchy */
       /* skip the 4 bytes of flags */
-      skiplen = sizeof (uint32_t);
+      skiplen = MP4TAG_META_SZ - MP4TAG_BOXHEAD_SZ;
       inclevel = true;
+      libmp4tag->parentidx = level;
     }
     if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
       needdata = true;
@@ -164,18 +165,44 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (level < MP4TAG_BASE_OFF_MAX) {
+      ssize_t      offset;
+
+      offset = ftell (libmp4tag->fh);
+      if (offset < 0) {
+	libmp4tag->mp4error = MP4TAG_ERR_FILE_ERROR;
+      }
+
       libmp4tag->base_lengths [level] = bd.len;
       strcpy (libmp4tag->base_name [level], bd.nm);
-      libmp4tag->base_offsets [level] = ftell (libmp4tag->fh) -
-          MP4TAG_BOXHEAD_SZ;
+      libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
 // fprintf (stdout, "store base: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->base_offsets [level]);
       libmp4tag->base_offset_count = level + 1;
     }
 
+    if (strcmp (bd.nm, MP4TAG_UDTA) == 0) {
+      ssize_t      offset;
+
+      /* the 'udta' offset is only needed if there is no 'ilst' block */
+      /* in the audio file */
+      offset = ftell (libmp4tag->fh);
+      if (offset < 0) {
+	libmp4tag->mp4error = MP4TAG_ERR_FILE_ERROR;
+      }
+      libmp4tag->udta_offset = offset - MP4TAG_BOXHEAD_SZ;
+fprintf (stdout, "udta offset: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->udta_offset);
+    }
+
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
-      libmp4tag->taglist_offset = ftell (libmp4tag->fh);
-      libmp4tag->taglist_base_offset = libmp4tag->taglist_offset -
-            MP4TAG_BOXHEAD_SZ;
+      ssize_t      offset;
+
+      offset = ftell (libmp4tag->fh);
+      if (offset < 0) {
+	libmp4tag->mp4error = MP4TAG_ERR_FILE_ERROR;
+      }
+
+      libmp4tag->taglist_offset = offset;
+      libmp4tag->taglist_base_offset = offset - MP4TAG_BOXHEAD_SZ;
+fprintf (stdout, "tag-base offset: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->taglist_base_offset);
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
     }
@@ -234,14 +261,14 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 
       plevel = level - 1;
 
-      usedlen [plevel] += sizeof (boxhead_t);
+      usedlen [plevel] += MP4TAG_BOXHEAD_SZ;
       usedlen [plevel] += bd.len;
 
       while (currlen [plevel] == usedlen [plevel]) {
         --level;
         plevel = level - 1;
         if (plevel > 0) {
-          usedlen [plevel] += sizeof (boxhead_t);
+          usedlen [plevel] += MP4TAG_BOXHEAD_SZ;
           usedlen [plevel] += usedlen [level];
         }
         /* out of ilst, do not process more tags */
@@ -265,7 +292,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     inclevel = false;
-    rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
+    rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
 // fprintf (stdout, "fread: rrc: %d\n", (int) rrc);
   }
 
@@ -285,10 +312,10 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
   char        *buff;
   char        tmp [MP4TAG_ID_LEN + 1];
 
-  rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
+  rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
   if (rrc == 1) {
     /* the total length includes the length and the identifier */
-    len = be32toh (bh.len) - sizeof (boxhead_t);
+    len = be32toh (bh.len) - MP4TAG_BOXHEAD_SZ;
     if (memcmp (bh.nm, MP4TAG_FTYP, MP4TAG_ID_LEN) != 0) {
       return -1;
     }
@@ -432,7 +459,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
 
     memcpy (&tlen, p, sizeof (uint32_t));
     tlen = be32toh (tlen);
-    tlen -= sizeof (boxhead_t);
+    tlen -= MP4TAG_BOXHEAD_SZ;
     tlen -= sizeof (uint32_t);
     /* what does 'mean' stand for? I would call it 'vendor' */
     /* ident len + ident (== "mean") + 4 bytes flags */

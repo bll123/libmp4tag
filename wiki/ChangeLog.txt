@@ -12,10 +12,12 @@
     * Fix update of 'ilst' block length.
     * Fix packaging.
     * Fix windows build.
+* New Features:
+    * Updating an mp4 file without enough space now works (PENDING).
 
 -->
 
-**1.0.4 alpha 2023-8---**
+**1.0.4 alpha 2023-8-21**
 
 * Bug Fixes:
     * Fix parse of 64-bit mdhd box.
