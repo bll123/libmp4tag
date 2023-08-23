@@ -63,6 +63,11 @@ enum {
   MP4TAG_FREE_SPACE_SZ = 256,
 };
 
+enum {
+  MP4TAG_DBG_NONE                   = 0x0000,
+  MP4TAG_DBG_PRINT_FILE_STRUCTURE   = 0x0001,
+};
+
 typedef struct mp4tag {
   char      *tag;
   char      *data;
@@ -107,6 +112,7 @@ typedef struct libmp4tag {
   int       tagalloccount;
   int       iterator;
   int       mp4error;
+  int       dbgflags;
   bool      mp7meta : 1;
   bool      unlimited : 1;
 } libmp4tag_t;

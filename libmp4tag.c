@@ -81,6 +81,7 @@ mp4tag_open (const char *fn, int *mp4error)
   libmp4tag->iterator = 0;
   libmp4tag->mp7meta = false;
   libmp4tag->unlimited = false;
+  libmp4tag->dbgflags = 0;
   libmp4tag->covercount = 0;
   libmp4tag->mp4error = MP4TAG_OK;
 
@@ -516,6 +517,17 @@ mp4tag_error_str (libmp4tag_t *libmp4tag)
 
   return mp4tagerrmsgs [libmp4tag->mp4error];
 }
+
+void
+mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+
+  libmp4tag->dbgflags = dbgflags;
+}
+
 
 /* internal routines */
 

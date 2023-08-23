@@ -33,10 +33,12 @@ main (int argc, char *argv [])
   bool          write = false;
   int           fnidx = -1;
   int           mp4error;
+  int           dbgflags = 0;
 
   static struct option mp4tagcli_options [] = {
     { "binary",         no_argument,        NULL,   'b' },
     { "clean",          no_argument,        NULL,   'c' },
+    { "debug",          required_argument,  NULL,   'x' },
     { "display",        required_argument,  NULL,   'd' },
     { "dump",           no_argument,        NULL,   'D' },
     { "duration",       no_argument,        NULL,   'u' },
@@ -45,7 +47,7 @@ main (int argc, char *argv [])
 
   *tagname = '\0';
 
-  while ((c = getopt_long_only (argc, argv, "cd:Du",
+  while ((c = getopt_long_only (argc, argv, "cd:Dux:",
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'b': {
@@ -71,6 +73,10 @@ main (int argc, char *argv [])
         duration = true;
         break;
       }
+      case 'x': {
+        dbgflags = atoi (optarg);
+	break;
+      }
       default: {
         break;
       }
@@ -87,6 +93,10 @@ main (int argc, char *argv [])
   if (libmp4tag == NULL) {
     fprintf (stderr, "unable to open %s\n", argv [1]);
     exit (1);
+  }
+
+  if (dbgflags != 0) {
+    mp4tag_set_debug_flags (libmp4tag, dbgflags);
   }
 
   mp4tag_parse (libmp4tag);

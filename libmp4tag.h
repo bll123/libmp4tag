@@ -73,6 +73,7 @@ int       mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
 int       mp4tag_error (libmp4tag_t *libmp4tag);
 const char  * mp4tag_version (void);
 const char  * mp4tag_error_str (libmp4tag_t *libmp4tag);
+void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
 /* these routines are useful for the application */
 
 /* mp4tagfileop.c */

@@ -122,7 +122,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     needdata = false;
     inclevel = false;
 
-// fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, bd.len);
+    if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
+      fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, bd.len);
+    }
 
     /* track the current level's length */
     currlen [level] = bd.len;
