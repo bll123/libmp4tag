@@ -9,4 +9,8 @@
 #cmakedefine01 _hdr_windows
 #cmakedefine01 _hdr_winsock2
 
+#cmakedefine01 _lib_wrename
+#cmakedefine01 _lib_wstat
+#cmakedefine01 _lib_wunlink
+
 #endif /* INC_CONFIG_H */

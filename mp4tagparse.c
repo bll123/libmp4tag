@@ -11,14 +11,14 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <ctype.h>
-// #include <assert.h>
+#include <assert.h>
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 #include "mp4tagbe.h"
 
 enum {
-  LEVEL_MAX = 300,
+  LEVEL_MAX = 40,
 };
 
 typedef struct {
@@ -28,6 +28,9 @@ typedef struct {
 
 typedef struct {
   uint64_t    len;
+  /* this length has to be at least 4 + 3 + 1 bytes */
+  /* room enough to hold the copyright symbol and three more chars */
+  /* it holds the base identifier */
   char        nm [10];
   uint64_t    dlen;
   char        *data;
@@ -64,11 +67,6 @@ typedef struct {
   uint32_t    moreflags;
 } boxmdhd8_t;
 
-enum {
-  /* boxhead + flags + reserved */
-  MP4TAG_DATA_SZ = sizeof (boxhead_t) + sizeof (uint32_t) + sizeof (uint32_t),
-};
-
 static void mp4tag_process_mdhd (libmp4tag_t *libmp4tag, const char *data);
 static void mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
@@ -92,9 +90,10 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
   bool            checkforfree = false;
   bool            checkforend = false;
 
-  // assert (sizeof (boxhead_t) == 8);
-  // assert (sizeof (boxmdhd4_t) == 24);
-  // assert (sizeof (boxmdhd8pack_t) == 36);
+  assert (sizeof (boxhead_t) == 8);
+  assert (sizeof (boxhead_t) == MP4TAG_BOXHEAD_SZ);
+  assert (sizeof (boxmdhd4_t) == 24);
+  assert (sizeof (boxmdhd8pack_t) == 36);
 
   for (int i = 0; i < LEVEL_MAX; ++i) {
     currlen [i] = 0;
@@ -168,7 +167,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       libmp4tag->base_lengths [level] = bd.len;
       strcpy (libmp4tag->base_name [level], bd.nm);
       libmp4tag->base_offsets [level] = ftell (libmp4tag->fh) -
-            sizeof (uint32_t) - MP4TAG_ID_LEN;
+          MP4TAG_BOXHEAD_SZ;
 // fprintf (stdout, "store base: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->base_offsets [level]);
       libmp4tag->base_offset_count = level + 1;
     }
@@ -176,14 +175,14 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
       libmp4tag->taglist_offset = ftell (libmp4tag->fh);
       libmp4tag->taglist_base_offset = libmp4tag->taglist_offset -
-            sizeof (uint32_t) - MP4TAG_ID_LEN;
+            MP4TAG_BOXHEAD_SZ;
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
     }
 
     if (checkforfree) {
       if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
-        libmp4tag->taglist_len += bd.len + sizeof (uint32_t) + MP4TAG_ID_LEN;
+        libmp4tag->taglist_len += MP4TAG_BOXHEAD_SZ + bd.len;
       }
       checkforend = true;
     }
@@ -266,16 +265,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     inclevel = false;
-#if 0
-{
-  ssize_t     currpos;
-  ssize_t     sz;
-
-  currpos = ftell (libmp4tag->fh);
-  sz = mp4tag_file_size (libmp4tag->fn);
-// fprintf (stdout, "b4-read currpos: %ld sz: %ld\n", (long) currpos, (long) sz);
-}
-#endif
     rrc = fread (&bh, sizeof (boxhead_t), 1, libmp4tag->fh);
 // fprintf (stdout, "fread: rrc: %d\n", (int) rrc);
   }
@@ -307,7 +296,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
 
     buff = malloc (len);
     if (buff == NULL) {
-      libmp4tag->errornum = MP4TAG_ERR_OUT_OF_MEMORY;
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
       return -1;
     }
     rrc = fread (buff, len, 1, libmp4tag->fh);
@@ -447,8 +436,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
     tlen -= sizeof (uint32_t);
     /* what does 'mean' stand for? I would call it 'vendor' */
     /* ident len + ident (== "mean") + 4 bytes flags */
-    p += sizeof (uint32_t);
-    p += MP4TAG_ID_LEN;
+    p += MP4TAG_BOXHEAD_SZ;
     p += sizeof (uint32_t);
     memcpy (tnm + len, p, tlen);
     len += tlen;
@@ -458,11 +446,10 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
 
     memcpy (&tlen, p, sizeof (uint32_t));
     tlen = be32toh (tlen);
-    tlen -= sizeof (boxhead_t);
+    tlen -= MP4TAG_BOXHEAD_SZ;
     tlen -= sizeof (uint32_t);
     /* ident len + ident (== "name") + 4 bytes flags */
-    p += sizeof (uint32_t);
-    p += MP4TAG_ID_LEN;
+    p += MP4TAG_BOXHEAD_SZ;
     p += sizeof (uint32_t);
     memcpy (tnm + len, p, tlen);
     len += tlen;
@@ -471,11 +458,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
   }
 
   mp4tag_process_data (p, &tlen, &tflag);
-
-  /* ident len + ident (== "data") */
-  p += sizeof (uint32_t) + MP4TAG_ID_LEN;
-  /* 4 bytes flags + reserved value */
-  p += sizeof (uint32_t) + sizeof (uint32_t);
+  p += MP4TAG_DATA_SZ;
 
 // fprintf (stdout, "  %s %02x %d (%d)\n", tnm, tflag, (int) tlen, (int) blen);
 
@@ -573,7 +556,7 @@ mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag,
       cdata = p;
       ++cflag;
     } else if (memcmp (p + sizeof (uint32_t), MP4TAG_NAME, MP4TAG_ID_LEN) == 0) {
-      p += sizeof (uint32_t) + MP4TAG_ID_LEN;
+      p += MP4TAG_BOXHEAD_SZ;
       cname = p;
     }
     p += tlen;
@@ -593,8 +576,7 @@ mp4tag_process_data (const char *p, uint32_t *plen, uint32_t *pflag)
   tlen = be32toh (tlen);
   tlen -= MP4TAG_DATA_SZ;
 
-  p += sizeof (uint32_t);
-  p += MP4TAG_ID_LEN;
+  p += MP4TAG_BOXHEAD_SZ;
   memcpy (&tflag, p, sizeof (uint32_t));
   tflag = be32toh (tflag);
   tflag = tflag & 0x00ffffff;
@@ -606,12 +588,9 @@ static void
 mp4tag_parse_check_end (libmp4tag_t *libmp4tag)
 {
   ssize_t     currpos;
-  ssize_t     sz;
 
   currpos = ftell (libmp4tag->fh);
-  sz = mp4tag_file_size (libmp4tag->fn);
-// fprintf (stdout, "currpos: %ld sz: %ld\n", (long) currpos, (long) sz);
-  if (currpos == sz) {
+  if (currpos >= 0 && (size_t) currpos == libmp4tag->filesz) {
     libmp4tag->unlimited = true;
   }
 }

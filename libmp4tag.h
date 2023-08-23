@@ -44,6 +44,7 @@ enum {
   MP4TAG_ERR_MISMATCH,      // mismatch between string and binary
   MP4TAG_ERR_NOT_FOUND,
   MP4TAG_ERR_NOT_IMPLEMENTED,
+  MP4TAG_ERR_FILE_ERROR,
 };
 
 enum {
@@ -51,12 +52,12 @@ enum {
   MP4TAG_ID_MAX = 255,
 };
 
-libmp4tag_t * mp4tag_open (const char *fn, int *errornum);
+libmp4tag_t * mp4tag_open (const char *fn, int *mp4error);
 void      mp4tag_free (libmp4tag_t *libmp4tag);
-void      mp4tag_parse (libmp4tag_t *libmp4tag);
+int       mp4tag_parse (libmp4tag_t *libmp4tag);
 int64_t   mp4tag_duration (libmp4tag_t *libmp4tag);
 int       mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag, mp4tagpub_t *mp4tagpub);
-void      mp4tag_iterate_init (libmp4tag_t *libmp4tag);
+int       mp4tag_iterate_init (libmp4tag_t *libmp4tag);
 int       mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub);
 int       mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, bool forcebinary);
 int       mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *name);
@@ -69,8 +70,15 @@ int       mp4tag_error (libmp4tag_t *libmp4tag);
 const char  * mp4tag_version (void);
 const char  * mp4tag_error_str (libmp4tag_t *libmp4tag);
 /* these routines are useful for the application */
-FILE      * mp4tag_fopen (const char *fn, const char *mode);
-ssize_t   mp4tag_file_size (const char *fn);
+
+/* mp4tagfileop.c */
+/* public file interface helper routines */
+
+FILE    * mp4tag_fopen (const char *fn, const char *mode);
+ssize_t mp4tag_file_size (const char *fn);
+char    * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz);
+int     mp4tag_file_delete (const char *fname);
+int     mp4tag_file_move (const char *fname, const char *nfn);
 
 /* versioning */
 
@@ -82,7 +90,7 @@ ssize_t   mp4tag_file_size (const char *fn);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 4
+#define LIBMP4TAG_VERS_REVISION 5
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \

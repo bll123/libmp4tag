@@ -6,6 +6,13 @@
 
 **1.0.5 alpha 2023-8---**
 
+* Bug Fixes:
+    * Fix when it is valid to perform an in-place update.
+    * Fix parse of custom tag name.
+    * Fix update of 'ilst' block length.
+    * Fix packaging.
+    * Fix windows build.
+
 -->
 
 **1.0.4 alpha 2023-8---**

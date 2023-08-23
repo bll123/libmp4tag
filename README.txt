@@ -17,10 +17,6 @@ About
 
 Current Status:
 
-  1.0.4 2023-8-22
-    I believe that in-place writing of tag is now working correctly.
-    Writing multiple cover images and cover names are working.
-
   Alpha
 
   Alpha software is under development.  There is no guarantee that the
@@ -92,6 +88,12 @@ Using the mp4tagcli executable:
     mp4tagcli filename.m4a covr=pic.png
     # setting a new tag that is unknown and needs to be binary data.
     mp4tagcli filename.m4a --binary -- ----:MYAPP:ALTERNATE=filename.dat
+
+  Cover Images and Cover Names:
+    mp4tagcli filename.m4a covr=picA.png
+    mp4tagcli filename.m4a covr:1=picB.png
+    mp4tagcli filename.m4a covr:1=picB.png covr:1:name=Back
+    mp4tagcli filename.m4a covr:0:name=Front
 
   Deleting a tag:
     mp4tagcli filename.m4a nam=

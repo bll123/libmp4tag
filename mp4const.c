@@ -19,63 +19,63 @@
 /* in mp4tagint.h */
 /* The priorities do not exactly match iTunes or mutagen */
 const mp4tagdef_t mp4taglist [] = {
-  {  2, "aART", MP4TAG_ID_STRING, 0 },    // string (album artist)
-  {  6, "akID", MP4TAG_ID_NUM, 1 },       // 1-byte (?)
-  {  6, "atID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes artist id)
-  {  7, "catg", MP4TAG_ID_STRING, 0 },    // string
-  {  6, "cmID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes composer id)
-  {  6, "cnID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes catalog id)
-  { 10, "covr", MP4TAG_ID_PNG, 0 },       // or jpg
-  {  5, "cpil", MP4TAG_ID_NUM, 1 },       // boolean, 1-byte
-  {  7, "cprt", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "desc", MP4TAG_ID_STRING, 0 },    // string
-  {  4, "disk", MP4TAG_ID_DATA, 6 },      // data, 4+2 byte
-  {  7, "egid", MP4TAG_ID_STRING, 0 },    // string
-  {  6, "geID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes genre id)
-  { MP4TAG_PRI_NOWRITE, "gnre", MP4TAG_ID_DATA, 2 }, // 2-byte, (apple id3v1 id, do not write)
-  {  6, "hdvd", MP4TAG_ID_NUM, 1 },       // boolean, 1-byte
-  {  7, "keyw", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "ldes", MP4TAG_ID_STRING, 0 },
-  {  7, "ownr", MP4TAG_ID_STRING, 0 },    // string
-  {  5, "pcst", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
-  {  5, "pgap", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
-  {  6, "plID", MP4TAG_ID_NUM, 8 },       // 8-byte (itunes album id)
-  {  7, "purd", MP4TAG_ID_STRING, 0 },    // string (purchase date)
-  {  7, "purl", MP4TAG_ID_STRING, 0 },    // string (podcast url)
-  {  6, "rtng", MP4TAG_ID_NUM, 1 },       // 1-byte (advisory rating)
-  {  6, "sfID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes country id)
-  {  6, "shwm", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
-  {  7, "soaa", MP4TAG_ID_STRING, 0 },    // string (album artist sort)
-  {  7, "soal", MP4TAG_ID_STRING, 0 },    // string (album sort)
-  {  7, "soar", MP4TAG_ID_STRING, 0 },    // string (artist sort)
-  {  7, "soco", MP4TAG_ID_STRING, 0 },    // string (composer sort)
-  {  7, "sonm", MP4TAG_ID_STRING, 0 },    // string (title sort)
-  {  7, "sosn", MP4TAG_ID_STRING, 0 },    // string (tv show sort)
-  {  6, "stik", MP4TAG_ID_NUM, 1 },       // 1 byte (media type)
-  {  5, "tmpo", MP4TAG_ID_NUM, 2 },       // 2 byte (bpm)
-  {  4, "trkn", MP4TAG_ID_DATA, 8 },      // data 4+2+2-unused
-  {  7, "tven", MP4TAG_ID_STRING, 0 },    // string (tv episode name)
-  {  6, "tves", MP4TAG_ID_NUM, 4 },       // 4 byte (tv episode)
-  {  7, "tvnn", MP4TAG_ID_STRING, 0 },    // string (tv network name)
-  {  7, "tvsh", MP4TAG_ID_STRING, 0 },    // string (tv show name)
-  {  6, "tvsn", MP4TAG_ID_NUM, 4 },       // 4 byte (tv season)
-  {  1, "©ART", MP4TAG_ID_STRING, 0 },    // string (artist)
-  {  2, "©alb", MP4TAG_ID_STRING, 0 },    // string (album)
-  {  7, "©cmt", MP4TAG_ID_STRING, 0 },    // string (comment)
-  {  5, "©day", MP4TAG_ID_STRING, 0 },    // string (year)
-  {  7, "©dir", MP4TAG_ID_STRING, 0 },    // string (director)
-  {  3, "©gen", MP4TAG_ID_STRING, 0 },    // string (custom genre)
-  {  7, "©grp", MP4TAG_ID_STRING, 0 },    // string (grouping)
-  {  9, "©lyr", MP4TAG_ID_STRING, 0 },    // string (lyrics)
-  {  6, "©mvc", MP4TAG_ID_NUM, 2 },       // 2-byte (movement total)
-  {  6, "©mvi", MP4TAG_ID_NUM, 2 },       // 2-byte (movement number)
-  {  7, "©mvn", MP4TAG_ID_STRING, 0 },    // string (movement name)
-  {  0, "©nam", MP4TAG_ID_STRING, 0 },    // string (title)
-  {  7, "©nrt", MP4TAG_ID_STRING, 0 },
-  {  7, "©pub", MP4TAG_ID_STRING, 0 },    // string (publisher)
-  {  5, "©too", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "©wrk", MP4TAG_ID_STRING, 0 },    // string
-  {  2, "©wrt", MP4TAG_ID_STRING, 0 },    // string
+  { 2, /* 2, */ "aART", MP4TAG_ID_STRING, 0 },    // string (album artist)
+  { 6, /* 6, */ "akID", MP4TAG_ID_NUM, 1 },       // 1-byte (?)
+  { 6, /* 6, */ "atID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes artist id)
+  { 7, /* 7, */ "catg", MP4TAG_ID_STRING, 0 },    // string
+  { 6, /* 6, */ "cmID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes composer id)
+  { 6, /* 6, */ "cnID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes catalog id)
+  { 10, /*10, */ "covr", MP4TAG_ID_PNG, 0 },       // or jpg
+  { 8, /* 5, */ "cpil", MP4TAG_ID_NUM, 1 },       // boolean, 1-byte
+  { 7, /* 7, */ "cprt", MP4TAG_ID_STRING, 0 },    // string
+  { 7, /* 7, */ "desc", MP4TAG_ID_STRING, 0 },    // string
+  { 6, /* 4, */ "disk", MP4TAG_ID_DATA, 6 },      // data, 4+2 byte
+  { 7, /* 7, */ "egid", MP4TAG_ID_STRING, 0 },    // string
+  { 6, /* 6, */ "geID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes genre id)
+  { MP4TAG_PRI_NOWRITE, /*MP4TAG_PRI_NOWRITE, */ "gnre", MP4TAG_ID_DATA, 2 }, // 2-byte, (apple id3v1 id, do not write)
+  { 6, /* 6, */ "hdvd", MP4TAG_ID_NUM, 1 },       // boolean, 1-byte
+  { 15, /* 7, */ "keyw", MP4TAG_ID_STRING, 0 },    // string
+  { 7, /* 7, */ "ldes", MP4TAG_ID_STRING, 0 },
+  { 7, /* 7, */ "ownr", MP4TAG_ID_STRING, 0 },    // string
+  { 5, /* 5, */ "pcst", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
+  { 9, /* 5, */ "pgap", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
+  { 6, /* 6, */ "plID", MP4TAG_ID_NUM, 8 },       // 8-byte (itunes album id)
+  { 7, /* 7, */ "purd", MP4TAG_ID_STRING, 0 },    // string (purchase date)
+  { 7, /* 7, */ "purl", MP4TAG_ID_STRING, 0 },    // string (podcast url)
+  { 6, /* 6, */ "rtng", MP4TAG_ID_NUM, 1 },       // 1-byte (advisory rating)
+  { 6, /* 6, */ "sfID", MP4TAG_ID_NUM, 4 },       // 4-byte (itunes country id)
+  { 6, /* 6, */ "shwm", MP4TAG_ID_BOOL, 1 },      // boolean, 1-byte
+  { 7, /* 7, */ "soaa", MP4TAG_ID_STRING, 0 },    // string (album artist sort)
+  { 7, /* 7, */ "soal", MP4TAG_ID_STRING, 0 },    // string (album sort)
+  { 7, /* 7, */ "soar", MP4TAG_ID_STRING, 0 },    // string (artist sort)
+  { 7, /* 7, */ "soco", MP4TAG_ID_STRING, 0 },    // string (composer sort)
+  { 7, /* 7, */ "sonm", MP4TAG_ID_STRING, 0 },    // string (title sort)
+  { 7, /* 7, */ "sosn", MP4TAG_ID_STRING, 0 },    // string (tv show sort)
+  { 6, /* 6, */ "stik", MP4TAG_ID_NUM, 1 },       // 1 byte (media type)
+  { 10, /* 5, */ "tmpo", MP4TAG_ID_NUM, 2 },       // 2 byte (bpm)
+  { 5, /* 4, */ "trkn", MP4TAG_ID_DATA, 8 },      // data 4+2+(2=unused)
+  { 7, /* 7, */ "tven", MP4TAG_ID_STRING, 0 },    // string (tv episode name)
+  { 6, /* 6, */ "tves", MP4TAG_ID_NUM, 4 },       // 4 byte (tv episode)
+  { 7, /* 7, */ "tvnn", MP4TAG_ID_STRING, 0 },    // string (tv network name)
+  { 7, /* 7, */ "tvsh", MP4TAG_ID_STRING, 0 },    // string (tv show name)
+  { 6, /* 6, */ "tvsn", MP4TAG_ID_NUM, 4 },       // 4 byte (tv season)
+  { 1, /* 1, */ "©ART", MP4TAG_ID_STRING, 0 },    // string (artist)
+  { 3, /* 2, */ "©alb", MP4TAG_ID_STRING, 0 },    // string (album)
+  { 7, /* 7, */ "©cmt", MP4TAG_ID_STRING, 0 },    // string (comment)
+  { 7, /* 5, */ "©day", MP4TAG_ID_STRING, 0 },    // string (year)
+  { 7, /* 7, */ "©dir", MP4TAG_ID_STRING, 0 },    // string (director)
+  { 4, /* 3, */ "©gen", MP4TAG_ID_STRING, 0 },    // string (custom genre)
+  { 7, /* 7, */ "©grp", MP4TAG_ID_STRING, 0 },    // string (grouping)
+  { 9, /* 9, */ "©lyr", MP4TAG_ID_STRING, 0 },    // string (lyrics)
+  { 6, /* 6, */ "©mvc", MP4TAG_ID_NUM, 2 },       // 2-byte (movement total)
+  { 6, /* 6, */ "©mvi", MP4TAG_ID_NUM, 2 },       // 2-byte (movement number)
+  { 7, /* 7, */ "©mvn", MP4TAG_ID_STRING, 0 },    // string (movement name)
+  { 0, /* 0, */ "©nam", MP4TAG_ID_STRING, 0 },    // string (title)
+  { 7, /* 7, */ "©nrt", MP4TAG_ID_STRING, 0 },
+  { 7, /* 7, */ "©pub", MP4TAG_ID_STRING, 0 },    // string (publisher)
+  { 11, /* 5, */ "©too", MP4TAG_ID_STRING, 0 },    // string
+  { 7, /* 7, */ "©wrk", MP4TAG_ID_STRING, 0 },    // string
+  { 1, /* 2, */ "©wrt", MP4TAG_ID_STRING, 0 },    // string
 };
 
 const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);

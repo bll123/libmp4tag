@@ -32,7 +32,7 @@ main (int argc, char *argv [])
   bool          clean = false;
   bool          write = false;
   int           fnidx = -1;
-  int           errornum;
+  int           mp4error;
 
   static struct option mp4tagcli_options [] = {
     { "binary",         no_argument,        NULL,   'b' },
@@ -83,7 +83,7 @@ main (int argc, char *argv [])
     exit (1);
   }
 
-  libmp4tag = mp4tag_open (argv [fnidx], &errornum);
+  libmp4tag = mp4tag_open (argv [fnidx], &mp4error);
   if (libmp4tag == NULL) {
     fprintf (stderr, "unable to open %s\n", argv [1]);
     exit (1);

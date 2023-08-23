@@ -38,6 +38,7 @@
 #define MP4TAG_NAME   "name"
 
 #define MP4TAG_CUSTOM_DELIM ":"
+#define MP4TAG_COVER_DELIM ":"
 
 enum {
   MP4TAG_ID_LEN = 4,
@@ -50,8 +51,13 @@ enum {
   MP4TAG_ID_PNG = 0x0e,
   MP4TAG_PRI_CUSTOM = 8,
   MP4TAG_PRI_NOWRITE = -1,
-  MP4TAG_PRI_MAX = 11,
+  MP4TAG_PRI_MAX = 20,
   MP4TAG_BASE_OFF_MAX = 10,
+  MP4TAG_BOXHEAD_SZ = sizeof (uint32_t) + MP4TAG_ID_LEN,
+  /* data-len + ident + flags + reserved */
+  MP4TAG_DATA_SZ = MP4TAG_ID_LEN + sizeof (uint32_t) * 3,
+  MP4TAG_COPY_SIZE = 5 * 1024 * 1024,
+  MP4TAG_FREE_SPACE_SZ = 256,
 };
 
 typedef struct mp4tag {
@@ -72,6 +78,7 @@ typedef struct mp4tag {
 
 typedef struct libmp4tag {
   char      *fn;
+  size_t    filesz;
   FILE      *fh;
   mp4tag_t  *tags;
   int64_t   creationdate;
@@ -94,7 +101,7 @@ typedef struct libmp4tag {
   int       tagcount;
   int       tagalloccount;
   int       iterator;
-  int       errornum;
+  int       mp4error;
   bool      mp7meta : 1;
   bool      unlimited : 1;
 } libmp4tag_t;
@@ -136,9 +143,5 @@ int  mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, int idx, cons
 int  mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data, size_t sz, const char *fn);
 void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
-char * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz);
-#ifdef _WIN32
-void * mp4tag_towide (const char *buff);
-#endif
 
 #endif /* INC_MP4TAGINT_H */

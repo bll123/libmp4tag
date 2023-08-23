@@ -119,13 +119,19 @@ install:
 .PHONY: sourcetar
 sourcetar: $(VERSFN)
 	@$(MAKE) tclean
-	@-$(RM) -f libmp4tag-src-*.tar.gz
 	VERS=$$(cat $(VERSFN)); \
-	tar -c -z -f libmp4tag-src-$${VERS}.tar.gz \
-		--exclude wikibearer.txt \
+	TARGZ=libmp4tag-src-$${VERS}.tar.gz; \
+	TDIR=libmp4tag-$${VERS}; \
+	test -f $${TARGZ} && $(RM) -f $${TARGZ}; \
+	test -d $${TDIR} && $(RM) -rf $${TDIR}; \
+	mkdir $${TDIR}; \
+	cp -pfr \
 		*.c *.h CMakeLists.txt Makefile config.h.in \
 		DEVNOTES.txt README.txt LICENSE.txt \
-		wiki
+		wiki \
+		$${TDIR}; \
+	tar -c -z -f libmp4tag-src-$${VERS}.tar.gz $${TDIR}; \
+	$(RM) -rf $${TDIR}
 
 # cleaning
 
