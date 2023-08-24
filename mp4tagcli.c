@@ -42,6 +42,7 @@ main (int argc, char *argv [])
     { "display",        required_argument,  NULL,   'd' },
     { "dump",           no_argument,        NULL,   'D' },
     { "duration",       no_argument,        NULL,   'u' },
+    { "version",        no_argument,        NULL,   'v' },
     { NULL,             0,                  NULL,   0 }
   };
 
@@ -71,6 +72,11 @@ main (int argc, char *argv [])
       }
       case 'u': {
         duration = true;
+        break;
+      }
+      case 'v': {
+        fprintf (stdout, "mp4tagcli: version %s\n", mp4tag_version ());
+        exit (0);
         break;
       }
       case 'x': {

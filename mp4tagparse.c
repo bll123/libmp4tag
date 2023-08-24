@@ -126,7 +126,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       /* not that this only prints the parts of the structure that are */
       /* relevant to this program.  e.g. anything after the ilst and */
       /* trailing free are not printed */
-      fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, bd.len);
+      fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, (long) bd.len);
     }
 
     /* track the current level's length */

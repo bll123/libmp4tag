@@ -4,71 +4,13 @@
 
 <!--
 
-**1.0.7 alpha 2023-8---**
+**1.1.1 beta 2023-9---**
 
 * Bug Fixes:
 
 -->
 
-**1.0.6 alpha 2023-8---**
-
-* Bug Fixes:
-    * Fix in-place update when there is unlimited room.
-    * Update stco/co64 blocks.
-    * Fix re-write.
-    * Handle audio files without any udta box.
-    * Fix re-write when ilst had to be added.
-* Changes:
-    * Will find and use all trailing free blocks.
-
-**1.0.5 alpha 2023-8-23**
-
-* Bug Fixes:
-    * Fix when it is valid to perform an in-place update.
-    * Fix parse of custom tag name.
-    * Fix update of 'ilst' block length.
-    * Fix packaging.
-    * Fix windows build.
-    * Better error propogation.
-* New Features:
-    * Updating an mp4 file without enough space now works.
-
-**1.0.4 alpha 2023-8-22**
-
-* Bug Fixes:
-    * Fix parse of 64-bit mdhd box.
-    * Handle multiple cover images and cover names.
-* Changes:
-    * mp4tagcli: Re-work command line argument handling
-
-**1.0.3 alpha 2023-8-20**
-
-* Bug Fixes:
-    * Fix compilation on Windows.
-    * Cleanup.
-
-**1.0.2 alpha 2023-8-19**
-
-* Bug Fixes:
-    * fixed genre tags.
-    * validate file type
-    * mp4tagcli: implement set of binary data.
-* Changes:
-    * can now write tags in-place if there is enough space.
-    * return error codes.
-* Notes:
-    * tags cannot be written when there is not enough space.
-
-**1.0.1 alpha 2023-8-17**
-
-* Changes:
-    * implemented set-tag, delete-tag, clean
-    * updated cli tool.
-* Notes:
-    * tags cannot be written
-
-**1.0.0 alpha 2023-8-17**
+**1.1.0 beta 2023-8-24**
 
 * Notes:
-   initial release
-    tags cannot be written
+    * Initial Release

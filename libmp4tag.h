@@ -95,8 +95,8 @@ int     mp4tag_file_move (const char *fname, const char *nfn);
 /* The revision value will change for bug fixes/cleanup/documentation. */
 
 #define LIBMP4TAG_VERS_MAJOR 1
-#define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 6
+#define LIBMP4TAG_VERS_MINOR 1
+#define LIBMP4TAG_VERS_REVISION 0
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \
@@ -104,7 +104,7 @@ int     mp4tag_file_move (const char *fname, const char *nfn);
    CPP_STR(rev)
 #define LIBMP4TAG_VERSION \
    LIBMP4TAG_VERSION_STR(LIBMP4TAG_VERS_MAJOR,LIBMP4TAG_VERS_MINOR,LIBMP4TAG_VERS_REVISION)
-#define LIBMP4TAG_RELEASE_STATE "alpha"
+#define LIBMP4TAG_RELEASE_STATE "beta"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 } /* extern C */

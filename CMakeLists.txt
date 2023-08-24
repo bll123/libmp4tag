@@ -131,6 +131,7 @@ if (NOT WIN32)
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
     add_compile_options (-mmacosx-version-min=10.12)
     add_link_options (-mmacosx-version-min=10.12)
+    set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
   endif()
 else()
   add_link_options (-static-libgcc)

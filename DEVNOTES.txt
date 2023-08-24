@@ -1,5 +1,5 @@
 
-2023-8-22:
+2023-8-24:
 
 Build requirements:
   make
@@ -13,6 +13,6 @@ What I need:
   Especially if the program can't handle them.
   Especially if there's something less common in them.
 
-Windows build uses MSys2.
+I use MSys2 on Windows.
 I don't use the MicroSoft C compilers.
 Any testing and changes, project file are appreciated.

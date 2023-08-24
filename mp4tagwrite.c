@@ -629,7 +629,6 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     tlen += MP4TAG_BOXHEAD_SZ + strlen (mp4tag->covername);
   }
 
-fprintf (stdout, "build-append: add: %s %d %d\n", mp4tag->tag, *dlen, tlen);
   data = realloc (data, *dlen + tlen);
   if (data == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;

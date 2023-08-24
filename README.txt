@@ -1,5 +1,8 @@
 libmp4tag
 
+  Please make a backup before using this software.  It is new, and
+  hasn't yet been tested thoroughly.
+
 Contents:
   About
   Notes
@@ -18,13 +21,15 @@ About
 
 Current Status:
 
-  Alpha
+  Beta
 
-  Alpha software is under development.  There is no guarantee that the
-  API will be preserved or that anything works correctly.
+  Beta software is under development.  The API should be (mostly)
+  stable, and most functionality should be working.  There may still
+  be some bugs present.
 
   To Do:
     - port to *bsd
+    - mp4tag_restore_tags ()
 
 Notes:
 
@@ -41,7 +46,7 @@ Using the mp4tagcli executable:
   The duration is displayed in milliseconds.
 
   Usage:
-      mp4tagcli <filename> [--debug <value>] \
+      mp4tagcli <filename> [--version] [--debug <value>] \
           [--duration] [--clean] [--display <tag> [--dump=<filename>]]
           [--binary] [<tag>={|<value>|<filename>}] ...]
 
