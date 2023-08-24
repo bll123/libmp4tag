@@ -85,28 +85,39 @@ mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz)
 {
   char    *fdata = NULL;
   int     rc = -1;
+  FILE    *fh;
+  ssize_t fsz;
 
-  *sz = mp4tag_file_size (fn);
-  if (*sz > 0) {
-    FILE    *fh;
+  *sz = 0;
+  fsz = mp4tag_file_size (fn);
+  if (fsz < 0) {
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
+    return NULL;
+  }
 
-    fdata = malloc (*sz);
-    if (fdata == NULL) {
-      return NULL;
+  fdata = malloc (fsz);
+  if (fdata == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    return NULL;
+  }
+
+  fh = mp4tag_fopen (fn, "rb");
+  if (fh == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
+  } else {
+    rc = fread (fdata, fsz, 1, fh);
+    if (rc != 1) {
+      libmp4tag->mp4error = MP4TAG_ERR_FILE_READ_ERROR;
     }
-
-    fh = mp4tag_fopen (fn, "rb");
-    if (fh != NULL) {
-      rc = fread (fdata, *sz, 1, fh);
-      fclose (fh);
-    }
-  } /* file has a valid size */
+  }
+  fclose (fh);
 
   if (rc != 1 && fdata != NULL) {
     free (fdata);
     fdata = NULL;
   }
 
+  *sz = fsz;
   return fdata;
 }
 

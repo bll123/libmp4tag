@@ -75,7 +75,7 @@ main (int argc, char *argv [])
       }
       case 'x': {
         dbgflags = atoi (optarg);
-	break;
+        break;
       }
       default: {
         break;
@@ -180,6 +180,9 @@ main (int argc, char *argv [])
     }
   }
 
+  if (mp4tag_error (libmp4tag) != MP4TAG_OK) {
+    fprintf (stdout, "processing error: %s\n", mp4tag_error_str (libmp4tag));
+  }
   mp4tag_free (libmp4tag);
   exit (0);
 }
@@ -187,10 +190,16 @@ main (int argc, char *argv [])
 static void
 setTagName (const char *tag, char *buff, size_t sz)
 {
+  if (strcmp (tag, "art") == 0) {
+    tag = "ART";
+  }
+  if (strcmp (tag, "aart") == 0) {
+    tag = "aART";
+  }
   if (strlen (tag) == 3) {
     snprintf (buff, sz, "%s%s", PREFIX_STR, tag);
   } else {
-    strcpy (buff, tag);
+    snprintf (buff, sz, "%s", tag);
   }
 }
 

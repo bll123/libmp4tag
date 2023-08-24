@@ -254,7 +254,8 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
 }
 
 int
-mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, int idx, const char *data)
+mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
+    int idx, const char *data)
 {
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
@@ -271,11 +272,17 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, int idx, const char
   if (idx >= 0 && idx < libmp4tag->tagcount) {
     mp4tag_t  *mp4tag;
 
+    /* an existing tag is being updated. */
+    /* use the information read from the audio file. */
+
     mp4tag = &libmp4tag->tags [idx];
 
     if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
       int     offset;
       int     coveridx;
+
+      /* handle cover tags separately */
+      /* only cover names are allowed for set-tag-str */
 
       offset = mp4tag_parse_cover_tag (tag, &coveridx);
       if (offset > 0) {
@@ -288,12 +295,13 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, int idx, const char
         return libmp4tag->mp4error;
       }
     } else {
+
+      /* existing: not a cover tag */
+
       if (mp4tag->binary) {
         libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
         return libmp4tag->mp4error;
       }
-
-      libmp4tag->mp4error = MP4TAG_OK;
 
       if (mp4tag->data != NULL) {
         free (mp4tag->data);
@@ -308,6 +316,9 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, int idx, const char
   } else {
     const mp4tagdef_t *tagdef = NULL;
     int               ok = false;
+
+    /* a new tag is being added. */
+    /* in this case, check to make sure it is in the valid list. */
 
     /* custom tags are always valid */
     if (memcmp (tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
@@ -352,9 +363,8 @@ mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *tag, int idx, const char
 
       mp4tag_add_tag (libmp4tag, tag, data, strlen (data), tflag, tlen, NULL);
       mp4tag_sort_tags (libmp4tag);
-      libmp4tag->mp4error = MP4TAG_OK;
     } else {
-      libmp4tag->mp4error = MP4TAG_ERR_NOT_FOUND;
+      libmp4tag->mp4error = MP4TAG_ERR_TAG_NOT_FOUND;
     }
   }
 
@@ -382,6 +392,8 @@ mp4tag_set_tag_binary (libmp4tag_t *libmp4tag,
   if (idx >= 0 && idx < libmp4tag->tagcount) {
     mp4tag_t  *mp4tag;
 
+    /* an existing binary data tag */
+
     mp4tag = &libmp4tag->tags [idx];
     if (! mp4tag->binary) {
       libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
@@ -395,37 +407,49 @@ mp4tag_set_tag_binary (libmp4tag_t *libmp4tag,
       libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
       return libmp4tag->mp4error;
     }
+
     memcpy (mp4tag->data, data, sz);
     mp4tag->datalen = sz;
     mp4tag->internallen = sz;
     identtype = mp4tag_check_covr (tag, fn);
     mp4tag->identtype = identtype;
-    libmp4tag->mp4error = MP4TAG_OK;
   } else {
     mp4tagdef_t *tagdef = NULL;
+    bool        ok = false;
 
-    tagdef = mp4tag_check_tag (tag);
-    if (tagdef == NULL) {
-      libmp4tag->mp4error = MP4TAG_ERR_NOT_FOUND;
-      return libmp4tag->mp4error;
+    /* a new binary data tag */
+    /* check to make sure this tag exists in the valid list */
+
+    /* custom tags are always valid */
+    if (memcmp (tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+      ok = true;
+    } else {
+      tagdef = mp4tag_check_tag (tag);
+      if (tagdef == NULL) {
+        libmp4tag->mp4error = MP4TAG_ERR_TAG_NOT_FOUND;
+        return libmp4tag->mp4error;
+      }
+      ok = true;
+
+      if (tagdef->identtype != MP4TAG_ID_DATA &&
+          tagdef->identtype != MP4TAG_ID_JPG &&
+          tagdef->identtype != MP4TAG_ID_PNG) {
+        libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
+        ok = false;
+      }
     }
 
-    if (tagdef->identtype != MP4TAG_ID_DATA &&
-        tagdef->identtype != MP4TAG_ID_JPG &&
-        tagdef->identtype != MP4TAG_ID_PNG) {
-      libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
-      return libmp4tag->mp4error;
-    }
     if (strcmp (tag, MP4TAG_TRKN) == 0 ||
         strcmp (tag, MP4TAG_DISK) == 0) {
       libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
-      return libmp4tag->mp4error;
+      ok = false;
     }
 
-    identtype = mp4tag_check_covr (tag, fn);
-    mp4tag_add_tag (libmp4tag, tag, data, sz, identtype, sz, NULL);
-    mp4tag_sort_tags (libmp4tag);
-    libmp4tag->mp4error = MP4TAG_OK;
+    if (ok) {
+      identtype = mp4tag_check_covr (tag, fn);
+      mp4tag_add_tag (libmp4tag, tag, data, sz, identtype, sz, NULL);
+      mp4tag_sort_tags (libmp4tag);
+    }
   }
 
   return libmp4tag->mp4error;

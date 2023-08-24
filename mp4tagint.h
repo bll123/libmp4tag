@@ -60,12 +60,13 @@ enum {
   MP4TAG_HDLR_SZ = MP4TAG_BOXHEAD_SZ + sizeof (uint32_t) * 6 + sizeof (uint8_t),
   MP4TAG_META_SZ = MP4TAG_BOXHEAD_SZ + sizeof (uint32_t),
   MP4TAG_COPY_SIZE = 5 * 1024 * 1024,
-  MP4TAG_FREE_SPACE_SZ = 256,
+  MP4TAG_FREE_SPACE_SZ = 512,
 };
 
 enum {
   MP4TAG_DBG_NONE                   = 0x0000,
   MP4TAG_DBG_PRINT_FILE_STRUCTURE   = 0x0001,
+  MP4TAG_DBG_WRITE                  = 0x0002,
 };
 
 typedef struct mp4tag {
@@ -104,6 +105,10 @@ typedef struct libmp4tag {
   uint32_t  taglist_len;
   int       parentidx;
   ssize_t   udta_offset;
+  ssize_t   stco_offset;
+  uint32_t  stco_len;
+  ssize_t   co64_offset;
+  uint32_t  co64_len;
   int       covercount;
   /* coverstart is a temporary variable used by the write process */
   int32_t   coverstart_offset;
@@ -150,7 +155,7 @@ mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
 void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, ssize_t sz, uint32_t origflag, size_t origlen, const char *covername);
-int  mp4tag_set_tag_str (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data);
+int  mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data);
 int  mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data, size_t sz, const char *fn);
 void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);

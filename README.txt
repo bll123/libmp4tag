@@ -11,7 +11,8 @@ About
 
   The goal is to have a library where all tags can be accessed and
   modified and any tags, unknown tags or custom tags are never lost
-  when the audio file is updated.
+  when the audio file is updated.  A list of known tags is only used
+  when new tags are added.
 
   A command line utility is included to display or change the tags.
 
@@ -28,7 +29,8 @@ Current Status:
 
 Notes:
 
-  The 'gnre' tag is always converted to '©gen' when writing the tag data.
+  The 'gnre' tag is always converted to '©gen' when writing the tag
+  data, and '©gen' is used internally.
 
   Duration is in milliseconds.
 
@@ -38,6 +40,18 @@ Using the mp4tagcli executable:
   automatically be prepended to the tag name.
 
   The duration is displayed in milliseconds.
+
+  Usage:
+      mp4tagcli <filename> [--debug <value>] \
+          [--duration] [--clean] [--display <tag> [--dump]]
+          [--binary] [<tag>={|<value>|<filename>}] ...]
+
+      --dump is only relevant for binary data.
+      --binary is only needed when adding an unknown binary data tag
+      tag=<filename> is only used for binary data.
+
+  Displaying known tags:
+    mp4tagcli --list-tags
 
   Displaying the duration and tags:
     mp4tagcli filename.m4a

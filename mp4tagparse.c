@@ -72,6 +72,7 @@ static void mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_
 static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void mp4tag_process_data (const char *p, uint32_t *tlen, uint32_t *flags);
 static void mp4tag_parse_check_end (libmp4tag_t *libmp4tag);
+static ssize_t mp4tag_get_curr_offset (libmp4tag_t *libmp4tag);
 
 int
 mp4tag_parse_file (libmp4tag_t *libmp4tag)
@@ -88,7 +89,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
   bool            done = false;
   bool            inclevel = false;
   bool            checkforfree = false;
-  bool            checkforend = false;
 
   assert (sizeof (boxhead_t) == 8);
   assert (sizeof (boxhead_t) == MP4TAG_BOXHEAD_SZ);
@@ -123,6 +123,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     inclevel = false;
 
     if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
+      /* not that this only prints the parts of the structure that are */
+      /* relevant to this program.  e.g. anything after the ilst and */
+      /* trailing free are not printed */
       fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, bd.len);
     }
 
@@ -159,12 +162,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
       needdata = true;
     }
-    if (strcmp (bd.nm, MP4TAG_STCO) == 0) {
-// fprintf (stdout, "found stco\n");
-    }
-    if (strcmp (bd.nm, MP4TAG_CO64) == 0) {
-// fprintf (stdout, "found co64\n");
-    }
     if (processdata) {
       needdata = true;
     }
@@ -184,28 +181,26 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       libmp4tag->base_offset_count = level + 1;
     }
 
-    if (strcmp (bd.nm, MP4TAG_UDTA) == 0) {
-      ssize_t      offset;
+    if (strcmp (bd.nm, MP4TAG_STCO) == 0) {
+      libmp4tag->stco_offset = mp4tag_get_curr_offset (libmp4tag);
+      libmp4tag->stco_len = bd.len;
+    }
 
+    if (strcmp (bd.nm, MP4TAG_CO64) == 0) {
+      libmp4tag->co64_offset = mp4tag_get_curr_offset (libmp4tag);
+      libmp4tag->co64_len = bd.len;
+    }
+
+    if (strcmp (bd.nm, MP4TAG_UDTA) == 0) {
       /* the 'udta' offset is only needed if there is no 'ilst' block */
       /* in the audio file */
-      offset = ftell (libmp4tag->fh);
-      if (offset < 0) {
-        libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
-      }
-      libmp4tag->udta_offset = offset - MP4TAG_BOXHEAD_SZ;
+      libmp4tag->udta_offset = mp4tag_get_curr_offset (libmp4tag);
     }
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
-      ssize_t      offset;
-
-      offset = ftell (libmp4tag->fh);
-      if (offset < 0) {
-        libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
-      }
-
-      libmp4tag->taglist_offset = offset;
-      libmp4tag->taglist_base_offset = offset - MP4TAG_BOXHEAD_SZ;
+      libmp4tag->taglist_offset = mp4tag_get_curr_offset (libmp4tag);
+      libmp4tag->taglist_base_offset =
+          libmp4tag->taglist_offset - MP4TAG_BOXHEAD_SZ;
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
     }
@@ -213,8 +208,14 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     if (checkforfree) {
       if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
         libmp4tag->taglist_len += MP4TAG_BOXHEAD_SZ + bd.len;
+        /* continue on and see if there are more 'free' boxes to add */
+      } else {
+        /* if this spot was reached, there is some other */
+        /* box after the 'ilst' or 'free' boxes */
+        /* unlimited will be false */
+        checkforfree = false;
+        done = true;
       }
-      checkforend = true;
     }
 
     if (needdata && bd.len > 0) {
@@ -285,13 +286,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       }
     }
 
-    if (checkforfree || checkforend) {
-      mp4tag_parse_check_end (libmp4tag);
-      if (checkforend) {
-        done = true;
-      }
-    }
-
     if (done) {
       break;
     }
@@ -301,7 +295,11 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
 // fprintf (stdout, "fread: rrc: %d\n", (int) rrc);
   }
 
-  mp4tag_parse_check_end (libmp4tag);
+  if (checkforfree) {
+    /* if checkforfree is still true, check and see if the end of file */
+    /* was reached */
+    mp4tag_parse_check_end (libmp4tag);
+  }
   mp4tag_sort_tags (libmp4tag);
   return libmp4tag->mp4error;
 }
@@ -636,4 +634,16 @@ mp4tag_parse_check_end (libmp4tag_t *libmp4tag)
   if (currpos >= 0 && (size_t) currpos == libmp4tag->filesz) {
     libmp4tag->unlimited = true;
   }
+}
+
+static ssize_t
+mp4tag_get_curr_offset (libmp4tag_t *libmp4tag)
+{
+  ssize_t      offset;
+
+  offset = ftell (libmp4tag->fh);
+  if (offset < 0) {
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
+  }
+  return offset;
 }

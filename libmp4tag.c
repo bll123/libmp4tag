@@ -3,6 +3,8 @@
  *
  * Resources:
  *    https://xhelmboyx.tripod.com/formats/mp4-layout.txt
+ *      stco information appears to be incorrect. like co64, it also
+ *      has a 32-bit version/flags.
  *    https://github.com/quodlibet/mutagen/blob/master/mutagen/mp4/__init__.py
  *    https://picard-docs.musicbrainz.org/en/appendices/tag_mapping.html
  *    https://docs.mp3tag.de/mapping/
@@ -29,8 +31,9 @@ const char *mp4tagerrmsgs [] = {
   [MP4TAG_ERR_NULL_VALUE] = "null value",
   [MP4TAG_ERR_NO_TAGS] = "no tags",
   [MP4TAG_ERR_MISMATCH] = "mismatch",
-  [MP4TAG_ERR_NOT_FOUND] = "not found",
+  [MP4TAG_ERR_TAG_NOT_FOUND] = "not found",
   [MP4TAG_ERR_NOT_IMPLEMENTED] = "not implemented",
+  [MP4TAG_ERR_FILE_NOT_FOUND] = "file not found",
   [MP4TAG_ERR_FILE_READ_ERROR] = "file read error",
   [MP4TAG_ERR_FILE_WRITE_ERROR] = "file write error",
   [MP4TAG_ERR_FILE_SEEK_ERROR] = "file seek error",
@@ -74,6 +77,10 @@ mp4tag_open (const char *fn, int *mp4error)
   libmp4tag->taglist_offset = 0;
   libmp4tag->taglist_len = 0;
   libmp4tag->udta_offset = 0;
+  libmp4tag->stco_offset = 0;
+  libmp4tag->stco_len = 0;
+  libmp4tag->co64_offset = 0;
+  libmp4tag->co64_len = 0;
   libmp4tag->parentidx = -1;
   libmp4tag->coverstart_offset = -1;
   libmp4tag->tagcount = 0;
@@ -196,7 +203,7 @@ mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag,
     mp4tagpub->coveridx = mp4tag->coveridx;
     mp4tagpub->binary = mp4tag->binary;
   } else {
-    libmp4tag->mp4error = MP4TAG_ERR_NOT_FOUND;
+    libmp4tag->mp4error = MP4TAG_ERR_TAG_NOT_FOUND;
   }
 
   return libmp4tag->mp4error;
@@ -304,7 +311,7 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
       free (fdata);
     }
   } else {
-    mp4tag_set_tag_str (libmp4tag, tag, idx, data);
+    mp4tag_set_tag_string (libmp4tag, tag, idx, data);
   }
 
   return libmp4tag->mp4error;
@@ -351,7 +358,7 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 
     mp4tag_del_tag (libmp4tag, idx);
   } else {
-    libmp4tag->mp4error = MP4TAG_ERR_NOT_FOUND;
+    libmp4tag->mp4error = MP4TAG_ERR_TAG_NOT_FOUND;
   }
 
   return libmp4tag->mp4error;
