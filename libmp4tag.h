@@ -96,7 +96,7 @@ int     mp4tag_file_move (const char *fname, const char *nfn);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 5
+#define LIBMP4TAG_VERS_REVISION 6
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \

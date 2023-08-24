@@ -137,8 +137,8 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     /* data associated with the current box. */
     /* hierarchies used: */
     /*   moov.trak.mdia.mdhd  (has duration) */
-    /*   moov.trak.mdia.minf.stbl.stco  (offset table) */
-    /*   moov.trak.mdia.minf.stbl.co64  (offset table) */
+    /*   moov.trak.mdia.minf.stbl.stco  (offset table to update) */
+    /*   moov.trak.mdia.minf.stbl.co64  (offset table to update) */
     /*   moov.udta.meta.ilst.*  (tags) */
     if (strcmp (bd.nm, MP4TAG_MOOV) == 0 ||
         strcmp (bd.nm, MP4TAG_TRAK) == 0 ||
@@ -192,9 +192,11 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (strcmp (bd.nm, MP4TAG_UDTA) == 0) {
-      /* the 'udta' offset is only needed if there is no 'ilst' block */
-      /* in the audio file */
-      libmp4tag->udta_offset = mp4tag_get_curr_offset (libmp4tag);
+      /* need to save this offset in case there is no 'ilst' box */
+      libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag) -
+          MP4TAG_BOXHEAD_SZ;
+      libmp4tag->after_ilst_offset =
+          libmp4tag->noilst_offset + MP4TAG_BOXHEAD_SZ;
     }
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
@@ -203,6 +205,8 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
           libmp4tag->taglist_offset - MP4TAG_BOXHEAD_SZ;
       /* the block size does not include the ident-len and ident */
       libmp4tag->taglist_len = bd.len;
+      libmp4tag->after_ilst_offset =
+          libmp4tag->taglist_offset + libmp4tag->taglist_len;
     }
 
     if (checkforfree) {
@@ -277,11 +281,20 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
           usedlen [plevel] += MP4TAG_BOXHEAD_SZ;
           usedlen [plevel] += usedlen [level];
         }
-        /* out of ilst, do not process more tags */
-        /* and don't need to process anything else at all */
+        /* out of 'ilst', do not process more tags */
+        /* only need to check for any 'free' boxes trailing the 'ilst'.*/
         if (processdata) {
           processdata = false;
           checkforfree = true;    // not quite done yet
+        }
+
+        if (level == 1 && libmp4tag->noilst_offset == 0) {
+          /* there is no 'udta' box at all */
+          /* note that this test is only reached after having gone up */
+          /* in level and back down again */
+
+          libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag);
+          libmp4tag->after_ilst_offset = libmp4tag->noilst_offset;
         }
       }
     }

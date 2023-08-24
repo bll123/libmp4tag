@@ -104,7 +104,8 @@ typedef struct libmp4tag {
   ssize_t   taglist_offset;
   uint32_t  taglist_len;
   int       parentidx;
-  ssize_t   udta_offset;
+  ssize_t   noilst_offset;
+  ssize_t   after_ilst_offset;
   ssize_t   stco_offset;
   uint32_t  stco_len;
   ssize_t   co64_offset;

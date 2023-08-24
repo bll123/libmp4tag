@@ -4,15 +4,22 @@
 
 <!--
 
+**1.0.7 alpha 2023-8---**
+
+* Bug Fixes:
+
+-->
+
 **1.0.6 alpha 2023-8---**
 
 * Bug Fixes:
     * Fix in-place update when there is unlimited room.
     * Update stco/co64 blocks.
+    * Fix re-write.
+    * Handle audio files without any udta box.
+    * Fix re-write when ilst had to be added.
 * Changes:
     * Will find and use all trailing free blocks.
-
--->
 
 **1.0.5 alpha 2023-8-23**
 

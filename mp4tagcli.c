@@ -180,9 +180,6 @@ main (int argc, char *argv [])
     }
   }
 
-  if (mp4tag_error (libmp4tag) != MP4TAG_OK) {
-    fprintf (stdout, "processing error: %s\n", mp4tag_error_str (libmp4tag));
-  }
   mp4tag_free (libmp4tag);
   exit (0);
 }

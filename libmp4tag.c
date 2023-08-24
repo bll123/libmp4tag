@@ -76,7 +76,8 @@ mp4tag_open (const char *fn, int *mp4error)
   libmp4tag->base_offset_count = 0;
   libmp4tag->taglist_offset = 0;
   libmp4tag->taglist_len = 0;
-  libmp4tag->udta_offset = 0;
+  libmp4tag->noilst_offset = 0;
+  libmp4tag->after_ilst_offset = 0;
   libmp4tag->stco_offset = 0;
   libmp4tag->stco_len = 0;
   libmp4tag->co64_offset = 0;
