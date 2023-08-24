@@ -1,11 +1,14 @@
 syntax: regexp
+^Archive/
 ^build/
+^dev/rs\.sh$
 ^dev/wikibearer\.txt$
 ^samples/
 ^tmp/
-\.m4a$
-\.png$
 \.jpg$
+\.m4a$
+\.mpr$
+\.png$
 ~$
 ^w$
 ^ww$
