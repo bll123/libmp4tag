@@ -42,6 +42,7 @@
 #define MP4TAG_COVER_DELIM ":"
 
 enum {
+  MP4TAG_NOTFOUND = -1,     // returned by find-tag
   MP4TAG_ID_LEN = 4,
   MP4TAG_STRING = 0,
   MP4TAG_ID_BOOL = 0x15,
@@ -121,6 +122,7 @@ typedef struct libmp4tag {
   int       dbgflags;
   bool      mp7meta : 1;
   bool      unlimited : 1;
+  bool      parsed : 1;
 } libmp4tag_t;
 
 /* mp4const.c */

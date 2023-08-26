@@ -20,7 +20,7 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 
-const char *mp4tagerrmsgs [] = {
+static const char *mp4tagerrmsgs [] = {
   [MP4TAG_OK] = "ok",
   [MP4TAG_FINISH] = "finish",
   [MP4TAG_ERR_BAD_STRUCT] = "bad structure",
@@ -39,13 +39,17 @@ const char *mp4tagerrmsgs [] = {
   [MP4TAG_ERR_FILE_SEEK_ERROR] = "file seek error",
   [MP4TAG_ERR_FILE_TELL_ERROR] = "file tell error",
   [MP4TAG_ERR_UNABLE_TO_PROCESS] = "unable to process",
+  [MP4TAG_ERR_NOT_PARSED] = "not parsed",
 };
 
 static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
 
+/**
+ * Used by the mp4tag_preserve_tags() and mp4tag_restore_tags() routines.
+ */
 typedef struct libmp4tagpreserve {
-  mp4tag_t  *tags;
-  int       tagcount;
+  mp4tag_t  *tags;            /** Preserved tags */
+  int       tagcount;         /** Count of number of tags */
 } libmp4tagpreserve_t;
 
 libmp4tag_t *
@@ -92,6 +96,7 @@ mp4tag_open (const char *fn, int *mp4error)
   libmp4tag->dbgflags = 0;
   libmp4tag->covercount = 0;
   libmp4tag->mp4error = MP4TAG_OK;
+  libmp4tag->parsed = false;
 
   libmp4tag->fh = mp4tag_fopen (fn, "rb+");
   if (libmp4tag->fh == NULL) {
@@ -157,6 +162,9 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
   }
 
   mp4tag_parse_file (libmp4tag);
+  if (libmp4tag->mp4error == MP4TAG_OK) {
+    libmp4tag->parsed = true;
+  }
   return libmp4tag->mp4error;
 }
 
@@ -165,6 +173,11 @@ mp4tag_duration (libmp4tag_t *libmp4tag)
 {
   if (libmp4tag == NULL) {
     return 0;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
   }
 
   libmp4tag->mp4error = MP4TAG_OK;
@@ -179,6 +192,11 @@ mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag,
 
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
   }
 
   libmp4tag->mp4error = MP4TAG_OK;
@@ -217,6 +235,11 @@ mp4tag_iterate_init (libmp4tag_t *libmp4tag)
     return MP4TAG_ERR_BAD_STRUCT;
   }
 
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
+  }
+
   libmp4tag->iterator = 0;
   return MP4TAG_OK;
 }
@@ -226,6 +249,11 @@ mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub)
 {
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
   }
 
   libmp4tag->mp4error = MP4TAG_OK;
@@ -265,6 +293,11 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
 
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
   }
 
   libmp4tag->mp4error = MP4TAG_OK;
@@ -327,6 +360,11 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
     return MP4TAG_ERR_BAD_STRUCT;
   }
 
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
+  }
+
   libmp4tag->mp4error = MP4TAG_OK;
 
   if (tag == NULL) {
@@ -376,6 +414,11 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
     return MP4TAG_ERR_BAD_STRUCT;
   }
 
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
+  }
+
   libmp4tag->mp4error = MP4TAG_OK;
 
   data = mp4tag_build_data (libmp4tag, &dlen);
@@ -392,6 +435,11 @@ mp4tag_clean_tags (libmp4tag_t *libmp4tag)
 {
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
   }
 
   libmp4tag->mp4error = MP4TAG_OK;
@@ -411,6 +459,11 @@ mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
   libmp4tagpreserve_t *preserve = NULL;
 
   if (libmp4tag == NULL) {
+    return NULL;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
     return NULL;
   }
 
@@ -461,6 +514,11 @@ mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve)
 {
   if (libmp4tag == NULL) {
     return MP4TAG_ERR_BAD_STRUCT;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
   }
 
   libmp4tag->mp4error = MP4TAG_OK;

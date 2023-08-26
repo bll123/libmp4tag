@@ -113,6 +113,11 @@ build:
 install:
 	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
 
+.PHONY: doc
+doc: $(VERSFN)
+	VERS=$$(cat $(VERSFN)); \
+	doxygen libmp4tag.doxygen
+
 # source
 
 # the wiki/ directory has the changelog in it
