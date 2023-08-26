@@ -24,12 +24,18 @@ typedef struct libmp4tagpreserve libmp4tagpreserve_t;
  * Returned by mp4tag_get_tag_by_name() and by mp4tag_iterate()
  */
 typedef struct {
-  const char  *tag;         /** The name of the tag. */
-  const char  *data;        /** The value of the tag. */
-  const char  *covername;   /** For 'covr' tags, the cover name, or NULL */
-  size_t      datalen;      /** The length of the tag value */
-  int         coveridx;     /** Which 'covr'. */
-  bool        binary;       /** If true, the tag value is binary data */
+  /** The name of the tag. */
+  const char  *tag;
+  /** The value of the tag. */
+  const char  *data;
+  /** For 'covr' tags, the cover name, or NULL. */
+  const char  *covername;
+  /** The length of the tag value. */
+  size_t      datalen;
+  /** For 'covr', which cover index this tag is for. */
+  int         coveridx;
+  /** If true, the tag value is binary data. */
+  bool        binary;
 } mp4tagpub_t;
 
 /**

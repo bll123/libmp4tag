@@ -48,8 +48,10 @@ static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
  * Used by the mp4tag_preserve_tags() and mp4tag_restore_tags() routines.
  */
 typedef struct libmp4tagpreserve {
-  mp4tag_t  *tags;            /** Preserved tags */
-  int       tagcount;         /** Count of number of tags */
+  /** Preserved tags.  No application access. */
+  mp4tag_t  *tags;
+  /** Count of number of tags. */
+  int       tagcount;
 } libmp4tagpreserve_t;
 
 libmp4tag_t *
