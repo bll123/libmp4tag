@@ -1,0 +1,83 @@
+[Wiki Home](Home)
+
+[TOC]
+
+### Error Codes
+
+##### MP4TAG_OK
+
+Success.
+
+##### MP4TAG_FINISH
+
+Returned by mp4tag_iterate.  Indicates that there are no more tags
+to process.
+
+##### MP4TAG_ERR_BAD_STRUCT
+
+The *libmp4tag* structure is invalid.
+
+##### MP4TAG_ERR_FILE_NOT_FOUND
+
+The file to be processed was not found or could not be opened.
+
+##### MP4TAG_ERR_FILE_READ_ERROR
+
+An error occured while reading the file.
+
+##### MP4TAG_ERR_FILE_SEEK_ERROR
+
+An error occured while seeking within the file.
+
+##### MP4TAG_ERR_FILE_TELL_ERROR
+
+An error occured while determining the position with the file.
+
+##### MP4TAG_ERR_FILE_WRITE_ERROR
+
+An error occured while writing the file.
+
+##### MP4TAG_ERR_MISMATCH
+
+There was a mismatch in the tag type.  A binary value was specified
+for a string tag or a string value was specified for a tag with binary
+data.
+
+##### MP4TAG_ERR_NO_TAGS
+
+There are no tags.
+
+##### MP4TAG_ERR_NOT_IMPLEMENTED
+
+The library function is not implemented.
+
+##### MP4TAG_ERR_NOT_MP4
+
+The open failed, as it could not be determined that the file specified
+was an MP4 file.
+
+##### MP4TAG_ERR_NOT_OPEN
+
+Tried to process a file that is not open.
+
+##### MP4TAG_ERR_NOT_PARSED
+
+Unable to process as the file has not yet been parsed.
+
+##### MP4TAG_ERR_NULL_VALUE
+
+A null value was specified.
+
+##### MP4TAG_ERR_OUT_OF_MEMORY
+
+An out of memory condition occured during processing.
+
+##### MP4TAG_ERR_TAG_NOT_FOUND
+
+The specified tag was not found or is not valid.
+
+##### MP4TAG_ERR_UNABLE_TO_OPEN
+
+
+
+##### MP4TAG_ERR_UNABLE_TO_PROCESS

@@ -135,11 +135,6 @@ build:
 install:
 	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
 
-.PHONY: doc
-doc: $(VERSFN)
-	VERS=$$(cat $(VERSFN)); \
-	doxygen libmp4tag.doxygen
-
 # source
 
 # the wiki/ directory has the changelog in it
@@ -154,7 +149,6 @@ sourcetar: $(VERSFN)
 	mkdir $${TDIR}; \
 	cp -pfr \
 		*.c *.h CMakeLists.txt Makefile config.h.in \
-		libmp4tag.doxygen \
 		DEVNOTES.txt README.txt LICENSE.txt \
 		wiki \
 		$${TDIR}; \
@@ -166,7 +160,7 @@ sourcetar: $(VERSFN)
 .PHONY: distclean
 distclean:
 	@-$(MAKE) tclean
-	@-$(RM) -rf build tmp doxygen man
+	@-$(RM) -rf build tmp
 	@-$(RM) -f libmp4tag-src-*.tar.gz
 	@mkdir $(BUILDDIR)
 
@@ -177,5 +171,5 @@ clean:
 
 .PHONY: tclean
 tclean:
-	@-$(RM) -f w ww www *~ core *.orig *.doxygen.bak
+	@-$(RM) -f w ww www *~ core *.orig
 	@-$(RM) -f wiki/*~ dev/*~

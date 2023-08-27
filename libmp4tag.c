@@ -129,25 +129,6 @@ mp4tag_open (const char *fn, int *mp4error)
   return libmp4tag;
 }
 
-void
-mp4tag_free (libmp4tag_t *libmp4tag)
-{
-  if (libmp4tag == NULL) {
-    return;
-  }
-
-  if (libmp4tag->fn != NULL) {
-    free (libmp4tag->fn);
-    libmp4tag->fn = NULL;
-  }
-  if (libmp4tag->fh != NULL) {
-    fclose (libmp4tag->fh);
-    libmp4tag->fh = NULL;
-  }
-  mp4tag_free_tags (libmp4tag);
-  free (libmp4tag);
-}
-
 int
 mp4tag_parse (libmp4tag_t *libmp4tag)
 {
@@ -168,6 +149,25 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
     libmp4tag->parsed = true;
   }
   return libmp4tag->mp4error;
+}
+
+void
+mp4tag_free (libmp4tag_t *libmp4tag)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+
+  if (libmp4tag->fn != NULL) {
+    free (libmp4tag->fn);
+    libmp4tag->fn = NULL;
+  }
+  if (libmp4tag->fh != NULL) {
+    fclose (libmp4tag->fh);
+    libmp4tag->fh = NULL;
+  }
+  mp4tag_free_tags (libmp4tag);
+  free (libmp4tag);
 }
 
 int64_t
@@ -354,6 +354,65 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
 }
 
 int
+mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag,
+    const char *data, size_t datalen)
+{
+  int       idx = -1;
+  bool      binary = false;
+
+  if (libmp4tag == NULL) {
+    return MP4TAG_ERR_BAD_STRUCT;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
+  }
+
+  if (tag == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_NULL_VALUE;
+    return libmp4tag->mp4error;
+  }
+
+  if (data == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_NULL_VALUE;
+    return libmp4tag->mp4error;
+  }
+
+  libmp4tag->mp4error = MP4TAG_OK;
+
+  idx = mp4tag_find_tag (libmp4tag, tag);
+  if (idx >= 0 && idx < libmp4tag->tagcount) {
+    mp4tag_t  *mp4tag;
+
+    mp4tag = &libmp4tag->tags [idx];
+    binary = mp4tag->binary;
+  } else {
+    /* assume the application knows what it is doing */
+    binary = true;
+  }
+
+  if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+    int     offset;
+    int     coveridx;
+
+    binary = true;
+    offset = mp4tag_parse_cover_tag (tag, &coveridx);
+    if (offset > 0) {
+      binary = false;
+    }
+  }
+
+  if (! binary) {
+    libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
+    return libmp4tag->mp4error;
+  }
+
+  mp4tag_set_tag_binary (libmp4tag, tag, idx, data, datalen, NULL);
+  return libmp4tag->mp4error;
+}
+
+int
 mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 {
   int       idx = -1;
@@ -406,6 +465,29 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 }
 
 int
+mp4tag_clean_tags (libmp4tag_t *libmp4tag)
+{
+  if (libmp4tag == NULL) {
+    return MP4TAG_ERR_BAD_STRUCT;
+  }
+
+  if (! libmp4tag->parsed) {
+    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
+    return libmp4tag->mp4error;
+  }
+
+  libmp4tag->mp4error = MP4TAG_OK;
+
+  if (libmp4tag->tags == NULL) {
+    /* already clean */
+    return MP4TAG_OK;
+  }
+
+  mp4tag_free_tags (libmp4tag);
+  return libmp4tag->mp4error;
+}
+
+int
 mp4tag_write_tags (libmp4tag_t *libmp4tag)
 {
   char      *data = NULL;
@@ -430,29 +512,6 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
   }
   rc = mp4tag_write_data (libmp4tag, data, dlen);
   return rc;
-}
-
-int
-mp4tag_clean_tags (libmp4tag_t *libmp4tag)
-{
-  if (libmp4tag == NULL) {
-    return MP4TAG_ERR_BAD_STRUCT;
-  }
-
-  if (! libmp4tag->parsed) {
-    libmp4tag->mp4error = MP4TAG_ERR_NOT_PARSED;
-    return libmp4tag->mp4error;
-  }
-
-  libmp4tag->mp4error = MP4TAG_OK;
-
-  if (libmp4tag->tags == NULL) {
-    /* already clean */
-    return MP4TAG_OK;
-  }
-
-  mp4tag_free_tags (libmp4tag);
-  return libmp4tag->mp4error;
 }
 
 libmp4tagpreserve_t *

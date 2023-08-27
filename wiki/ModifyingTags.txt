@@ -1,0 +1,25 @@
+[Wiki Home](Home)
+
+[TOC]
+
+### Modifying Tags
+
+These routines modify the list of tags internally.  The MP4 file is
+not modified until the mp4tag_write_tags() routine is called.
+
+##### mp4tag_set_tag
+
+int mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, bool forcebinary)
+
+##### mp4tag_set_binary_tag
+
+int mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, size_t datalen)
+
+##### mp4tag_delete_tag
+
+int mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
+
+##### mp4tag_clean_tags
+
+int mp4tag_clean_tags (libmp4tag_t *libmp4tag);
+

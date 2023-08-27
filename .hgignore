@@ -3,11 +3,8 @@ syntax: regexp
 ^build/
 ^dev/rs\.sh$
 ^dev/wikibearer\.txt$
-^doxygen/
-^man/
 ^samples/
 ^tmp/
-\.doxygen\.bak$
 \.jpg$
 \.m4a$
 \.mpr$

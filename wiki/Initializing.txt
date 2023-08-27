@@ -1,0 +1,31 @@
+[Wiki Home](Home)
+
+[TOC]
+
+### Initializing
+
+##### mp4tag_open
+
+#include "libmp4tag.h"
+
+libmp4tag_t *mp4tag_open (const char *filename, int *mp4error)
+
+Opens an MP4 file.  The MP4 file is checked for a valid 'ftyp' header.
+A libmp4tag_t structure is allocated and returned for use in the other
+mp4tag_* routines.
+
+**filename** : The file to open.
+
+**mp4error** : A pointer to an integer.  Returns the
+[error&nbsp;code](ErrorCodes).
+
+Returns: A pointer to an allocated libmp4tag_t structure.  This
+pointer must be freed in a call to mp4tag_free().
+
+##### mp4tag_parse
+
+int mp4tag_parse (libmp4tag_t *libmp4tag)
+
+##### mp4tag_free
+
+void mp4tag_free (libmp4tag_t *libmp4tag)

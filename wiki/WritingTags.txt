@@ -1,0 +1,20 @@
+[Wiki Home](Home)
+
+[TOC]
+
+### Writing Tags
+
+The MP4 file is not modified until the mp4tag_write_tags() routine is
+called.
+
+If possible, the MP4 file is modified in-place.  If there is not
+enough room for the modified tags, the MP4 file is re-written and
+replaced.
+
+##### mp4tag_write_tags
+
+int mp4tag_write_tags (libmp4tag_t *libmp4tag)
+
+libmp4tag : The libmp4tag structure returned from mp4tag_open().
+
+Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).

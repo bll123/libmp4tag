@@ -12,51 +12,22 @@
 extern "C" {
 #endif
 
-/**
- * @file
- * libmp4tag External API
- */
-
-/**
- * PREFIX_STR is the copyright symbol string prepended to some tags.
- */
 #define PREFIX_STR   "\xc2\xa9"
 
-/**
- * libmp4tag_t is the structure containing the information used by libmp4tag
- * to process the MP4 file.
- */
 typedef struct libmp4tag libmp4tag_t;
-/**
- * libmp4tagpreserve_t is the structure used when preserving the tags
- * in a MP4 file.
- */
 typedef struct libmp4tagpreserve libmp4tagpreserve_t;
 
 /* libmp4tag.c */
 
-/**
- * Public tag data.
- * Returned by mp4tag_get_tag_by_name() and by mp4tag_iterate()
- */
 typedef struct {
-  /** The name of the tag. */
   const char  *tag;
-  /** The value of the tag. */
   const char  *data;
-  /** For 'covr' tags, the cover name, or NULL. */
   const char  *covername;
-  /** The length of the tag value. */
   size_t      datalen;
-  /** For 'covr', which cover index this tag is for. */
   int         coveridx;
-  /** If true, the tag value is binary data. */
   bool        binary;
 } mp4tagpub_t;
 
-/**
- * Possible error returns.
- */
 enum {
   /* the iterator returns the first three values */
   /* other routines return MP4TAG_OK/MP4TAG_ERROR */
@@ -85,196 +56,29 @@ enum {
   MP4TAG_ID_MAX = 255,
 };
 
-/**
- * Open an MP4 file.
- *
- * The file is checked for a valid 'ftyp' header.
- *
- * The MP4 file is not yet parsed.
- *
- * @param[in] fn The filename to process.
- * @param[out] mp4error Error return.
- * @return Pointer to libmp4tag_t structure or NULL on error
- */
 libmp4tag_t * mp4tag_open (const char *fn, int *mp4error);
-
-/**
- * Frees a libmp4tag_t * structure.
- *
- * Any open files are closed and all associated data is freed.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- */
+int       mp4tag_parse (libmp4tag_t *libmp4tag);
 void      mp4tag_free (libmp4tag_t *libmp4tag);
 
-/**
- * Parses an open MP4 file.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @return MP4TAG_OK or error return.
- */
-int       mp4tag_parse (libmp4tag_t *libmp4tag);
-
-/**
- * Returns the duration in millseconds.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @return duration in milliseconds or 0 on error.
- */
 int64_t   mp4tag_duration (libmp4tag_t *libmp4tag);
-
-/**
- * Get the value for a particular tag.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @param[in] tag The tag name to process.
- * @param[out] mp4tagpub Pointer to public mp4tagpub_t structure to be filled in.
- * @return MP4TAG_OK or error return.
- */
 int       mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag, mp4tagpub_t *mp4tagpub);
-
-/**
- * Initialize the iterator.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @return MP4TAG_OK or error return.
- */
 int       mp4tag_iterate_init (libmp4tag_t *libmp4tag);
-
-/**
- * Iterate through the tags.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @param[out] mp4tagpub Pointer to public mp4tagpub_t structure to be filled in.
- * @return MP4TAG_OK, MP4TAG_FINISH or error return.
- */
 int       mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub);
 
-/**
- * Set a tag to a value.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @param[in] tag The name of the tag to set.
- * @param[in] data The value that the tag will be set to, or in the
- *    case of binary data, the filename to read the data from.
- * @param[in] forcebinary Set to true for unknown tags that are being set to binary data.
- * @return MP4TAG_OK or error return.
- */
 int       mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, bool forcebinary);
-
-/**
- * Delete a tag.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @param[in] tag The name of the tag to delete.
- * @return MP4TAG_OK or error return.
- */
+int       mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, size_t datalen);
 int       mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag);
-
-/**
- * Write the tags out to the MP4 file.
- *
- * mp4tag_write_tags() must be called to finalize any changes to the tags.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @return MP4TAG_OK or error return.
- */
-int       mp4tag_write_tags (libmp4tag_t *libmp4tag);
-
-/**
- * Remove all tags.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @return MP4TAG_OK or error return.
- */
 int       mp4tag_clean_tags (libmp4tag_t *libmp4tag);
 
-/**
- * Preserve the tags in the audio file.
- *
- * Usage:
- *    libmp4tag = mp4tag_open (fname, &mp4error);
- *    mp4tag_parse (libmp4tag);
- *    preserve = mp4tag_preserve_tags (libmp4tag);
- *    mp4tag_free (libmp4tag);
- *    // run some program that mangles tags
- *    snprintf (cmd, sizeof (cmd), "tag-mangling-program %s\n", fname);
- *    system (cmd);
- *    libmp4tag = mp4tag_open (fname, &mp4error);
- *    mp4tag_parse (libmp4tag);
- *    mp4tag_restore_tags (libmp4tag, preserve);
- *    mp4tag_write_tags (libmp4tag);
- *    mp4tag_free (libmp4tag);
- *    mp4tag_preserve_free (preserve);
- *
- * mp4tag_preserve_tags() / mp4tag_restore_tags() can also be used to copy
- * the tags to another file.
- *    libmp4tag = mp4tag_open (fnameAAA, &mp4error);
- *    mp4tag_parse (libmp4tag);
- *    preserve = mp4tag_preserve_tags (libmp4tag);
- *    mp4tag_free (libmp4tag);
- *    libmp4tag = mp4tag_open (fnameBBB, &mp4error);
- *    mp4tag_parse (libmp4tag);
- *    mp4tag_restore_tags (libmp4tag, preserve);
- *    mp4tag_free (libmp4tag);
- *    mp4tag_preserve_free (preserve);
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @return libmp4tagpreserve_t * or NULL on error.
- */
+int       mp4tag_write_tags (libmp4tag_t *libmp4tag);
+
 libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
-
-/**
- * Restore the tags to the audio file.
- *
- * The mp4tag_write_tags() routine must be called afterwards.
- * Not yet implemented.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @param[in] preserve Pointer to libmp4tagpreserve_t structure returned
- *    from a mp4tag_preserve_tags call.
- * @return MP4TAG_OK or error return.
- */
 int       mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
-
-/**
- * Free a libmp4tagpreserve_t structure returned by mp4tag_preserve_tags().
- *
- * @param[in] preserve Pointer to libmp4tagpreserve_t structure.
- * @return MP4TAG_OK or error return.
- */
 int       mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
 
-/**
- * Return the last error code.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @return last error encountered.
- */
-int       mp4tag_error (libmp4tag_t *libmp4tag);
-
-/**
- * Get the libmp4tag version string.
- *
- * @return libmp4tag version string.
- */
+int         mp4tag_error (libmp4tag_t *libmp4tag);
 const char  * mp4tag_version (void);
-
-/**
- * Return a brief readable error string corresponding to the last error.
- *
- * This routine is intended more for debugging purposes.
- *
- * @return error string.
- */
 const char  * mp4tag_error_str (libmp4tag_t *libmp4tag);
-
-/**
- * Set the debug flags.
- *
- * @param[in] libmp4tag Pointer to libmp4tag structure.
- * @param[in] dbgflags Debug flags.
- */
 void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
 
 /* these routines are useful for the application */
@@ -282,58 +86,10 @@ void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
 /* mp4tagfileop.c */
 /* public file interface helper routines */
 
-/**
- * Open a file.
- *
- * Works for both posix and windows.
- *
- * @param[in] fn The file to open.
- * @param[in] mode Mode to use for opening the file.
- * @return FILE * pointer or NULL on error.
- */
 FILE    * mp4tag_fopen (const char *fn, const char *mode);
-
-/**
- * Return a file's size.
- *
- * Works for both posix and windows.
- *
- * @param[in] fn The file to check.
- * @return Size of the file or -1 on error.
- */
 ssize_t mp4tag_file_size (const char *fn);
-
-/**
- * Read all data from a file and return the data.
- *
- * Works for both posix and windows.
- *
- * @param[in] libmp4tag Pointer to libmp4tag_t structure.  Use to track errors.
- * @param[in] fn The file to read.
- * @param[out] sz The file to read.
- * @return allocated value or NULL on error
- */
 char    * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz);
-
-/**
- * Delete a file.
- *
- * Works for both posix and windows.
- *
- * @param[in] fname The file to delete.
- * @return 0 on success.
- */
 int     mp4tag_file_delete (const char *fname);
-
-/**
- * Move a file from one name to another.
- *
- * Works for both posix and windows.
- *
- * @param[in] fname The old filename.
- * @param[in] nfn The new filename.
- * @return 0 on success.
- */
 int     mp4tag_file_move (const char *fname, const char *nfn);
 
 /* versioning */
@@ -344,25 +100,10 @@ int     mp4tag_file_move (const char *fname, const char *nfn);
 /* or there are additions to the api. */
 /* The revision value will change for bug fixes/cleanup/documentation. */
 
-/**
- * Major version number.
- */
 #define LIBMP4TAG_VERS_MAJOR 1
-/**
- * Minor version number.
- */
-#define LIBMP4TAG_VERS_MINOR 1
-/**
- * Revision version number.
- */
-#define LIBMP4TAG_VERS_REVISION 1
-/**
- * libmp4tag release state.
- */
+#define LIBMP4TAG_VERS_MINOR 2
+#define LIBMP4TAG_VERS_REVISION 0
 #define LIBMP4TAG_RELEASE_STATE "beta"
-/**
- * @cond VERSIONMACROS
- */
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
    CPP_STR(maj) "." \
@@ -370,9 +111,6 @@ int     mp4tag_file_move (const char *fname, const char *nfn);
    CPP_STR(rev)
 #define LIBMP4TAG_VERSION \
    LIBMP4TAG_VERSION_STR(LIBMP4TAG_VERS_MAJOR,LIBMP4TAG_VERS_MINOR,LIBMP4TAG_VERS_REVISION)
-/**
- * @endcond
- */
 
 #if defined (__cplusplus) || defined (c_plusplus)
 } /* extern C */

@@ -1,0 +1,18 @@
+[Wiki Home](Home)
+
+[TOC]
+
+### Preserving and Restoring Tags
+
+##### *mp4tag_preserve_tags
+
+libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
+
+##### mp4tag_restore_tags
+
+int       mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
+
+##### mp4tag_preserve_free
+
+int       mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
+

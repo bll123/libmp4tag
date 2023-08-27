@@ -4,7 +4,18 @@
 
 <div markdown style="float: left; margin-right: 20px;">
 
-### Change Log
+[Initializing](Initializing)
+<br>[Getting Tag Information](GettingTags)
+<br>[Modifying Tags](ModifyingTags)
+<br>[Writing Tags](WritingTags)
+<br>[Preserve &amp; Restore](PreserveRestore)
+<br>[Other Routines](Other)
+<br>[Helper Utilities](HelperUtilities)
+<br>[Error Codes](ErrorCodes)
+
+</div>
+<div markdown style="float: left; margin-right: 20px;">
+
 [Change Log](ChangeLog)
 
 </div>
