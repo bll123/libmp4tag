@@ -208,6 +208,10 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
   libmp4tag->tags [tagidx].internallen = origlen;
 
   libmp4tag->tags [tagidx].tag = strdup (tag);
+  if (libmp4tag->tags [tagidx].tag == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    return;
+  }
 
   if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
 // fprintf (stdout, "tag: %s\n", tag);
@@ -216,9 +220,17 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     /* make sure the base tag is set properly */
     free (libmp4tag->tags [tagidx].tag);
     libmp4tag->tags [tagidx].tag = strdup (MP4TAG_COVR);
+    if (libmp4tag->tags [tagidx].tag == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+      return;
+    }
 
     if (covername != NULL) {
       libmp4tag->tags [tagidx].covername = strdup (covername);
+      if (libmp4tag->tags [tagidx].covername == NULL) {
+        libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+        return;
+      }
     }
     if (coveridx == -1) {
       libmp4tag->tags [tagidx].coveridx = libmp4tag->covercount;
@@ -231,11 +243,19 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
   if (sz == MP4TAG_STRING) {
     /* string with null terminator */
     libmp4tag->tags [tagidx].data = strdup (data);
+    if (libmp4tag->tags [tagidx].data == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+      return;
+    }
     libmp4tag->tags [tagidx].datalen = strlen (data);
   } else if (sz < 0) {
     /* string w/o null terminator */
     sz = - sz;
     libmp4tag->tags [tagidx].data = malloc (sz + 1);
+    if (libmp4tag->tags [tagidx].data == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+      return;
+    }
     if (libmp4tag->tags [tagidx].data != NULL) {
       memcpy (libmp4tag->tags [tagidx].data, data, sz);
     }
@@ -243,8 +263,12 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     libmp4tag->tags [tagidx].datalen = sz;
   } else {
     /* binary data */
-    libmp4tag->tags [tagidx].data = malloc (sz);
-    if (libmp4tag->tags [tagidx].data != NULL) {
+    if (sz > 0) {
+      libmp4tag->tags [tagidx].data = malloc (sz);
+      if (libmp4tag->tags [tagidx].data == NULL) {
+        libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+        return;
+      }
       memcpy (libmp4tag->tags [tagidx].data, data, sz);
     }
     libmp4tag->tags [tagidx].binary = true;
@@ -499,15 +523,70 @@ mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx)
     return;
   }
 
-  if (libmp4tag->tags [idx].tag != NULL) {
-    free (libmp4tag->tags [idx].tag);
+  mp4tag_free_tag (&libmp4tag->tags [idx]);
+}
+
+void
+mp4tag_free_tag (mp4tag_t *mp4tag)
+{
+  if (mp4tag->tag != NULL) {
+    free (mp4tag->tag);
+    mp4tag->tag = NULL;
   }
-  if (libmp4tag->tags [idx].data != NULL) {
-    free (libmp4tag->tags [idx].data);
+  if (mp4tag->data != NULL) {
+    free (mp4tag->data);
+    mp4tag->data = NULL;
+    mp4tag->datalen = 0;
   }
-  if (libmp4tag->tags [idx].covername != NULL) {
-    free (libmp4tag->tags [idx].covername);
+  if (mp4tag->covername != NULL) {
+    free (mp4tag->covername);
+    mp4tag->covername = NULL;
   }
+}
+
+void
+mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source)
+{
+  target->tag = NULL;
+  if (source->tag != NULL) {
+    target->tag = strdup (source->tag);
+    if (target->tag == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    }
+  }
+
+  target->datalen = source->datalen;
+
+  target->data = NULL;
+  if (source->datalen > 0 && source->data != NULL) {
+    size_t      len;
+
+    len = source->datalen;
+    if (! source->binary) {
+      /* string null terminator */
+      ++len;
+    }
+    target->data = malloc (len);
+    memcpy (target->data, source->data, len);
+    if (target->data == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    }
+  }
+
+  target->covername = NULL;
+  if (source->covername != NULL) {
+    target->covername = strdup (source->covername);
+    if (target->covername == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    }
+  }
+
+  target->coveridx = source->coveridx;
+  target->idx = source->idx;
+  target->identtype = source->identtype;
+  target->internallen = source->internallen;
+  target->priority = source->priority;
+  target->binary = source->binary;
 }
 
 /* internal routines */

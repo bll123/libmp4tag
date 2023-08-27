@@ -10,6 +10,7 @@ GCC = gcc
 CLANG = clang
 VERSFN = tmp/vers.txt
 PREFIX = /usr
+RM = rm
 
 .PHONY: release
 release:
@@ -46,45 +47,66 @@ $(VERSFN): libmp4tag.h
 	echo $${VERS} > $(VERSFN)
 
 # parallel doesn't seem to work under msys2
+# cmake doesn't seem to support parallel under *BSD
 .PHONY: cmake
 cmake: $(VERSFN)
 	@VERS=$$(cat $(VERSFN)); \
-	if test $$(uname -s) = Linux; then \
-	  COMP=$(GCC) \
-	  VERS=$${VERS} \
-	  $(MAKE) cmake-unix; \
-          pmode=--parallel $(MAKE) build; \
-	elif test $$(uname -s) = Darwin; then \
-	  COMP=$(CLANG) \
-	  VERS=$${VERS} \
-	  $(MAKE) cmake-unix; \
-	  pmode=--parallel $(MAKE) build; \
-	else \
-	  COMP=$(GCC) \
-	  VERS=$${VERS} \
-	  $(MAKE) cmake-windows; \
-	  $(MAKE) build; \
-	fi
+	case $$(uname -s) in \
+          Linux) \
+	    COMP=$(GCC) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-unix; \
+            pmode=--parallel $(MAKE) build; \
+            ;; \
+	  *BSD) \
+	    COMP=$(CLANG) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-unix; \
+	    $(MAKE) build; \
+            ;; \
+	  Darwin) \
+	    COMP=$(CLANG) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-unix; \
+	    pmode=--parallel $(MAKE) build; \
+            ;; \
+	  MINGW*) \
+	    COMP=$(GCC) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-windows; \
+	    $(MAKE) build; \
+            ;; \
+	esac
 
 .PHONY: cmakeclang
 cmakeclang: $(VERSFN)
 	@VERS=$$(cat $(VERSFN)); \
-	if test $$(uname -s) = Linux; then \
-	  COMP=$(CLANG) \
-	  VERS=$${VERS} \
-	  $(MAKE) cmake-unix; \
-	  pmode=--parallel $(MAKE) build; \
-	elif test $$(uname -s) = Darwin; then \
-	  COMP=$(CLANG) \
-	  VERS=$${VERS} \
-	  $(MAKE) cmake-unix; \
-	  pmode=--parallel $(MAKE) build; \
-	else \
-	  COMP=/mingw64/bin/clang.exe \
-	  VERS=$${VERS} \
-	  $(MAKE) cmake-windows; \
-	  $(MAKE) build; \
-	fi
+	case $$(uname -s) in \
+          Linux) \
+	    COMP=$(CLANG) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-unix; \
+            pmode=--parallel $(MAKE) build; \
+            ;; \
+	  *BSD) \
+	    COMP=$(CLANG) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-unix; \
+	    $(MAKE) build; \
+            ;; \
+	  Darwin) \
+	    COMP=$(CLANG) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-unix; \
+	    pmode=--parallel $(MAKE) build; \
+            ;; \
+	  MINGW*) \
+	    COMP=/mingw64/bin/clang.exe \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-windows; \
+	    $(MAKE) build; \
+            ;; \
+	esac
 
 .PHONY: cmake-unix
 cmake-unix:
@@ -132,6 +154,7 @@ sourcetar: $(VERSFN)
 	mkdir $${TDIR}; \
 	cp -pfr \
 		*.c *.h CMakeLists.txt Makefile config.h.in \
+		libmp4tag.doxygen \
 		DEVNOTES.txt README.txt LICENSE.txt \
 		wiki \
 		$${TDIR}; \
@@ -143,7 +166,7 @@ sourcetar: $(VERSFN)
 .PHONY: distclean
 distclean:
 	@-$(MAKE) tclean
-	@-$(RM) -rf build tmp
+	@-$(RM) -rf build tmp doxygen man
 	@-$(RM) -f libmp4tag-src-*.tar.gz
 	@mkdir $(BUILDDIR)
 

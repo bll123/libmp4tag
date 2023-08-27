@@ -70,6 +70,7 @@ enum {
   MP4TAG_DBG_WRITE                  = 0x0002,
 };
 
+/* any changes to this structure must be reflected in mp4tag_clone_tag() */
 typedef struct mp4tag {
   char      *tag;
   char      *data;
@@ -162,5 +163,7 @@ int  mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *name, int idx, c
 int  mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data, size_t sz, const char *fn);
 void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
+void mp4tag_free_tag (mp4tag_t *mp4tag);
+void mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source);
 
 #endif /* INC_MP4TAGINT_H */

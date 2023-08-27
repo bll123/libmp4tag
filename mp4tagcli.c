@@ -14,6 +14,7 @@
 
 #include "libmp4tag.h"
 
+static libmp4tag_t * openparse (const char *fname, int dbgflags);
 static void setTagName (const char *tag, char *buff, size_t sz);
 static void displayTag (mp4tagpub_t *mp4tagpub);
 
@@ -25,19 +26,23 @@ main (int argc, char *argv [])
   int           c;
   int           option_index;
   char          tagname [MP4TAG_ID_MAX];
+  const         char *infname = NULL;
+  const         char *copyto = NULL;
   bool          display = false;
   bool          dump = false;
   bool          duration = false;
   bool          forcebinary = false;
   bool          clean = false;
   bool          write = false;
+  bool          copy = false;
   int           fnidx = -1;
-  int           mp4error;
   int           dbgflags = 0;
 
   static struct option mp4tagcli_options [] = {
     { "binary",         no_argument,        NULL,   'b' },
     { "clean",          no_argument,        NULL,   'c' },
+    { "copyfrom",       required_argument,  NULL,   'f' },
+    { "copyto",         required_argument,  NULL,   't' },
     { "debug",          required_argument,  NULL,   'x' },
     { "display",        required_argument,  NULL,   'd' },
     { "dump",           no_argument,        NULL,   'D' },
@@ -48,7 +53,7 @@ main (int argc, char *argv [])
 
   *tagname = '\0';
 
-  while ((c = getopt_long_only (argc, argv, "cd:Dux:",
+  while ((c = getopt_long_only (argc, argv, "cd:Df:t:ux:",
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'b': {
@@ -67,6 +72,18 @@ main (int argc, char *argv [])
         display = true;
         if (optarg != NULL) {
           setTagName (optarg, tagname, sizeof (tagname));
+        }
+        break;
+      }
+      case 'f': {
+        if (optarg != NULL) {
+          infname = optarg;
+        }
+        break;
+      }
+      case 't': {
+        if (optarg != NULL) {
+          copyto = optarg;
         }
         break;
       }
@@ -89,30 +106,37 @@ main (int argc, char *argv [])
     }
   }
 
-  fnidx = optind;
-  if (fnidx <= 0 || fnidx >= argc) {
-    fprintf (stderr, "no file specified\n");
-    exit (1);
+  if (infname != NULL && copyto != NULL) {
+    copy = true;
   }
 
-  libmp4tag = mp4tag_open (argv [fnidx], &mp4error);
-  if (libmp4tag == NULL) {
-    fprintf (stderr, "unable to open %s\n", argv [1]);
-    exit (1);
+  if (! copy) {
+    fnidx = optind;
+    if (fnidx <= 0 || fnidx >= argc) {
+      fprintf (stderr, "no file specified\n");
+      exit (1);
+    }
+    infname = argv [fnidx];
   }
 
-  if (dbgflags != 0) {
-    mp4tag_set_debug_flags (libmp4tag, dbgflags);
+  libmp4tag = openparse (infname, dbgflags);
+
+  if (copy) {
+    libmp4tagpreserve_t   *preserve;
+
+    preserve = mp4tag_preserve_tags (libmp4tag);
+    mp4tag_free (libmp4tag);
+    libmp4tag = openparse (copyto, dbgflags);
+    mp4tag_restore_tags (libmp4tag, preserve);
+    write = true;
   }
 
-  mp4tag_parse (libmp4tag);
-
-  if (clean) {
+  if (clean && ! copy) {
     mp4tag_clean_tags (libmp4tag);
     write = true;
   }
 
-  if (! clean) {
+  if (! clean && ! copy) {
     for (int i = fnidx + 1; i < argc; ++i) {
       char    *tstr;
       char    *tokstr;
@@ -154,7 +178,7 @@ main (int argc, char *argv [])
     }
   }
 
-  if (display && ! clean) {
+  if (display && ! clean && ! copy) {
     int     rc;
 
     rc = mp4tag_get_tag_by_name (libmp4tag, tagname, &mp4tagpub);
@@ -230,4 +254,24 @@ displayTag (mp4tagpub_t *mp4tagpub)
           mp4tagpub->tag, mp4tagpub->coveridx, mp4tagpub->covername);
     }
   }
+}
+
+static libmp4tag_t *
+openparse (const char *fname, int dbgflags)
+{
+  libmp4tag_t   *libmp4tag = NULL;
+  int           mp4error;
+
+  libmp4tag = mp4tag_open (fname, &mp4error);
+  if (libmp4tag == NULL) {
+    fprintf (stderr, "unable to open %s\n", fname);
+    exit (1);
+  }
+
+  if (dbgflags != 0) {
+    mp4tag_set_debug_flags (libmp4tag, dbgflags);
+  }
+
+  mp4tag_parse (libmp4tag);
+  return libmp4tag;
 }

@@ -469,12 +469,12 @@ mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
     return NULL;
   }
 
-  libmp4tag->mp4error = MP4TAG_OK;
-
   if (libmp4tag->tags == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_NO_TAGS;
     return NULL;
   }
+
+  libmp4tag->mp4error = MP4TAG_OK;
 
   preserve = malloc (sizeof (libmp4tagpreserve_t));
   if (preserve == NULL) {
@@ -493,19 +493,7 @@ mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
   libmp4tag->mp4error = MP4TAG_OK;
 
   for (int i = 0; i < preserve->tagcount; ++i) {
-    preserve->tags [i].tag = strdup (libmp4tag->tags [i].tag);
-    if (preserve->tags [i].tag == NULL) {
-      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-      return NULL;
-    }
-    preserve->tags [i].datalen = libmp4tag->tags [i].datalen;
-    preserve->tags [i].data = malloc (libmp4tag->tags [i].datalen);
-    if (preserve->tags [i].data == NULL) {
-      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-      return NULL;
-    }
-    memcpy (preserve->tags [i].data, libmp4tag->tags [i].data,
-        libmp4tag->tags [i].datalen);
+    mp4tag_clone_tag (libmp4tag, &preserve->tags [i], &libmp4tag->tags [i]);
   }
 
   return preserve;
@@ -523,14 +511,31 @@ mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve)
     return libmp4tag->mp4error;
   }
 
-  libmp4tag->mp4error = MP4TAG_OK;
-
   if (preserve == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_NULL_VALUE;
     return libmp4tag->mp4error;
   }
 
-  return MP4TAG_ERR_NOT_IMPLEMENTED;
+  libmp4tag->mp4error = MP4TAG_OK;
+
+  mp4tag_free_tags (libmp4tag);
+
+  libmp4tag->tagcount = preserve->tagcount;
+  if (libmp4tag->tagcount > libmp4tag->tagalloccount) {
+    libmp4tag->tagalloccount = libmp4tag->tagcount;
+    libmp4tag->tags = realloc (libmp4tag->tags,
+        sizeof (mp4tag_t) * libmp4tag->tagcount);
+    if (libmp4tag->tags == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+      return libmp4tag->mp4error;
+    }
+  }
+
+  for (int i = 0; i < preserve->tagcount; ++i) {
+    mp4tag_clone_tag (libmp4tag, &libmp4tag->tags [i], &preserve->tags [i]);
+  }
+
+  return libmp4tag->mp4error;
 }
 
 int
@@ -544,12 +549,7 @@ mp4tag_preserve_free (libmp4tagpreserve_t *preserve)
 
   if (preserve->tags != NULL) {
     for (int i = 0; i < preserve->tagcount; ++i) {
-      if (preserve->tags [i].tag != NULL) {
-        free (preserve->tags [i].tag);
-      }
-      if (preserve->tags [i].data != NULL) {
-        free (preserve->tags [i].data);
-      }
+      mp4tag_free_tag (&preserve->tags [i]);
     }
     free (preserve->tags);
     preserve->tags = NULL;

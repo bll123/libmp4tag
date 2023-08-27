@@ -10,12 +10,10 @@ Contents:
 
 About
 
-  libmp4tag is a library to read and write MP4 tags.
-
-  The goal is to have a library where all tags can be accessed and
-  modified and any tags, unknown tags or custom tags are never lost
-  when the audio file is updated.  A list of known tags is only used
-  when new tags are added.
+  An MP4 tagging library where all tags can be accessed and modified and
+  any tags, unknown tags or custom tags are never lost when the audio
+  file is updated. A list of known tags is only used when new tags are
+  added.
 
   A command line utility is included to display or change the tags.
 
@@ -28,8 +26,7 @@ Current Status:
   be some bugs present.
 
   To Do:
-    - port to *bsd
-    - mp4tag_restore_tags ()
+    - better documentation
 
 Notes:
 
@@ -108,3 +105,8 @@ Using the mp4tagcli executable:
 
   Deleting all tags:
     mp4tagcli filename.m4a --clean
+
+  Copy all tags:
+    # this was implemented to test the preserve/restore functionality
+    # of the library.
+    mp4tagcli --copyfrom aaa.m4a --copyto bbb.m4a

@@ -4,11 +4,17 @@
 
 <!--
 
-**1.1.1 beta 2023-9---**
-
-* Bug Fixes:
+**1.1.2 beta 2023-8-27**
 
 -->
+
+**1.1.1 beta 2023-8-27**
+
+* Bug Fixes:
+    * Build now works on FreeBSD.
+* New Features:
+    * mp4tag_preserve_tags, mp4tag_restore_tags are now implemented.
+    * mp4tagcli: Added --copyfrom/--copyto to test preserve/restore.
 
 **1.1.0 beta 2023-8-24**
 

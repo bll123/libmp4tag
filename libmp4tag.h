@@ -192,6 +192,33 @@ int       mp4tag_clean_tags (libmp4tag_t *libmp4tag);
 /**
  * Preserve the tags in the audio file.
  *
+ * Usage:
+ *    libmp4tag = mp4tag_open (fname, &mp4error);
+ *    mp4tag_parse (libmp4tag);
+ *    preserve = mp4tag_preserve_tags (libmp4tag);
+ *    mp4tag_free (libmp4tag);
+ *    // run some program that mangles tags
+ *    snprintf (cmd, sizeof (cmd), "tag-mangling-program %s\n", fname);
+ *    system (cmd);
+ *    libmp4tag = mp4tag_open (fname, &mp4error);
+ *    mp4tag_parse (libmp4tag);
+ *    mp4tag_restore_tags (libmp4tag, preserve);
+ *    mp4tag_write_tags (libmp4tag);
+ *    mp4tag_free (libmp4tag);
+ *    mp4tag_preserve_free (preserve);
+ *
+ * mp4tag_preserve_tags() / mp4tag_restore_tags() can also be used to copy
+ * the tags to another file.
+ *    libmp4tag = mp4tag_open (fnameAAA, &mp4error);
+ *    mp4tag_parse (libmp4tag);
+ *    preserve = mp4tag_preserve_tags (libmp4tag);
+ *    mp4tag_free (libmp4tag);
+ *    libmp4tag = mp4tag_open (fnameBBB, &mp4error);
+ *    mp4tag_parse (libmp4tag);
+ *    mp4tag_restore_tags (libmp4tag, preserve);
+ *    mp4tag_free (libmp4tag);
+ *    mp4tag_preserve_free (preserve);
+ *
  * @param[in] libmp4tag Pointer to libmp4tag structure.
  * @return libmp4tagpreserve_t * or NULL on error.
  */
