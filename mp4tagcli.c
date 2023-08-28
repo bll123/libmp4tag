@@ -35,6 +35,7 @@ main (int argc, char *argv [])
   bool          clean = false;
   bool          write = false;
   bool          copy = false;
+  bool          testbin = false;
   int           fnidx = -1;
   int           dbgflags = 0;
 
@@ -47,6 +48,7 @@ main (int argc, char *argv [])
     { "display",        required_argument,  NULL,   'd' },
     { "dump",           no_argument,        NULL,   'D' },
     { "duration",       no_argument,        NULL,   'u' },
+    { "testbin",        no_argument,        NULL,   'B' },
     { "version",        no_argument,        NULL,   'v' },
     { NULL,             0,                  NULL,   0 }
   };
@@ -58,6 +60,10 @@ main (int argc, char *argv [])
     switch (c) {
       case 'b': {
         forcebinary = true;
+        break;
+      }
+      case 'B': {
+        testbin = true;
         break;
       }
       case 'c': {
@@ -159,10 +165,24 @@ main (int argc, char *argv [])
           }
         }
         if (p != NULL) {
-          if (mp4tag_set_tag (libmp4tag, tagname, p, forcebinary) == MP4TAG_OK) {
-            write = true;
+          if (testbin) {
+            char    *data = NULL;
+            size_t  sz;
+
+            data = mp4tag_read_file (libmp4tag, p, &sz);
+            if (data != NULL) {
+              if (mp4tag_set_binary_tag (libmp4tag, tagname, data, sz) == MP4TAG_OK) {
+                write = true;
+              } else {
+                fprintf (stderr, "Unable to set tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
+              }
+            }
           } else {
-            fprintf (stderr, "Unable to set tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
+            if (mp4tag_set_tag (libmp4tag, tagname, p, forcebinary) == MP4TAG_OK) {
+              write = true;
+            } else {
+              fprintf (stderr, "Unable to set tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
+            }
           }
         } /* data is being set for the tag */
       } /* there is a tag name */
