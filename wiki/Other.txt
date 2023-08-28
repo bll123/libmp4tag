@@ -8,25 +8,31 @@
 
 int mp4tag_error (libmp4tag_t *libmp4tag);
 
+**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+
 Returns the current [error&nbsp;code](ErrorCodes).
 
 ##### mp4tag_version
 
 const char * mp4tag_version (void);
 
-Returns the libmp4tag version string.
+Returns: The libmp4tag version string.
 
 ##### mp4tag_error_str
 
+Intended more for debugging purposes.
+
 const char * mp4tag_error_str (libmp4tag_t *libmp4tag);
 
-*libmp4tag* : The libmp4tag_t structure.
+**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
-Returns a brief error string corresponding to the libmp4tag
+Returns: A brief error string corresponding to the libmp4tag
 [error&nbsp;code](ErrorCodes).
 
 ##### mp4tag_set_debug_flags
 
 void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
+
+**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
 Sets the debug flags to the **dbgflags** value.

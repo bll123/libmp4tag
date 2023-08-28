@@ -76,8 +76,7 @@ An out of memory condition occured during processing.
 
 The specified tag was not found or is not valid.
 
-##### MP4TAG_ERR_UNABLE_TO_OPEN
-
-
-
 ##### MP4TAG_ERR_UNABLE_TO_PROCESS
+
+Cannot write the file as neither the tag list, nor the hierarchy in
+which to place the tag list can be found.

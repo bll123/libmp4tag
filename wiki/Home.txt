@@ -5,6 +5,7 @@
 <div markdown style="float: left; margin-right: 20px;">
 
 [Initializing](Initializing)
+<br>[Tag Names](TagNames)
 <br>[Getting Tag Information](GettingTags)
 <br>[Modifying Tags](ModifyingTags)
 <br>[Writing Tags](WritingTags)

@@ -8,21 +8,49 @@ These routines are written to work both on posix systems and on Windows.
 
 ##### mp4tag_fopen
 
-FILE * mp4tag_fopen (const char *fn, const char *mode)
+FILE * mp4tag_fopen (const char *filename, const char *mode)
+
+**filename** : The file to open.
+
+**mode** : The mode to use to open the file (see **fopen**).
+
+Returns: A FILE pointer or NULL on error.
 
 ##### mp4tag_file_size
 
-ssize_t mp4tag_file_size (const char *fn)
+ssize_t mp4tag_file_size (const char *filename)
+
+**filename** : The file to open.
+
+Returns: The size of the file or -1 on error.
 
 ##### *mp4tag_read_file
 
-char * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz)
+char * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *filename, size_t *sz)
+
+**filename** : The file to open.
+
+**sz** : How much data to read.
+
+Returns: An allocated pointer to the data.  The application takes
+ownership of the returned data and must free it.
 
 ##### mp4tag_file_delete
 
-int mp4tag_file_delete (const char *fname)
+int mp4tag_file_delete (const char *filename)
+
+**filename** : The file to delete.
+
+Returns: 0 on success.
 
 ##### mp4tag_file_move
 
-int mp4tag_file_move (const char *fname, const char *nfn)
+Renames a file.
 
+int mp4tag_file_move (const char *filename, const char *nfn)
+
+**filename** : The old filename.
+
+**nfn** : The new filename.
+
+Returns: 0 on success.

@@ -1,0 +1,81 @@
+[Wiki Home](Home)
+
+[TOC]
+
+### Tag Names
+
+Cover tags.  Cover tags may specify the cover index and also a cover
+name.
+
+'covr' and 'covr:0' are the same tag for the first cover image.
+<br>'covr:0:name' is the name of the first cover.
+<br>'covr:1' is the second cover image.
+<br>'covr:1:name' is the name of the second cover.
+
+Custom tag names.  Custom tags have a tag name with three parts.
+'----', the vendor identification and the name of the tag.  e.g.
+'----:BDJ4:DANCE' and
+'----:com.apple.iTunes:MusicBrainz&nbsp;Track&nbsp;Id' are custom
+tags.
+
+Standard MP4 Tags:
+
+  Name|Description
+  ----|-----------
+  aART|Album Artist
+  akID|iTunes (numeric)
+  atID|iTunes Artist ID (numeric)
+  catg|Category
+  cmID|iTunes Composer ID (numeric)
+  cnID|iTunes Catalog ID (numeric)
+  covr|Cover Image and Cover names
+  cpil|Compilation (flag)
+  cprt|Copyright
+  desc|Description
+  disk|Disc Number and Total Discs (numeric)
+  egid|iTunes Podcast GUID
+  geID|iTunes Genre ID (numeric)
+  gnre|ID3 Genre (numeric)
+  hdvd|HD DVD (flag)
+  keyw|Keywords
+  ldes|Lyrics Description
+  ownr|Owner
+  pcst|Podcast (flag)
+  pgap|Play Gapless (flag)
+  plID|iTunes Album ID (numeric)
+  purd|Purchase Date
+  purl|Podcast URL
+  rtng|Advisory Rating (numeric)
+  sfID|iTunes Country ID (numeric)
+  shwm|Show Movement (flag)
+  soaa|Album Artist Sort
+  soal|Album Sort
+  soar|Artist Sort
+  soco|Composer Sort
+  sonm|Title Sort
+  sosn|TV Show Sort
+  stik|Media Type (numeric)
+  tmpo|BPM (numeric)
+  trkn|Track Number and Total Tracks (numeric)
+  tven|TV Episode Name
+  tves|TV Episode (numeric)
+  tvnn|TV Network Name
+  tvsh|TV Show Name
+  tvsn|TV Season (numeric)
+  ©ART|Artist
+  ©alb|Album
+  ©cmt|Comment
+  ©day|Year
+  ©dir|Director
+  ©gen|Genre
+  ©grp|Grouping
+  ©lyr|Lyrics
+  ©mvc|Movement Total (numeric)
+  ©mvi|Movement Number (numeric)
+  ©mvn|Movement Name
+  ©nam|Title
+  ©nrt|Narrator
+  ©pub|Publisher
+  ©too|Encoded By
+  ©wrk|Work
+  ©wrt|Writer, Composer

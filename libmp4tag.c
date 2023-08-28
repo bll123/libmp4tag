@@ -25,7 +25,6 @@ static const char *mp4tagerrmsgs [] = {
   [MP4TAG_FINISH] = "finish",
   [MP4TAG_ERR_BAD_STRUCT] = "bad structure",
   [MP4TAG_ERR_OUT_OF_MEMORY] = "out of memory",
-  [MP4TAG_ERR_UNABLE_TO_OPEN] = "unable to open",
   [MP4TAG_ERR_NOT_MP4] = "not mp4",
   [MP4TAG_ERR_NOT_OPEN] = "not open",
   [MP4TAG_ERR_NULL_VALUE] = "null value",
@@ -44,13 +43,8 @@ static const char *mp4tagerrmsgs [] = {
 
 static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
 
-/**
- * Used by the mp4tag_preserve_tags() and mp4tag_restore_tags() routines.
- */
 typedef struct libmp4tagpreserve {
-  /** Preserved tags.  No application access. */
   mp4tag_t  *tags;
-  /** Count of number of tags. */
   int       tagcount;
 } libmp4tagpreserve_t;
 
@@ -102,7 +96,7 @@ mp4tag_open (const char *fn, int *mp4error)
 
   libmp4tag->fh = mp4tag_fopen (fn, "rb+");
   if (libmp4tag->fh == NULL) {
-    *mp4error = MP4TAG_ERR_UNABLE_TO_OPEN;
+    *mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
     free (libmp4tag);
     return NULL;
   }
