@@ -255,11 +255,18 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (processdata && strcmp (bd.nm, MP4TAG_DATA) == 0) {
+      /* data box inside a 'covr' */
       inclevel = false;
     }
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
       processdata = true;
+      if (bd.len == 0) {
+        /* there are no tags */
+        inclevel = false;
+        processdata = false;
+        checkforfree = true;
+      }
     }
 
     if (inclevel) {
@@ -274,7 +281,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       usedlen [plevel] += MP4TAG_BOXHEAD_SZ;
       usedlen [plevel] += bd.len;
 
-      while (currlen [plevel] == usedlen [plevel]) {
+      while (level > 1 && currlen [plevel] <= usedlen [plevel]) {
         --level;
         plevel = level - 1;
         if (plevel > 0) {
@@ -356,13 +363,12 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
   idx = 0;
   while (idx < len && rrc == 1) {
     if (idx == 0) {
-      /* major brand, generally M4A */
+      /* major brand */
       memcpy (tmp, buff + idx, MP4TAG_ID_LEN);
       tmp [MP4TAG_ID_LEN] = '\0';
-      /* ran into a .m4a file where mp42 was put into the tmp field */
-      /* may as well check for mp41 also */
       if (strcmp (tmp, "M4A ") == 0 ||
-          strcmp (tmp, "M4V ") == 0 ||
+          strcmp (tmp, "kddi") == 0 ||
+          strcmp (tmp, "isom") == 0 ||
           strcmp (tmp, "mp41") == 0 ||
           strcmp (tmp, "mp42") == 0) {
         ++ok;
@@ -402,6 +408,14 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
         /* mpeg-7 meta data */
         fprintf (stdout, "== mpeg-7 meta data\n");
         libmp4tag->mp7meta = true;
+      }
+      if (memcmp (buff + idx, "3g2a", 4) == 0) {
+        /* I don't really know what this is */
+        ++ok;
+      }
+      if (memcmp (buff + idx, "isom", 4) == 0) {
+        /* generic iso media */
+        ++ok;
       }
       /* isom, iso2, qt, avc1, 3gp, mmp4 */
     }
