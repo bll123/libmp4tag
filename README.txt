@@ -17,6 +17,8 @@ About
 
   A command line utility is included to display or change the tags.
 
+  Wiki: https://sourceforge.net/p/libmp4tag/wiki/Home/
+
 Current Status:
 
   Beta

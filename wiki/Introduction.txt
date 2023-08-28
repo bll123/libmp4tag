@@ -1,0 +1,29 @@
+[Wiki Home](Home)
+
+### Introduction
+
+libmp4tag is an MP4 tagging library where all tags can be accessed and
+modified.  It is designed so that when the tags are re-written to the
+MP4 file, all tags will be preserved, whether the tag is known,
+unknown or custom.
+
+A simple command line utility is included as an example for developers
+and as a simple way to modify MP4 file tags.
+
+libmp4tag was written by Brad Lanam in August 2023 for use by the
+[BallroomDJ&nbsp;4](https://sourceforge.net/projects/ballroomdj4/)
+application.
+
+Finding a library that would allow processing of the tags I needed for
+MP4 audio files proved to be difficult.  The libraries that claimed to
+handle many audio formats would only allow access to "known" tags or
+bypassed tags that I needed, or didn't handle custom tags.  An MP4
+specific library I found had the same issues.  One of the large well
+known applications that has metadata support also has the same issues.
+
+In this process of researching and working with audio tag libraries, I
+realized that many of the popular applications were not processing
+tags correctly.  Either by writing incorrect tag data or by losing
+metadata.  My new determination for BallroomDJ&nbsp;4 is to not be one
+of those applications, and the libmp4tag library was written for this
+purpose so that the metadata would not get lost.
