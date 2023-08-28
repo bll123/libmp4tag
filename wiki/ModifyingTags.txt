@@ -7,6 +7,7 @@
 These routines modify the list of tags internally.  The MP4 file is
 not modified until the **mp4tag_write_tags** function is called.
 
+-------------
 ##### mp4tag_set_tag
 
 Sets the specified tag to a new value.
@@ -34,6 +35,7 @@ tags.
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
+-------------
 ##### mp4tag_set_binary_tag
 
 Available with version 1.2.0.
@@ -54,6 +56,7 @@ int mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag, const char *
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
+-------------
 ##### mp4tag_delete_tag
 
 Delete the specified tag.
@@ -66,6 +69,7 @@ int mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
+-------------
 ##### mp4tag_clean_tags
 
 Deletes all tags.

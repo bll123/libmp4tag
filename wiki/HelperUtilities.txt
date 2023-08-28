@@ -6,6 +6,7 @@
 
 These routines are written to work both on posix systems and on Windows.
 
+-------------
 ##### mp4tag_fopen
 
 ~~~
@@ -18,6 +19,7 @@ FILE * mp4tag_fopen (const char *filename, const char *mode)
 
 Returns: A FILE pointer or NULL on error.
 
+-------------
 ##### mp4tag_file_size
 
 ~~~
@@ -28,6 +30,7 @@ ssize_t mp4tag_file_size (const char *filename)
 
 Returns: The size of the file or -1 on error.
 
+-------------
 ##### mp4tag_read_file
 
 ~~~
@@ -41,6 +44,7 @@ char * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *filename, size_t *s
 Returns: An allocated pointer to the data.  The application takes
 ownership of the returned data and must free it.
 
+-------------
 ##### mp4tag_file_delete
 
 ~~~
@@ -51,6 +55,7 @@ int mp4tag_file_delete (const char *filename)
 
 Returns: 0 on success.
 
+-------------
 ##### mp4tag_file_move
 
 Renames a file.

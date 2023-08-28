@@ -4,6 +4,7 @@
 
 ### Other Utilities
 
+-------------
 ##### mp4tag_error
 
 ~~~
@@ -14,6 +15,7 @@ int mp4tag_error (libmp4tag_t *libmp4tag)
 
 Returns the current [error&nbsp;code](ErrorCodes).
 
+-------------
 ##### mp4tag_version
 
 ~~~
@@ -22,6 +24,7 @@ const char * mp4tag_version (void)
 
 Returns: The libmp4tag version string.
 
+-------------
 ##### mp4tag_error_str
 
 Intended more for debugging purposes.
@@ -35,6 +38,7 @@ const char * mp4tag_error_str (libmp4tag_t *libmp4tag)
 Returns: A brief error string corresponding to the libmp4tag
 [error&nbsp;code](ErrorCodes).
 
+-------------
 ##### mp4tag_set_debug_flags
 
 ~~~
@@ -42,5 +46,7 @@ void mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags)
 ~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+
+**dbgflags** : The value to set the debug flags to.
 
 Sets the debug flags to the **dbgflags** value.

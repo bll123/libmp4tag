@@ -10,6 +10,13 @@ unknown or custom.
 A simple command line utility is included as an example for developers
 and as a simple way to modify MP4 file tags.
 
+Notes:
+
+The 'gnre' tag is always converted to '©gen' when writing the tag
+data, and '©gen' is used internally.
+
+----------
+
 libmp4tag was written by Brad Lanam in August 2023 for use by the
 [BallroomDJ&nbsp;4](https://sourceforge.net/projects/ballroomdj4/)
 application.

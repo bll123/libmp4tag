@@ -15,6 +15,8 @@ Determining whether any tags have changed and whether calling
 **mp4tag_write_tags** is necessary is the responsibility of the
 application.
 
+-------------
+
 ##### mp4tag_write_tags
 
 ~~~

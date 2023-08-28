@@ -28,7 +28,7 @@ Current Status:
   be some bugs present.
 
   To Do:
-    - better documentation
+    - manual pages
 
 Notes:
 
