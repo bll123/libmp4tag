@@ -10,9 +10,11 @@ Opens an MP4 file.  The MP4 file is checked for a valid 'ftyp' header.
 A libmp4tag_t structure is allocated and returned for use in the other
 libmp4tag functions.
 
+~~~
 #include "libmp4tag.h"
 
 libmp4tag_t *mp4tag_open (const char *filename, int *mp4error)
+~~~
 
 **filename** : The file to open.
 
@@ -24,7 +26,9 @@ pointer must be freed in a call to **mp4tag_free**.
 
 ##### mp4tag_parse
 
+~~~
 int mp4tag_parse (libmp4tag_t *libmp4tag)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
@@ -34,6 +38,8 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
 Closes any open files and frees all memory.
 
+~~~
 void mp4tag_free (libmp4tag_t *libmp4tag)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.

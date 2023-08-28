@@ -12,6 +12,7 @@ Example usage (no error checking):
 ~~~
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "libmp4tag.h"
 
@@ -39,6 +40,7 @@ main (int argc, const char *argv [])
   mp4tag_write_tags (libmp4tag);
   mp4tag_preserve_free (preserve);
   mp4tag_free (libmp4tag);
+
 }
 ~~~
 
@@ -46,6 +48,7 @@ Copying tags (no error checking):
 ~~~
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "libmp4tag.h"
 
@@ -69,12 +72,15 @@ main (int argc, const char *argv [])
   mp4tag_write_tags (libmp4tag);
   mp4tag_preserve_free (preserve);
   mp4tag_free (libmp4tag);
+
 }
 ~~~
 
 ##### mp4tag_preserve_tags
 
-libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
+~~~
+libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
@@ -84,7 +90,9 @@ Returns: Allocated libmp4tagpreserve_t structure.
 
 Be sure to call **mp4tag_write_tags** after restoring the tags.
 
-int mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
+~~~
+int mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
@@ -92,7 +100,9 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
 ##### mp4tag_preserve_free
 
-int mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
+~~~
+int mp4tag_preserve_free (libmp4tagpreserve_t *preserve)
+~~~
 
 **preserve** : The libmp4tagpreserve_t structure returned from
 **mp4tag_preserve_tags**.

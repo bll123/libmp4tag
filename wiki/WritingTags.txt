@@ -13,11 +13,13 @@ replaced.
 
 Determining whether any tags have changed and whether calling
 **mp4tag_write_tags** is necessary is the responsibility of the
-application
+application.
 
 ##### mp4tag_write_tags
 
+~~~
 int mp4tag_write_tags (libmp4tag_t *libmp4tag)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 

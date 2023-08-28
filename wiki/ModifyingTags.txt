@@ -18,7 +18,9 @@ When setting binary data, the data argument specifies a file to read
 to load the binary data.  If the application already has the binary
 data in memory, the **mp4tag_set_binary_tag** function should be used.
 
+~~~
 int mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, bool forcebinary)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
@@ -34,9 +36,13 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
 ##### mp4tag_set_binary_tag
 
+Available with version 1.2.0.
+
 Used when the binary data is already in the application's memory.
 
+~~~
 int mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, size_t datalen)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
@@ -52,7 +58,9 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
 Delete the specified tag.
 
+~~~
 int mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
@@ -62,7 +70,9 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
 Deletes all tags.
 
+~~~
 int mp4tag_clean_tags (libmp4tag_t *libmp4tag);
+~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
