@@ -505,6 +505,7 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
     return libmp4tag->mp4error;
   }
   rc = mp4tag_write_data (libmp4tag, data, dlen);
+  free (data);
   return rc;
 }
 

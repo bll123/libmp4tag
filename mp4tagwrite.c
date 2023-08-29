@@ -784,7 +784,7 @@ mp4tag_parse_pair (const char *data, int *a, int *b)
   int   rc;
 
   rc = sscanf (data, "%d/%d", a, b);
-  if (rc == 2) {
+  if (rc == 1 || rc == 2) {
     return;
   }
   /* try using mutagen output format */

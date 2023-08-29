@@ -542,7 +542,11 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
       t16 = be16toh (t16);
       /* trkn has an additional two trailing bytes */
 
-      snprintf (tmp, sizeof (tmp), "%d/%d", (int) t32, (int) t16);
+      if (t16 == 0) {
+        snprintf (tmp, sizeof (tmp), "%d", (int) t32);
+      } else {
+        snprintf (tmp, sizeof (tmp), "%d/%d", (int) t32, (int) t16);
+      }
       mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING, tflag, tlen, NULL);
     } else if (tlen == 4) {
       memcpy (&t32, p, sizeof (uint32_t));

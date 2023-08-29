@@ -385,7 +385,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
         tlen = strlen (data);
       }
 
-      mp4tag_add_tag (libmp4tag, tag, data, strlen (data), tflag, tlen, NULL);
+      mp4tag_add_tag (libmp4tag, tag, data, MP4TAG_STRING, tflag, tlen, NULL);
       mp4tag_sort_tags (libmp4tag);
     } else {
       libmp4tag->mp4error = MP4TAG_ERR_TAG_NOT_FOUND;
