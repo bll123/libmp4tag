@@ -132,7 +132,9 @@ build:
 	cmake --build $(BUILDDIR) $(pmode)
 
 .PHONY: install
-install:
+install: $(VERSFN)
+	# force cmake to re-build the pkgconfig file.
+	@$(RM) -f libmp4tag.pc
 	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
 
 # source
@@ -148,7 +150,7 @@ sourcetar: $(VERSFN)
 	test -d $${TDIR} && $(RM) -rf $${TDIR}; \
 	mkdir $${TDIR}; \
 	cp -pfr \
-		*.c *.h CMakeLists.txt Makefile config.h.in \
+		*.c *.h CMakeLists.txt Makefile config.h.in libmp4tag.pc.in \
 		DEVNOTES.txt README.txt LICENSE.txt \
 		wiki \
 		$${TDIR}; \
@@ -161,13 +163,14 @@ sourcetar: $(VERSFN)
 distclean:
 	@-$(MAKE) tclean
 	@-$(RM) -rf build tmp
-	@-$(RM) -f libmp4tag-src-*.tar.gz
+	@-$(RM) -f libmp4tag-src-*.tar.gz libmp4tag.pc
 	@mkdir $(BUILDDIR)
 
 .PHONY: clean
 clean:
 	@-$(MAKE) tclean
 	@-test -d build && cmake --build build --target clean
+	@$(RM) -f libmp4tag.pc
 
 .PHONY: tclean
 tclean:

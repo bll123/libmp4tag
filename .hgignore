@@ -3,6 +3,7 @@ syntax: regexp
 ^build/
 ^dev/rs\.sh$
 ^dev/wikibearer\.txt$
+^libmp4tag\.pc$
 ^samples/
 ^tmp/
 \.jpg$

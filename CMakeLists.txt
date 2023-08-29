@@ -196,3 +196,18 @@ install (FILES
   libmp4tag.h
   DESTINATION include
 )
+
+# Want to get the installation prefix from the cmake install process,
+# not from whatever it is set to during the build.
+# During the install process, the version is not set, so read it in.
+install (CODE
+  [[
+  file (READ tmp/vers.txt LIBMP4TAG_BUILD_VERS)
+  configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
+  ]]
+)
+
+install (FILES
+  libmp4tag.pc
+  DESTINATION lib/pkgconfig
+)
