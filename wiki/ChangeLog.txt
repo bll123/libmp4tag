@@ -4,16 +4,18 @@
 
 <!--
 
-**1.2.0 beta 2023-8---**
+**1.2.1 beta 2023-9---**
+
+-->
+
+**1.2.0 beta 2023-8-28**
 
 * Bug Fixes:
-    * Fix crash when taglist is empty.
+    * Fix crash when taglist is present but empty.
     * Recognize more files as mp4.
 * New Features:
     * New mp4tag_set_binary_tag() routine.
     * Added wiki documentation.
-
--->
 
 **1.1.1 beta 2023-8-27**
 
