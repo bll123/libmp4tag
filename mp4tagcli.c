@@ -138,7 +138,9 @@ main (int argc, char *argv [])
   }
 
   if (clean && ! copy) {
-    mp4tag_clean_tags (libmp4tag);
+    if (mp4tag_clean_tags (libmp4tag) != MP4TAG_OK) {
+      fprintf (stderr, "Unable to clean tags (%s)\n", mp4tag_error_str (libmp4tag));
+    }
     write = true;
   }
 

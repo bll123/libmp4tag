@@ -500,10 +500,10 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
   libmp4tag->mp4error = MP4TAG_OK;
 
   data = mp4tag_build_data (libmp4tag, &dlen);
-  if (data == NULL) {
-    libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+  if (libmp4tag->mp4error != MP4TAG_OK) {
     return libmp4tag->mp4error;
   }
+  /* if data is null and dlen == 0 , it is a complete clean of the tags */
   rc = mp4tag_write_data (libmp4tag, data, dlen);
   free (data);
   return rc;

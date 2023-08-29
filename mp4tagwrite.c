@@ -131,9 +131,11 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     return libmp4tag->mp4error;
   }
 
-  if (fwrite (data, datalen, 1, libmp4tag->fh) != 1) {
-    libmp4tag->mp4error = MP4TAG_ERR_FILE_WRITE_ERROR;
-    return libmp4tag->mp4error;
+  if (datalen > 0) {
+    if (fwrite (data, datalen, 1, libmp4tag->fh) != 1) {
+      libmp4tag->mp4error = MP4TAG_ERR_FILE_WRITE_ERROR;
+      return libmp4tag->mp4error;
+    }
   }
 
   freelen = 0;

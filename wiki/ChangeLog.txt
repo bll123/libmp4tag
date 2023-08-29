@@ -15,6 +15,7 @@
     * Fix disc/track parsing issues.
     * Fix memory leak.
     * Fix bug setting new disk/track tag.
+    * Fix mp4tag_clean_tags.
 * Changes:
     * Create and install pkgconfig file.
 

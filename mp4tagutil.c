@@ -567,9 +567,10 @@ mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source)
       ++len;
     }
     target->data = malloc (len);
-    memcpy (target->data, source->data, len);
     if (target->data == NULL) {
       libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    } else {
+      memcpy (target->data, source->data, len);
     }
   }
 
