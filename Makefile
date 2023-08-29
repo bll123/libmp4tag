@@ -151,7 +151,7 @@ sourcetar: $(VERSFN)
 	mkdir $${TDIR}; \
 	cp -pfr \
 		*.c *.h CMakeLists.txt Makefile config.h.in libmp4tag.pc.in \
-		DEVNOTES.txt README.txt LICENSE.txt \
+		README.txt LICENSE.txt \
 		wiki \
 		$${TDIR}; \
 	tar -c -z -f libmp4tag-src-$${VERS}.tar.gz $${TDIR}; \

@@ -6,6 +6,8 @@ libmp4tag
 Contents:
   About
   Notes
+  Build Requirements
+  Building
   Using the mp4tagcli executable
 
 About
@@ -36,6 +38,17 @@ Notes:
   data, and '©gen' is used internally.
 
   Duration is in milliseconds.
+
+Build Requirements:
+
+  make
+  cmake
+  C compiler
+  libmp4tag does not use any external libraries.
+
+Building:
+  make
+  make PREFIX=install-dir install
 
 Using the mp4tagcli executable:
 
