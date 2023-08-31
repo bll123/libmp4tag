@@ -6,6 +6,9 @@
 
 **1.2.3 beta 2023-9---**
 
+* Bug Fixes:
+    * Fix windows installation.
+
 -->
 
 **1.2.2 beta 2023-8-31**

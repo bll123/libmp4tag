@@ -48,7 +48,9 @@ Build Requirements:
 
 Building:
   make
-  make PREFIX=install-dir install
+  make PREFIX=target-dir install
+  # if staging:
+  make PREFIX=target-dir DESTDIR=stage-dir install
 
 Using the mp4tagcli executable:
 

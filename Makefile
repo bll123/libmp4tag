@@ -9,7 +9,6 @@ BUILDDIR = build
 GCC = gcc
 CLANG = clang
 VERSFN = tmp/vers.txt
-PREFIX = /usr
 RM = rm
 
 .PHONY: release
@@ -127,15 +126,24 @@ cmake-windows:
 
 # cmake on windows installs extra unneeded crap
 # --parallel does not work correctly on msys2
+# --parallel also seems to not work on *BSD
 .PHONY: build
 build:
 	cmake --build $(BUILDDIR) $(pmode)
 
+# force cmake to re-build the pkgconfig file.
+# prefix and destdir should be unset so that cmake does not 
+# pick them up, otherwise paths get duplicated.
+# if destdir is not set, use the same path as prefix
 .PHONY: install
 install: $(VERSFN)
-	# force cmake to re-build the pkgconfig file.
-	@$(RM) -f libmp4tag.pc
-	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
+	@$(RM) -f libmp4tag.pc tmp/prefix.txt
+	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
+	@echo $(PREFIX) > tmp/prefix.txt
+	@tdest=$${DESTDIR:-$${PREFIX}}; \
+	unset PREFIX; \
+	unset DESTDIR; \
+	cmake --install $(BUILDDIR) --prefix "$${tdest}"
 
 # source
 

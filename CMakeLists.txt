@@ -184,9 +184,13 @@ endif()
 
 #### install
 
+# the cmake install process is bizaare.
+# variables are not set.  despite this, cmake-install-libdir
+# seems to work, though it cannot be used as a variable.
+
 install (TARGETS
   libmp4tag
-  DESTINATION lib
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 install (TARGETS
   mp4tagcli
@@ -197,12 +201,15 @@ install (FILES
   DESTINATION include
 )
 
-# Want to get the installation prefix from the cmake install process,
-# not from whatever it is set to during the build.
+# Want to get the installation prefix. Not cmake defaults or staging dirs.
+# Not from whatever it is set to during the cmake build.
 # During the install process, the version is not set, so read it in.
+# The Makefile removes libmp4tag.pc before starting the install,
+# so this code is always run.
 install (CODE
   [[
   file (READ tmp/vers.txt LIBMP4TAG_BUILD_VERS)
+  file (READ tmp/prefix.txt LIBMP4TAG_INST_PREFIX)
   configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
   ]]
 )
