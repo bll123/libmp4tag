@@ -27,7 +27,7 @@ static void * mp4tag_towide (const char *buff);
 FILE *
 mp4tag_fopen (const char *fname, const char *mode)
 {
-  FILE          *fh;
+  FILE          *fh = NULL;
 
 #ifdef _WIN32
   {
@@ -36,9 +36,11 @@ mp4tag_fopen (const char *fname, const char *mode)
 
     tfname = mp4tag_towide (fname);
     tmode = mp4tag_towide (mode);
-    fh = _wfopen (tfname, tmode);
-    free (tfname);
-    free (tmode);
+    if (tfname != NULL && tmode != NULL) {
+      fh = _wfopen (tfname, tmode);
+      free (tfname);
+      free (tmode);
+    }
   }
 #else
   {
@@ -60,11 +62,13 @@ mp4tag_file_size (const char *fname)
     int           rc;
 
     tfname = mp4tag_towide (fname);
-    rc = _wstat (tfname, &statbuf);
-    if (rc == 0) {
-      sz = statbuf.st_size;
+    if (tfname != NULL) {
+      rc = _wstat (tfname, &statbuf);
+      if (rc == 0) {
+        sz = statbuf.st_size;
+      }
+      free (tfname);
     }
-    mdfree (tfname);
   }
 #else
   {
@@ -124,7 +128,7 @@ mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz)
 int
 mp4tag_file_delete (const char *fname)
 {
-  int     rc;
+  int     rc = -1;
 #if _lib__wunlink
   wchar_t *tname;
 #endif
@@ -135,8 +139,10 @@ mp4tag_file_delete (const char *fname)
 
 #if _lib__wunlink
   tname = mp4tag_towide (fname);
-  rc = _wunlink (tname);
-  mdfree (tname);
+  if (tname != NULL) {
+    rc = _wunlink (tname);
+    free (tname);
+  }
 #else
   rc = unlink (fname);
 #endif
@@ -160,9 +166,11 @@ mp4tag_file_move (const char *fname, const char *nfn)
 
     wfname = mp4tag_towide (fname);
     wnfn = mp4tag_towide (nfn);
-    rc = _wrename (wfname, wnfn);
-    mdfree (wfname);
-    mdfree (wnfn);
+    if (wfname != NULL && wnfn != NULL) {
+      rc = _wrename (wfname, wnfn);
+      free (wfname);
+      free (wnfn);
+    }
   }
 #else
   rc = rename (fname, nfn);

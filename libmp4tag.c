@@ -152,13 +152,14 @@ mp4tag_free (libmp4tag_t *libmp4tag)
     return;
   }
 
-  if (libmp4tag->fn != NULL) {
-    free (libmp4tag->fn);
-    libmp4tag->fn = NULL;
-  }
   if (libmp4tag->fh != NULL) {
     fclose (libmp4tag->fh);
     libmp4tag->fh = NULL;
+  }
+
+  if (libmp4tag->fn != NULL) {
+    free (libmp4tag->fn);
+    libmp4tag->fn = NULL;
   }
   mp4tag_free_tags (libmp4tag);
   free (libmp4tag);
@@ -347,6 +348,7 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
   return libmp4tag->mp4error;
 }
 
+/* this will not work for cover images as the api is currently defined */
 int
 mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag,
     const char *data, size_t datalen)
@@ -505,7 +507,9 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
   }
   /* if data is null and dlen == 0 , it is a complete clean of the tags */
   rc = mp4tag_write_data (libmp4tag, data, dlen);
-  free (data);
+  if (data != NULL) {
+    free (data);
+  }
   return rc;
 }
 

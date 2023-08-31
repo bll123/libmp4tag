@@ -4,9 +4,17 @@
 
 <!--
 
-**1.2.2 beta 2023-8---**
+**1.2.3 beta 2023-9---**
 
 -->
+
+**1.2.2 beta 2023-8-31**
+
+* Bug Fixes:
+    * Prevent possible crashes.
+    * Fix various internal bugs.
+    * Fix windows build.
+    * Fix windows file handling on re-write.
 
 **1.2.1 beta 2023-8-29**
 

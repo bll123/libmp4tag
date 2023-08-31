@@ -28,10 +28,7 @@ typedef struct {
 
 typedef struct {
   uint64_t    len;
-  /* this length has to be at least 4 + 3 + 1 bytes */
-  /* room enough to hold the copyright symbol and three more chars */
-  /* it holds the base identifier */
-  char        nm [10];
+  char        nm [MP4TAG_ID_DISP_LEN];
   uint64_t    dlen;
   char        *data;
 } boxdata_t;
@@ -130,8 +127,10 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     /* track the current level's length */
-    currlen [level] = bd.len;
-    usedlen [level] = 0;
+    if (level < LEVEL_MAX) {
+      currlen [level] = bd.len;
+      usedlen [level] = 0;
+    }
 
     /* to process a heirarchy, set the skiplen to the size of any */
     /* data associated with the current box. */
@@ -175,7 +174,8 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       }
 
       libmp4tag->base_lengths [level] = bd.len;
-      strcpy (libmp4tag->base_name [level], bd.nm);
+      snprintf (libmp4tag->base_name [level], sizeof (libmp4tag->base_name [level]),
+          "%s", bd.nm);
       libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
 // fprintf (stdout, "store base: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->base_offsets [level]);
       libmp4tag->base_offset_count = level + 1;
@@ -273,7 +273,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       ++level;
     }
 
-    if (! inclevel && level > 0) {
+    if (! inclevel && level > 0 && level < LEVEL_MAX) {
       int     plevel;
 
       plevel = level - 1;
@@ -471,6 +471,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
     uint32_t blen, const char *data)
 {
   const char  *p;
+  /* tnm must be large enough to hold any custom tag name */
   char        tnm [MP4TAG_ID_MAX];
   uint32_t    tflag;
   uint8_t     t8;
@@ -486,12 +487,11 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
     return;
   }
 
-  strcpy (tnm, tag);
+  snprintf (tnm, sizeof (tnm), "%s", tag);
   if (strcmp (tag, "----") == 0) {
     size_t    len;
 
-    strcpy (tnm, tag);
-    len = strlen (tag);
+    len = strlen (tnm);
     tnm [len++] = ':';
     tnm [len] = '\0';
 
@@ -530,8 +530,9 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
   /* general data */
   if (tflag == MP4TAG_ID_DATA ||
       tflag == MP4TAG_ID_NUM) {
-    /* what follows depends on the identifier */
 
+    /* 'disk' and 'trkn' must be handle as special cases. */
+    /* they are marked as data (0x00). */
     if (strcmp (tnm, MP4TAG_DISK) == 0 ||
         strcmp (tnm, MP4TAG_TRKN) == 0) {
       /* pair of 32 bit and 16 bit numbers */
@@ -540,7 +541,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
       p += sizeof (uint32_t);
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
-      /* trkn has an additional two trailing bytes */
+      /* trkn has an additional two trailing bytes that are not used */
 
       if (t16 == 0) {
         snprintf (tmp, sizeof (tmp), "%d", (int) t32);
@@ -556,6 +557,9 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
     } else if (tlen == 2) {
       memcpy (&t16, p, sizeof (uint16_t));
       t16 = be16toh (t16);
+
+      /* the 'gnre' tag is converted to '©gen' */
+      /* hard-coded lists of genres are not good */
       if (strcmp (tnm, MP4TAG_GNRE) == 0) {
         /* the itunes value is offset by 1 */
         t16 -= 1;

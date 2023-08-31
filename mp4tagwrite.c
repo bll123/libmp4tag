@@ -32,16 +32,13 @@ static char * mp4tag_append_len_64 (char *dptr, uint64_t val);
 static void mp4tag_update_cover_len (libmp4tag_t *libmp4tag, char *data, uint32_t len);
 static int  mp4tag_copy_file_data (FILE *ifh, FILE *ofh, size_t offset, size_t len);
 
+/* if there are no tags, null will be returned. */
 char *
 mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
 {
   char      *data = NULL;
 
   *datalen = 0;
-
-  if (libmp4tag == NULL) {
-    return NULL;
-  }
 
   for (int i = 0; i < libmp4tag->tagcount; ++i) {
     const mp4tagdef_t   *result = NULL;
@@ -222,7 +219,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
     return libmp4tag->mp4error;
   }
 
-  snprintf (ofn, sizeof (ofn), "%s.tmp", libmp4tag->fn);
+  snprintf (ofn, sizeof (ofn), "%s%s", libmp4tag->fn, MP4TAG_TEMP_SUFFIX);
   ofh = mp4tag_fopen (ofn, "wb+");
   if (ofh == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_NOT_OPEN;
@@ -357,7 +354,23 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
   fclose (ofh);
 
   if (rc == MP4TAG_OK) {
+    char    tfn [2048];
+
+    snprintf (tfn, sizeof (tfn), "%s%s", libmp4tag->fn, MP4TAG_BACKUP_SUFFIX);
+    /* windows will not allow an open file to be removed, */
+    /* and the original file is still open */
+
+    if (libmp4tag->fh != NULL) {
+      fclose (libmp4tag->fh);
+      libmp4tag->fh = NULL;
+    }
+
+    mp4tag_file_move (libmp4tag->fn, tfn);
     mp4tag_file_move (ofn, libmp4tag->fn);
+    mp4tag_file_delete (tfn);
+
+    /* and re-open the file */
+    libmp4tag->fh = mp4tag_fopen (libmp4tag->fn, "rb+");
   } else {
     mp4tag_file_delete (ofn);
   }

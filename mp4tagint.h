@@ -40,26 +40,34 @@
 
 #define MP4TAG_CUSTOM_DELIM ":"
 #define MP4TAG_COVER_DELIM ":"
+#define MP4TAG_BACKUP_SUFFIX "-mp4tag.bak"
+#define MP4TAG_TEMP_SUFFIX "-mp4tag.tmp"
 
 enum {
   MP4TAG_NOTFOUND = -1,     // returned by find-tag
   MP4TAG_ID_LEN = 4,
+  /* this length has to be at least 2 + 3 + 1 bytes */
+  /* room enough to hold the copyright symbol, three more chars and eol */
+  MP4TAG_ID_DISP_LEN = 6,
   MP4TAG_STRING = 0,
+  /* internal MP4 values */
   MP4TAG_ID_BOOL = 0x15,
   MP4TAG_ID_STRING = 0x01,
   MP4TAG_ID_DATA = 0x00,
   MP4TAG_ID_NUM = 0x15,
   MP4TAG_ID_JPG = 0x0d,
   MP4TAG_ID_PNG = 0x0e,
-  MP4TAG_PRI_CUSTOM = 8,
-  MP4TAG_PRI_NOWRITE = -1,
-  MP4TAG_PRI_MAX = 20,
-  MP4TAG_BASE_OFF_MAX = 10,
+  /* internal MP4 sizes */
   MP4TAG_BOXHEAD_SZ = sizeof (uint32_t) + MP4TAG_ID_LEN,
   /* data-len + ident + flags + reserved */
   MP4TAG_DATA_SZ = MP4TAG_ID_LEN + sizeof (uint32_t) * 3,
   MP4TAG_HDLR_SZ = MP4TAG_BOXHEAD_SZ + sizeof (uint32_t) * 6 + sizeof (uint8_t),
   MP4TAG_META_SZ = MP4TAG_BOXHEAD_SZ + sizeof (uint32_t),
+  /* priorities */
+  MP4TAG_PRI_CUSTOM = 8,
+  MP4TAG_PRI_NOWRITE = -1,
+  MP4TAG_PRI_MAX = 20,
+  MP4TAG_BASE_OFF_MAX = 15,
   MP4TAG_COPY_SIZE = 5 * 1024 * 1024,
   MP4TAG_FREE_SPACE_SZ = 512,
 };
@@ -100,7 +108,7 @@ typedef struct libmp4tag {
   uint32_t  base_lengths [MP4TAG_BASE_OFF_MAX];
   ssize_t   base_offsets [MP4TAG_BASE_OFF_MAX];
   /* for debugging, otherwise not needed */
-  char      base_name [MP4TAG_BASE_OFF_MAX][MP4TAG_ID_LEN + 1];
+  char      base_name [MP4TAG_BASE_OFF_MAX][MP4TAG_ID_DISP_LEN + 1];
   int       base_offset_count;
   ssize_t   taglist_base_offset;
   ssize_t   taglist_offset;
