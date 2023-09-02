@@ -22,10 +22,8 @@ if [[ ! -f libmp4tag-src-${VERS}.tar.gz ]]; then
   echo "no source tar"
   exit 1
 fi
-if [[ ! -f build/libmp4tag.so || ! -f build/mp4tagcli ]]; then
-  echo "no binaries "
-  exit 1
-fi
+
+make tclean
 
 fn=README.txt
 sshpass -e rsync -v -e ssh ${fn} \
