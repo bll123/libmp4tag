@@ -31,8 +31,8 @@ returned.  If there is no cover name, or the tag is not 'covr',
 
 **datalen** : The size of the value.
 
-**coveridx** : The index of the cover. The first cover will have a
-value of zero.
+**coveridx** : The index of the cover image. The first cover will have
+a value of zero.
 
 **binary** : If true, the data is in binary format.
 
@@ -60,6 +60,10 @@ int mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag, mp4tagpub_t
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
+**tag** : The name of the tag to retrieve.
+
+**mp4tagpub** : A pointer to a mp4tagpub_t structure to fill in.
+
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
 -------------
@@ -81,5 +85,7 @@ int mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub)
 ~~~
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+
+**mp4tagpub** : A pointer to a mp4tagpub_t structure to fill in.
 
 Returns: MP4TAG_OK, MP4TAG_FINISH or other [error&nbsp;code](ErrorCodes).

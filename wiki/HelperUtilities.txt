@@ -37,7 +37,7 @@ Returns: The size of the file or -1 on error.
 char * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *filename, size_t *sz)
 ~~~
 
-**filename** : The file to open.
+**filename** : The file to get the size of.
 
 **sz** : How much data to read.
 

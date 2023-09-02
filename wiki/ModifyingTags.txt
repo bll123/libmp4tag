@@ -67,6 +67,8 @@ int mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
+**tag** : The name of the tag to delete.
+
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
 -------------

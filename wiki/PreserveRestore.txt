@@ -85,7 +85,8 @@ libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
 
 **libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
 
-Returns: Allocated libmp4tagpreserve_t structure.
+Returns: Allocated libmp4tagpreserve_t structure.  The
+*8mp4tag_preserve_free** function must be called to free this value.
 
 -------------
 ##### mp4tag_restore_tags
