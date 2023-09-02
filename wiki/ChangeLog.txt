@@ -4,12 +4,15 @@
 
 <!--
 
-**1.2.3 beta 2023-9---**
+**1.2.4 beta 2023-9---**
+
+-->
+
+**1.2.3 beta 2023-9-2**
 
 * Bug Fixes:
     * Fix windows installation.
-
--->
+    * Install pkgconfig file.
 
 **1.2.2 beta 2023-8-31**
 

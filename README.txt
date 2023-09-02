@@ -49,6 +49,7 @@ Build Requirements:
 Building:
   make
   make PREFIX=target-dir install
+  # e.g. make PREFIX=/usr/local install
   # if staging:
   make PREFIX=target-dir DESTDIR=stage-dir install
 

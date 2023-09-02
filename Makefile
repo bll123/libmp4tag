@@ -11,6 +11,8 @@ CLANG = clang
 VERSFN = tmp/vers.txt
 RM = rm
 
+PREFIX = /usr
+
 .PHONY: release
 release:
 	LIBMP4TAG_BUILD=Release $(MAKE) cmake
@@ -131,19 +133,16 @@ cmake-windows:
 build:
 	cmake --build $(BUILDDIR) $(pmode)
 
-# force cmake to re-build the pkgconfig file.
-# prefix and destdir should be unset so that cmake does not 
-# pick them up, otherwise paths get duplicated.
-# if destdir is not set, use the same path as prefix
+# force cmake to re-build the pkgconfig file
+# make sure the correct prefix is available for the pkgconfig file.
+# cmake's --prefix argument is disassociated from the prefix needed
+# for the pkgconfig file.
 .PHONY: install
 install: $(VERSFN)
 	@$(RM) -f libmp4tag.pc tmp/prefix.txt
 	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
 	@echo $(PREFIX) > tmp/prefix.txt
-	@tdest=$${DESTDIR:-$${PREFIX}}; \
-	unset PREFIX; \
-	unset DESTDIR; \
-	cmake --install $(BUILDDIR) --prefix "$${tdest}"
+	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
 
 # source
 

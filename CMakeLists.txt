@@ -184,9 +184,10 @@ endif()
 
 #### install
 
-# the cmake install process is bizaare.
-# variables are not set.  despite this, cmake-install-libdir
-# seems to work, though it cannot be used as a variable.
+# the cmake install process is bizarre. variables are not set.
+# why doesn't it load the cache?
+# cmake-install-libdir cannot be used as a variable for
+# the pre-install build of the .pc file.
 
 install (TARGETS
   libmp4tag
@@ -210,6 +211,13 @@ install (CODE
   [[
   file (READ tmp/vers.txt LIBMP4TAG_BUILD_VERS)
   file (READ tmp/prefix.txt LIBMP4TAG_INST_PREFIX)
+  string (REGEX REPLACE "\n$" "" LIBMP4TAG_BUILD_VERS "${LIBMP4TAG_BUILD_VERS}")
+  string (REGEX REPLACE "\n$" "" LIBMP4TAG_INST_PREFIX "${LIBMP4TAG_INST_PREFIX}")
+  if (WIN32)
+    set (LIBMP4TAG_INST_LIBDIR bin)
+  else()
+    set (LIBMP4TAG_INST_LIBDIR lib)
+  endif()
   configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
   ]]
 )
