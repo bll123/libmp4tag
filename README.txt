@@ -69,9 +69,6 @@ Using the mp4tagcli executable:
       --binary is only needed when adding an unknown binary data tag
       tag=<filename> is only used for binary data.
 
-  Displaying known tags:
-    mp4tagcli --list-tags
-
   Displaying the duration and tags:
     mp4tagcli filename.m4a
 
