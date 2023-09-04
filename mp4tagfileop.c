@@ -55,15 +55,15 @@ mp4tag_file_size (const char *fname)
 {
   ssize_t       sz = -1;
 
-#if _lib__wstat
+#if _lib__wstat64
   {
-    struct _stat  statbuf;
+    struct __stat64  statbuf;
     wchar_t       *tfname = NULL;
     int           rc;
 
     tfname = mp4tag_towide (fname);
     if (tfname != NULL) {
-      rc = _wstat (tfname, &statbuf);
+      rc = _wstat64 (tfname, &statbuf);
       if (rc == 0) {
         sz = statbuf.st_size;
       }

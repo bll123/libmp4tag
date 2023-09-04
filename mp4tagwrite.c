@@ -176,7 +176,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
       return libmp4tag->mp4error;
     }
 
-t32 = libmp4tag->taglist_len + MP4TAG_BOXHEAD_SZ;
+// t32 = libmp4tag->taglist_len + MP4TAG_BOXHEAD_SZ;
 // fprintf (stdout, "old-ilst-len: %d\n", t32);
     t32 = datalen + MP4TAG_BOXHEAD_SZ;
 // fprintf (stdout, "    upd-ilst: %d\n", t32);
@@ -227,10 +227,15 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
   }
 
   offset = libmp4tag->taglist_offset;
+  if (libmp4tag->taglist_offset != 0) {
+    /* copy up to the taglist head, the 'ilst' head will be re-written */
+    offset -= MP4TAG_BOXHEAD_SZ;
+  }
   if (offset == 0 && libmp4tag->noilst_offset != 0) {
     offset = libmp4tag->noilst_offset;
   }
-  /* this following code will set 'rc' to the mp4-error, */
+
+  /* the following code will set 'rc' to the mp4-error, */
   /* and libmp4tag->mp4error will be set to 'rc' on failure */
   /* once this code is complete */
 
@@ -308,6 +313,22 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
     }
   }
 
+  if (rc == MP4TAG_OK && libmp4tag->taglist_offset != 0) {
+    uint32_t    t32;
+
+    t32 = datalen + MP4TAG_BOXHEAD_SZ;
+    if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
+      fprintf (stdout, "  ilst size w/head: %d\n", t32);
+    }
+    t32 = htobe32 (t32);
+    if (fwrite (&t32, sizeof (uint32_t), 1, ofh) != 1) {
+      rc = MP4TAG_ERR_FILE_WRITE_ERROR;
+    }
+    if (fwrite (MP4TAG_ILST, MP4TAG_ID_LEN, 1, ofh) != 1) {
+      rc = MP4TAG_ERR_FILE_WRITE_ERROR;
+    }
+  }
+
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
     fprintf (stdout, "  data-offset: %ld\n", ftell (ofh));
     fprintf (stdout, "  tags: %ld\n", (long) datalen);
@@ -325,7 +346,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
   wlen = libmp4tag->filesz - offset;
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
     fprintf (stdout, "  file-size: %ld\n", (long) libmp4tag->filesz);
-    fprintf (stdout, "  copy-final-data: offset:%ld length:%ld\n", (long) offset, (long) wlen);
+    fprintf (stdout, "  copy-final-data: i-offset:%ld length:%ld\n", (long) offset, (long) wlen);
   }
   if (rc == MP4TAG_OK) {
     rc = mp4tag_copy_file_data (libmp4tag->fh, ofh, offset, wlen);
@@ -339,7 +360,9 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
     delta += MP4TAG_META_SZ + MP4TAG_HDLR_SZ + MP4TAG_BOXHEAD_SZ;
   }
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
-    fprintf (stdout, "  delta: %d\n", delta);
+    fprintf (stdout, "  taglist-len: %d\n", libmp4tag->taglist_len);
+    fprintf (stdout, "      datalen: %d\n", datalen);
+    fprintf (stdout, "        delta: %d\n", delta);
   }
 
   /* if it is not an insert, update the parent offsets */
@@ -471,7 +494,8 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
   uint64_t  t64;
   uint32_t  numoffsets;
 
-  /* stco has 4 bytes number of offsets and 32-bit offsets */
+  /* stco has 4 bytes version/flags, 4 bytes number of offsets */
+  /* and 32-bit offsets */
   /* co64 has 4 bytes version/flags, 4 bytes number of offsets */
   /* and 64-bit offsets */
 
@@ -513,6 +537,8 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
   dptr = buff;
   /* appears that the documentation I am using is incorrect about stco */
   /* stco does have a version/flags value */
+  memcpy (&t32, dptr, sizeof (uint32_t));
+fprintf (stdout, "vf: %d\n", be32toh (t32));
   dptr += sizeof (uint32_t);
   memcpy (&t32, dptr, sizeof (uint32_t));
   dptr += sizeof (uint32_t);
@@ -530,7 +556,6 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
         t32 = htobe32 (t32);
         memcpy (dptr, &t32, sizeof (uint32_t));
       }
-      dptr += sizeof (uint32_t);
     }
     if (offsetsz == sizeof (uint64_t)) {
       memcpy (&t64, dptr, sizeof (uint64_t));
@@ -540,8 +565,8 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
         t64 = htobe64 (t64);
         memcpy (dptr, &t64, sizeof (uint64_t));
       }
-      dptr += sizeof (uint64_t);
     }
+    dptr += offsetsz;
   }
 
   rc = fseek (ofh, boffset, SEEK_SET);

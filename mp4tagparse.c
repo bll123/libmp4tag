@@ -70,6 +70,9 @@ static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32
 static void mp4tag_process_data (const char *p, uint32_t *tlen, uint32_t *flags);
 static void mp4tag_parse_check_end (libmp4tag_t *libmp4tag);
 static ssize_t mp4tag_get_curr_offset (libmp4tag_t *libmp4tag);
+/* debugging */
+static void mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const char *data);
+static void mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset);
 
 int
 mp4tag_parse_file (libmp4tag_t *libmp4tag)
@@ -165,7 +168,21 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       needdata = true;
     }
 
-    if (level < MP4TAG_BASE_OFF_MAX) {
+    if (checkforfree) {
+      if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
+        libmp4tag->taglist_len += MP4TAG_BOXHEAD_SZ + bd.len;
+        libmp4tag->after_ilst_offset += MP4TAG_BOXHEAD_SZ + bd.len;
+        /* continue on and see if there are more 'free' boxes to add */
+      } else {
+        /* if this spot was reached, there is some other */
+        /* box after the 'ilst' or 'free' boxes */
+        /* unlimited will be false */
+        checkforfree = false;
+        done = true;
+      }
+    }
+
+    if (! done && level < MP4TAG_BASE_OFF_MAX) {
       ssize_t      offset;
 
       offset = ftell (libmp4tag->fh);
@@ -184,11 +201,17 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     if (strcmp (bd.nm, MP4TAG_STCO) == 0) {
       libmp4tag->stco_offset = mp4tag_get_curr_offset (libmp4tag);
       libmp4tag->stco_len = bd.len;
+      if (libmp4tag->dbgflags & MP4TAG_DBG_DUMP_CO) {
+        needdata = true;
+      }
     }
 
     if (strcmp (bd.nm, MP4TAG_CO64) == 0) {
       libmp4tag->co64_offset = mp4tag_get_curr_offset (libmp4tag);
       libmp4tag->co64_len = bd.len;
+      if (libmp4tag->dbgflags & MP4TAG_DBG_DUMP_CO) {
+        needdata = true;
+      }
     }
 
     if (strcmp (bd.nm, MP4TAG_UDTA) == 0) {
@@ -207,19 +230,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       libmp4tag->taglist_len = bd.len;
       libmp4tag->after_ilst_offset =
           libmp4tag->taglist_offset + libmp4tag->taglist_len;
-    }
-
-    if (checkforfree) {
-      if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
-        libmp4tag->taglist_len += MP4TAG_BOXHEAD_SZ + bd.len;
-        /* continue on and see if there are more 'free' boxes to add */
-      } else {
-        /* if this spot was reached, there is some other */
-        /* box after the 'ilst' or 'free' boxes */
-        /* unlimited will be false */
-        checkforfree = false;
-        done = true;
-      }
     }
 
     if (needdata && bd.len > 0) {
@@ -241,6 +251,11 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     if (needdata && bd.data != NULL && bd.len > 0) {
+      if (strcmp (bd.nm, MP4TAG_STCO) == 0 ||
+          strcmp (bd.nm, MP4TAG_CO64) == 0) {
+        /* debugging */
+        mp4tag_dump_co (libmp4tag, bd.nm, bd.len, bd.data);
+      }
       if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
         mp4tag_process_mdhd (libmp4tag, bd.data);
       }
@@ -681,4 +696,65 @@ mp4tag_get_curr_offset (libmp4tag_t *libmp4tag)
     libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
   }
   return offset;
+}
+
+static void
+mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const char *data)
+{
+  const char    *dptr = data;
+  uint32_t      numoffsets;
+  int           offsetsz;
+  uint32_t      t32;
+  uint64_t      t64;
+  uint64_t      origoffset;
+
+  /* preserve the current position */
+  origoffset = ftell (libmp4tag->fh);
+
+  if (strcmp (ident, MP4TAG_STCO) == 0) {
+    offsetsz = sizeof (uint32_t);
+  }
+  if (strcmp (ident, MP4TAG_CO64) == 0) {
+    offsetsz = sizeof (uint64_t);
+  }
+
+  /* version/flags */
+  dptr += sizeof (uint32_t);
+  memcpy (&t32, dptr, sizeof (uint32_t));
+  dptr += sizeof (uint32_t);
+  numoffsets = be32toh (t32);
+
+  for (uint32_t i = 0; i < numoffsets; ++i) {
+    if (offsetsz == sizeof (uint32_t)) {
+      memcpy (&t32, dptr, sizeof (uint32_t));
+      t64 = be32toh (t32);
+    }
+    if (offsetsz == sizeof (uint64_t)) {
+      memcpy (&t64, dptr, sizeof (uint64_t));
+      t64 = be64toh (t64);
+    }
+    fprintf (stdout, "%4d: %08" PRIx64 " ", i, t64);
+    mp4tag_dump_data (libmp4tag, t64);
+    fprintf (stdout, " ");
+    mp4tag_dump_data (libmp4tag, t64 + 200);
+    fprintf (stdout, "\n");
+    dptr += offsetsz;
+  }
+
+  /* restore the original position */
+  fseek (libmp4tag->fh, origoffset, SEEK_SET);
+}
+
+static void
+mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset)
+{
+  unsigned char    buff [8];
+
+  if (fseek (libmp4tag->fh, offset, SEEK_SET) == 0) {
+    if (fread (buff, sizeof (buff), 1, libmp4tag->fh) == 1) {
+      for (size_t j = 0; j < sizeof (buff); ++j) {
+        fprintf (stdout, "%02x", buff [j]);
+      }
+    }
+  }
 }

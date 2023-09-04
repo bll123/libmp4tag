@@ -10,7 +10,7 @@
 #cmakedefine01 _hdr_winsock2
 
 #cmakedefine01 _lib__wrename
-#cmakedefine01 _lib__wstat
+#cmakedefine01 _lib__wstat64
 #cmakedefine01 _lib__wunlink
 
 #endif /* INC_CONFIG_H */
