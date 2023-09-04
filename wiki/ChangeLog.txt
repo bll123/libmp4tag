@@ -4,15 +4,19 @@
 
 <!--
 
-**1.2.4 beta 2023-9---**
+**1.2.5 beta 2023-9---**
+
+-->
+
+**1.2.4 beta 2023-9-4**
 
 * Bug Fixes:
     * Windows: Allow for linking with UCRT.
     * Fix tag box length on re-write.
     * Fix stco/co64 update.
     * Fix parent box update.
-
--->
+* Changes:
+    * Update mp4tag_read_file api.
 
 **1.2.3 beta 2023-9-2**
 

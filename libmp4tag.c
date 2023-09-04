@@ -335,8 +335,12 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
   if (binary) {
     char      *fdata;
     size_t    sz;
+    int       mp4err;
 
-    fdata = mp4tag_read_file (libmp4tag, data, &sz);
+    fdata = mp4tag_read_file (data, &sz, &mp4err);
+    if (mp4err != MP4TAG_OK) {
+      libmp4tag->mp4error = mp4err;
+    }
     if (fdata != NULL) {
       mp4tag_set_tag_binary (libmp4tag, tag, idx, fdata, sz, data);
       free (fdata);

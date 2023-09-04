@@ -87,7 +87,7 @@ void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
 
 FILE    * mp4tag_fopen (const char *fn, const char *mode);
 ssize_t mp4tag_file_size (const char *fn);
-char    * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *fn, size_t *sz);
+char    * mp4tag_read_file (const char *fn, size_t *sz, int *mp4error);
 int     mp4tag_file_delete (const char *fname);
 int     mp4tag_file_move (const char *fname, const char *nfn);
 

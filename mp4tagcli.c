@@ -170,9 +170,10 @@ main (int argc, char *argv [])
           if (testbin) {
             char    *data = NULL;
             size_t  sz;
+            int     mp4err;
 
-            data = mp4tag_read_file (libmp4tag, p, &sz);
-            if (data != NULL) {
+            data = mp4tag_read_file (p, &sz, &mp4err);
+            if (mp4err == MP4TAG_OK && data != NULL) {
               if (mp4tag_set_binary_tag (libmp4tag, tagname, data, sz) == MP4TAG_OK) {
                 write = true;
               } else {
