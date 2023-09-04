@@ -538,7 +538,6 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
   /* appears that the documentation I am using is incorrect about stco */
   /* stco does have a version/flags value */
   memcpy (&t32, dptr, sizeof (uint32_t));
-fprintf (stdout, "vf: %d\n", be32toh (t32));
   dptr += sizeof (uint32_t);
   memcpy (&t32, dptr, sizeof (uint32_t));
   dptr += sizeof (uint32_t);
