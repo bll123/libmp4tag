@@ -113,6 +113,7 @@ typedef struct libmp4tag {
   int       base_offset_count;
   ssize_t   taglist_base_offset;
   ssize_t   taglist_offset;
+  uint32_t  taglist_orig_len;
   uint32_t  taglist_len;
   int       parentidx;
   ssize_t   noilst_offset;
@@ -130,9 +131,13 @@ typedef struct libmp4tag {
   int       iterator;
   int       mp4error;
   int       dbgflags;
+  int       options;
   bool      mp7meta : 1;
   bool      unlimited : 1;
   bool      parsed : 1;
+  /* used by the parser */
+  bool      processdata : 1;
+  bool      checkforfree : 1;
 } libmp4tag_t;
 
 /* mp4const.c */
@@ -151,13 +156,17 @@ extern const int mp4tagoldgenrelistsz;
 
 /* mp4tagparse.c */
 
-int  mp4tag_parse_file (libmp4tag_t *libmp4tag);
+int  mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level);
 int  mp4tag_parse_ftyp (libmp4tag_t *libmp4tag);
 
 /* mp4tagwrite.c */
 
 char  * mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *dlen);
 int   mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen);
+
+
+/* mp4writeutil.c */
+void mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta);
 
 /* mp4tagutil.c */
 

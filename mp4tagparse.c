@@ -10,7 +10,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <inttypes.h>
-#include <ctype.h>
 #include <assert.h>
 
 #include "libmp4tag.h"
@@ -27,6 +26,7 @@ typedef struct {
 } boxhead_t;
 
 typedef struct {
+  uint64_t    boxlen;
   uint64_t    len;
   char        nm [MP4TAG_ID_DISP_LEN];
   uint64_t    dlen;
@@ -63,7 +63,6 @@ typedef struct {
   uint64_t    duration;
   uint32_t    moreflags;
 } boxmdhd8_t;
-
 static void mp4tag_process_mdhd (libmp4tag_t *libmp4tag, const char *data);
 static void mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
@@ -75,38 +74,62 @@ static void mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t le
 static void mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset);
 
 int
-mp4tag_parse_file (libmp4tag_t *libmp4tag)
+mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
 {
   boxhead_t       bh;
   boxdata_t       bd;
   size_t          rrc;
-  size_t          skiplen;
-  size_t          currlen [LEVEL_MAX];
-  size_t          usedlen [LEVEL_MAX];
-  int             level = 0;
+  uint32_t        skiplen;
+  uint64_t        remaininglen;
   bool            needdata = false;
-  bool            processdata = false;
-  bool            done = false;
-  bool            inclevel = false;
-  bool            checkforfree = false;
+  bool            descend = false;
 
   assert (sizeof (boxhead_t) == 8);
   assert (sizeof (boxhead_t) == MP4TAG_BOXHEAD_SZ);
   assert (sizeof (boxmdhd4_t) == 24);
   assert (sizeof (boxmdhd8pack_t) == 36);
 
-  for (int i = 0; i < LEVEL_MAX; ++i) {
-    currlen [i] = 0;
-    usedlen [i] = 0;
-  }
+  remaininglen = boxlen;
+  /* subtract the box's header size, as it is not included */
+  /* within the container's contents */
+  remaininglen -= MP4TAG_BOXHEAD_SZ;
 
   rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
   if (rrc != 1) {
     libmp4tag->mp4error = MP4TAG_ERR_FILE_READ_ERROR;
   }
+
   while (! feof (libmp4tag->fh) && rrc == 1) {
     /* the total length includes the length and the identifier */
-    bd.len = be32toh (bh.len) - MP4TAG_BOXHEAD_SZ;
+    bd.boxlen = be32toh (bh.len);
+    bd.len = bd.boxlen - MP4TAG_BOXHEAD_SZ;
+    if (boxlen == 0) {
+      remaininglen = bd.boxlen;
+    }
+
+    /* check for length error */
+    if (remaininglen > 0 && bd.boxlen > remaininglen) {
+      if (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX) {
+        int     savedidx;
+
+        savedidx = libmp4tag->parentidx;
+        libmp4tag->parentidx = level - 1;
+        mp4tag_update_parent_lengths (libmp4tag, libmp4tag->fh, - remaininglen);
+        /* update base lengths to match */
+        for (int i = libmp4tag->parentidx; i >= 0; --i) {
+          libmp4tag->base_lengths [i] -= remaininglen;
+        }
+        libmp4tag->parentidx = savedidx;
+      }
+
+      /* set up for a re-read */
+      if (fseek (libmp4tag->fh, - MP4TAG_BOXHEAD_SZ, SEEK_CUR) != 0) {
+        libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
+      }
+      return libmp4tag->mp4error;
+    }
+
+    /* save the name of the box */
     if (*bh.nm == '\xa9') {
       /* maximum 5 bytes */
       strcpy (bd.nm, PREFIX_STR);
@@ -118,25 +141,16 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
     }
 
     bd.data = NULL;
+    bd.dlen = 0;
     skiplen = bd.len;
     needdata = false;
-    inclevel = false;
 
     if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
-      /* not that this only prints the parts of the structure that are */
-      /* relevant to this program.  e.g. anything after the ilst and */
-      /* trailing free are not printed */
-      fprintf (stdout, "%*s %2d %.5s: %ld %ld\n", level*2, " ", level, bd.nm, (long) bd.len + MP4TAG_BOXHEAD_SZ, (long) bd.len);
+      fprintf (stdout, "%*s %2d %.5s: %" PRId64 " %" PRId64 " (%" PRId64 ")\n", level*2, " ", level, bd.nm, bd.boxlen, bd.len, remaininglen);
     }
 
-    /* track the current level's length */
-    if (level < LEVEL_MAX) {
-      currlen [level] = bd.len;
-      usedlen [level] = 0;
-    }
+    descend = false;
 
-    /* to process a heirarchy, set the skiplen to the size of any */
-    /* data associated with the current box. */
     /* hierarchies used: */
     /*   moov.trak.mdia.mdhd  (has duration) */
     /*   moov.trak.mdia.minf.stbl.stco  (offset table to update) */
@@ -150,52 +164,44 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
         strcmp (bd.nm, MP4TAG_MINF) == 0 ||
         strcmp (bd.nm, MP4TAG_ILST) == 0) {
       /* want to descend into this hierarchy */
-      /* there is no data associated, don't need to skip anything */
+      /* container only, don't need to skip over any data */
+      descend = true;
       skiplen = 0;
-      inclevel = true;
     }
     if (strcmp (bd.nm, MP4TAG_META) == 0) {
       /* want to descend into this hierarchy */
       /* skip the 4 bytes of flags */
       skiplen = MP4TAG_META_SZ - MP4TAG_BOXHEAD_SZ;
-      inclevel = true;
-      libmp4tag->parentidx = level;
-    }
-    if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
-      needdata = true;
-    }
-    if (processdata) {
-      needdata = true;
+      descend = true;
     }
 
-    if (checkforfree) {
-      if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
-        libmp4tag->taglist_len += MP4TAG_BOXHEAD_SZ + bd.len;
-        libmp4tag->after_ilst_offset += MP4TAG_BOXHEAD_SZ + bd.len;
-        /* continue on and see if there are more 'free' boxes to add */
-      } else {
-        /* if this spot was reached, there is some other */
-        /* box after the 'ilst' or 'free' boxes */
-        /* unlimited will be false */
-        checkforfree = false;
-        done = true;
+    /* save off any offsets before any processing is done */
+
+    if (strcmp (bd.nm, MP4TAG_UDTA) == 0) {
+      /* need to save this offset in case there is no 'ilst' box */
+      libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag) -
+          MP4TAG_BOXHEAD_SZ;
+      libmp4tag->after_ilst_offset =
+          libmp4tag->noilst_offset + MP4TAG_BOXHEAD_SZ;
+    }
+
+    if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
+      libmp4tag->parentidx = level - 1;
+      libmp4tag->taglist_offset = mp4tag_get_curr_offset (libmp4tag);
+      libmp4tag->taglist_base_offset =
+          libmp4tag->taglist_offset - MP4TAG_BOXHEAD_SZ;
+      /* do not include the ident-len and ident lengths */
+      libmp4tag->taglist_orig_len = bd.len;
+      libmp4tag->taglist_len = bd.len;
+      libmp4tag->after_ilst_offset =
+          libmp4tag->taglist_offset + libmp4tag->taglist_len;
+
+      libmp4tag->processdata = true;
+      if (bd.len == 0) {
+        /* there are no tags */
+        libmp4tag->processdata = false;
+        libmp4tag->checkforfree = true;
       }
-    }
-
-    if (! done && level < MP4TAG_BASE_OFF_MAX) {
-      ssize_t      offset;
-
-      offset = ftell (libmp4tag->fh);
-      if (offset < 0) {
-        libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
-      }
-
-      libmp4tag->base_lengths [level] = bd.len;
-      snprintf (libmp4tag->base_name [level], sizeof (libmp4tag->base_name [level]),
-          "%s", bd.nm);
-      libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
-// fprintf (stdout, "store base: %s %d len:%ld offset:%08lx\n", bd.nm, level, bd.len, libmp4tag->base_offsets [level]);
-      libmp4tag->base_offset_count = level + 1;
     }
 
     if (strcmp (bd.nm, MP4TAG_STCO) == 0) {
@@ -214,22 +220,66 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       }
     }
 
-    if (strcmp (bd.nm, MP4TAG_UDTA) == 0) {
-      /* need to save this offset in case there is no 'ilst' box */
-      libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag) -
-          MP4TAG_BOXHEAD_SZ;
-      libmp4tag->after_ilst_offset =
-          libmp4tag->noilst_offset + MP4TAG_BOXHEAD_SZ;
+    if (libmp4tag->checkforfree) {
+      if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
+fprintf (stdout, "found free-box: %d\n", (int) bd.boxlen);
+        libmp4tag->taglist_len += bd.boxlen;
+        libmp4tag->after_ilst_offset += bd.boxlen;
+        /* continue on and see if there are more 'free' boxes to add */
+      } else {
+fprintf (stdout, "after free-box: %s\n", bd.nm);
+        /* if this spot was reached, there is some other */
+        /* box after the 'ilst' or 'free' boxes */
+        /* unlimited will be false */
+        libmp4tag->checkforfree = false;
+        if (! (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
+          break;
+        }
+      }
     }
 
+    if (descend && bd.len > 0) {
+      if (level < MP4TAG_BASE_OFF_MAX) {
+        ssize_t      offset;
+
+        offset = ftell (libmp4tag->fh);
+        if (offset < 0) {
+          libmp4tag->mp4error = MP4TAG_ERR_FILE_TELL_ERROR;
+        }
+
+        libmp4tag->base_lengths [level] = bd.boxlen;
+        snprintf (libmp4tag->base_name [level], sizeof (libmp4tag->base_name [level]),
+            "%s", bd.nm);
+        libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
+        // fprintf (stdout, "%*s %2d store base %s %d len:%ld offset:%08lx\n", level*2, " ", level, bd.nm, level, bd.len + MP4TAG_BOXHEAD_SZ, libmp4tag->base_offsets [level]);
+        libmp4tag->base_offset_count = level + 1;
+      }
+
+      if (skiplen > 0) {
+        if (fseek (libmp4tag->fh, skiplen, SEEK_CUR) != 0) {
+          libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
+        }
+      }
+
+      mp4tag_parse_file (libmp4tag, bd.boxlen, level + 1);
+      /* when descending, the box's data has already been skipped or read */
+      skiplen = 0;
+    }
+
+    /* if descended into the hierarchy, now done */
+
+    /* out of 'ilst', do not process more tags */
+    /* only need to check for any 'free' boxes trailing the 'ilst'.*/
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
-      libmp4tag->taglist_offset = mp4tag_get_curr_offset (libmp4tag);
-      libmp4tag->taglist_base_offset =
-          libmp4tag->taglist_offset - MP4TAG_BOXHEAD_SZ;
-      /* the block size does not include the ident-len and ident */
-      libmp4tag->taglist_len = bd.len;
-      libmp4tag->after_ilst_offset =
-          libmp4tag->taglist_offset + libmp4tag->taglist_len;
+      libmp4tag->processdata = false;
+      libmp4tag->checkforfree = true;    // not quite done yet
+    }
+
+    if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
+      needdata = true;
+    }
+    if (libmp4tag->processdata) {
+      needdata = true;
     }
 
     if (needdata && bd.len > 0) {
@@ -259,7 +309,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       if (strcmp (bd.nm, MP4TAG_MDHD) == 0) {
         mp4tag_process_mdhd (libmp4tag, bd.data);
       }
-      if (processdata) {
+      if (libmp4tag->processdata) {
         if (strcmp (bd.nm, MP4TAG_COVR) == 0) {
           mp4tag_process_covr (libmp4tag, bd.nm, bd.len, bd.data);
         } else {
@@ -269,72 +319,28 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag)
       free (bd.data);
     }
 
-    if (processdata && strcmp (bd.nm, MP4TAG_DATA) == 0) {
-      /* data box inside a 'covr' */
-      inclevel = false;
+    remaininglen -= bd.boxlen;
+    if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
+      fprintf (stdout, "%*s %2d %.5s: %" PRId64 " %" PRId64 " (%" PRId64 ") end\n", level*2, " ", level, bd.nm, bd.boxlen, bd.len, remaininglen);
+    }
+    if (remaininglen <= 0 && boxlen != 0) {
+      return libmp4tag->mp4error;
     }
 
-    if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
-      processdata = true;
-      if (bd.len == 0) {
-        /* there are no tags */
-        inclevel = false;
-        processdata = false;
-        checkforfree = true;
-      }
+    if (level == 0 && libmp4tag->noilst_offset == 0) {
+      libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag);
+      libmp4tag->after_ilst_offset = libmp4tag->noilst_offset;
     }
 
-    if (inclevel) {
-      ++level;
-    }
-
-    if (! inclevel && level > 0 && level < LEVEL_MAX) {
-      int     plevel;
-
-      plevel = level - 1;
-
-      usedlen [plevel] += MP4TAG_BOXHEAD_SZ;
-      usedlen [plevel] += bd.len;
-
-      while (level > 1 && currlen [plevel] <= usedlen [plevel]) {
-        --level;
-        plevel = level - 1;
-        if (plevel > 0) {
-          usedlen [plevel] += MP4TAG_BOXHEAD_SZ;
-          usedlen [plevel] += usedlen [level];
-        }
-        /* out of 'ilst', do not process more tags */
-        /* only need to check for any 'free' boxes trailing the 'ilst'.*/
-        if (processdata) {
-          processdata = false;
-          checkforfree = true;    // not quite done yet
-        }
-
-        if (level == 1 && libmp4tag->noilst_offset == 0) {
-          /* there is no 'udta' box at all */
-          /* note that this test is only reached after having gone up */
-          /* in level and back down again */
-
-          libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag);
-          libmp4tag->after_ilst_offset = libmp4tag->noilst_offset;
-        }
-      }
-    }
-
-    if (done) {
-      break;
-    }
-
-    inclevel = false;
     rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
-// fprintf (stdout, "fread: rrc: %d\n", (int) rrc);
   }
 
-  if (checkforfree) {
+  if (level == 0 && libmp4tag->checkforfree) {
     /* if checkforfree is still true, check and see if the end of file */
     /* was reached */
     mp4tag_parse_check_end (libmp4tag);
   }
+
   mp4tag_sort_tags (libmp4tag);
   return libmp4tag->mp4error;
 }
@@ -705,7 +711,7 @@ mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const cha
   uint32_t      numoffsets;
   int           offsetsz;
   uint32_t      t32;
-  uint64_t      t64;
+  uint64_t      t64 = 0;
   uint64_t      origoffset;
 
   /* preserve the current position */

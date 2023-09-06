@@ -61,7 +61,7 @@ Using the mp4tagcli executable:
   The duration is displayed in milliseconds.
 
   Usage:
-      mp4tagcli <filename> [--version] [--debug <value>] \
+      mp4tagcli <filename> [--version] [--debug <value>] [--autofix] \
           [--duration] [--clean] [--display <tag> [--dump=<filename>]]
           [--binary] [<tag>={|<value>|<filename>}] ...]
 
@@ -125,3 +125,7 @@ Using the mp4tagcli executable:
     # this was implemented to test the preserve/restore functionality
     # of the library.
     mp4tagcli --copyfrom aaa.m4a --copyto bbb.m4a
+
+  Auto-Fix:
+    # The --autofix will fix certain internal MP4 errors.
+    mp4tagcli --autofix filename.m4a

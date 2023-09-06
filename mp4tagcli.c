@@ -14,7 +14,7 @@
 
 #include "libmp4tag.h"
 
-static libmp4tag_t * openparse (const char *fname, int dbgflags);
+static libmp4tag_t * openparse (const char *fname, int dbgflags, int options);
 static void setTagName (const char *tag, char *buff, size_t sz);
 static void displayTag (mp4tagpub_t *mp4tagpub);
 
@@ -38,8 +38,10 @@ main (int argc, char *argv [])
   bool          testbin = false;
   int           fnidx = -1;
   int           dbgflags = 0;
+  int           options = 0;
 
   static struct option mp4tagcli_options [] = {
+    { "autofix",        no_argument,        NULL,   'F' },
     { "binary",         no_argument,        NULL,   'b' },
     { "clean",          no_argument,        NULL,   'c' },
     { "copyfrom",       required_argument,  NULL,   'f' },
@@ -55,7 +57,7 @@ main (int argc, char *argv [])
 
   *tagname = '\0';
 
-  while ((c = getopt_long_only (argc, argv, "cd:Df:t:ux:",
+  while ((c = getopt_long_only (argc, argv, "cd:Df:Ft:ux:",
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'b': {
@@ -85,6 +87,10 @@ main (int argc, char *argv [])
         if (optarg != NULL) {
           infname = optarg;
         }
+        break;
+      }
+      case 'F': {
+        options |= MP4TAG_OPTION_AUTO_FIX;
         break;
       }
       case 't': {
@@ -125,14 +131,14 @@ main (int argc, char *argv [])
     infname = argv [fnidx];
   }
 
-  libmp4tag = openparse (infname, dbgflags);
+  libmp4tag = openparse (infname, dbgflags, options);
 
   if (copy) {
     libmp4tagpreserve_t   *preserve;
 
     preserve = mp4tag_preserve_tags (libmp4tag);
     mp4tag_free (libmp4tag);
-    libmp4tag = openparse (copyto, dbgflags);
+    libmp4tag = openparse (copyto, dbgflags, options);
     mp4tag_restore_tags (libmp4tag, preserve);
     write = true;
   }
@@ -280,7 +286,7 @@ displayTag (mp4tagpub_t *mp4tagpub)
 }
 
 static libmp4tag_t *
-openparse (const char *fname, int dbgflags)
+openparse (const char *fname, int dbgflags, int options)
 {
   libmp4tag_t   *libmp4tag = NULL;
   int           mp4error;
@@ -291,6 +297,7 @@ openparse (const char *fname, int dbgflags)
     exit (1);
   }
 
+  mp4tag_set_option (libmp4tag, options);
   if (dbgflags != 0) {
     mp4tag_set_debug_flags (libmp4tag, dbgflags);
   }

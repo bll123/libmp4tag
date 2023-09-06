@@ -181,5 +181,5 @@ clean:
 
 .PHONY: tclean
 tclean:
-	@-$(RM) -f w ww www *~ core *.orig */*.orig
-	@-$(RM) -f */*~ 
+	@-$(RM) -f w ww www core
+	@-$(RM) -f *~ */*~ *.orig */*.orig

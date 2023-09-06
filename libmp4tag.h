@@ -52,6 +52,11 @@ enum {
 };
 
 enum {
+  MP4TAG_OPTION_NONE      = 0x0000,
+  MP4TAG_OPTION_AUTO_FIX  = 0x0001,
+};
+
+enum {
   MP4TAG_ID_MAX = 255,
 };
 
@@ -79,6 +84,7 @@ int         mp4tag_error (libmp4tag_t *libmp4tag);
 const char  * mp4tag_version (void);
 const char  * mp4tag_error_str (libmp4tag_t *libmp4tag);
 void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
+void      mp4tag_set_option (libmp4tag_t *libmp4tag, int option);
 
 /* these routines are useful for the application */
 
@@ -101,7 +107,7 @@ int     mp4tag_file_move (const char *fname, const char *nfn);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 2
-#define LIBMP4TAG_VERS_REVISION 4
+#define LIBMP4TAG_VERS_REVISION 5
 #define LIBMP4TAG_RELEASE_STATE "beta"
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \

@@ -75,6 +75,7 @@ mp4tag_open (const char *fn, int *mp4error)
   }
   libmp4tag->base_offset_count = 0;
   libmp4tag->taglist_offset = 0;
+  libmp4tag->taglist_orig_len = 0;
   libmp4tag->taglist_len = 0;
   libmp4tag->noilst_offset = 0;
   libmp4tag->after_ilst_offset = 0;
@@ -92,7 +93,10 @@ mp4tag_open (const char *fn, int *mp4error)
   libmp4tag->dbgflags = 0;
   libmp4tag->covercount = 0;
   libmp4tag->mp4error = MP4TAG_OK;
+  libmp4tag->options = MP4TAG_OPTION_NONE;
   libmp4tag->parsed = false;
+  libmp4tag->processdata = false;
+  libmp4tag->checkforfree = false;
 
   libmp4tag->fh = mp4tag_fopen (fn, "rb+");
   if (libmp4tag->fh == NULL) {
@@ -138,7 +142,7 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
     return libmp4tag->mp4error;
   }
 
-  mp4tag_parse_file (libmp4tag);
+  mp4tag_parse_file (libmp4tag, 0, 0);
   if (libmp4tag->mp4error == MP4TAG_OK) {
     libmp4tag->parsed = true;
   }
@@ -656,6 +660,16 @@ mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags)
   }
 
   libmp4tag->dbgflags = dbgflags;
+}
+
+void
+mp4tag_set_option (libmp4tag_t *libmp4tag, int option)
+{
+  if (libmp4tag == NULL) {
+    return;
+  }
+
+  libmp4tag->options = option;
 }
 
 

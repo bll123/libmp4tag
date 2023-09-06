@@ -4,9 +4,14 @@
 
 <!--
 
-**1.2.5 beta 2023-9---**
+**1.2.6 beta 2023-9---**
 
 -->
+
+**1.2.5 beta 2023-9-6**
+
+* Bug Fixes:
+    * Fix update of parent container lengths.
 
 **1.2.4 beta 2023-9-4**
 

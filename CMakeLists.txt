@@ -164,6 +164,7 @@ add_library (libmp4tag SHARED
   mp4tagparse.c
   mp4tagwrite.c
   mp4tagutil.c
+  mp4writeutil.c
   mp4const.c
 )
 if (WIN32)
