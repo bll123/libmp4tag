@@ -232,7 +232,10 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     }
 
     if (descend && bd.len > 0) {
-      if (level < MP4TAG_BASE_OFF_MAX) {
+      /* only want to update the base-offsets if the 'ilst' */
+      /* has not been found */
+      if (level < MP4TAG_BASE_OFF_MAX &&
+          libmp4tag->taglist_offset == 0) {
         ssize_t      offset;
 
         offset = ftell (libmp4tag->fh);
@@ -246,7 +249,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
         libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
         // fprintf (stdout, "%*s %2d store base %s %d len:%ld offset:%08lx\n", level*2, " ", level, bd.nm, level, bd.len + MP4TAG_BOXHEAD_SZ, libmp4tag->base_offsets [level]);
         libmp4tag->base_offset_count = level + 1;
-//        libmp4tag->parentidx = level;
       }
 
       if (skiplen > 0) {
@@ -737,7 +739,7 @@ mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const cha
       memcpy (&t64, dptr, sizeof (uint64_t));
       t64 = be64toh (t64);
     }
-    fprintf (stdout, "%4d: %08" PRIx64 " ", i, t64);
+    fprintf (stdout, "%6d: %08" PRIx64 " ", i, t64);
     mp4tag_dump_data (libmp4tag, t64);
     fprintf (stdout, " ");
     mp4tag_dump_data (libmp4tag, t64 + 200);

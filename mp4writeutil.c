@@ -23,7 +23,7 @@ mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta)
 
   idx = libmp4tag->parentidx;
 
-  if (idx >= 0 && libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
+  if (idx >= 0 && (libmp4tag->dbgflags & MP4TAG_DBG_WRITE)) {
     fprintf (stdout, "  update-parent-lengths\n");
     fprintf (stdout, "    delta: %d\n", delta);
   }

@@ -11,9 +11,9 @@
 **1.2.5 beta 2023-9---**
 
 * Bug Fixes:
-    * Fix internal parsing issue.
+    * Fix parsing issues.
     * Fix update of parent container lengths.
-    * Fix bug re-writing when only 'udta' is present.
+    * Fix re-writing bugs.
 
 **1.2.4 beta 2023-9-4**
 

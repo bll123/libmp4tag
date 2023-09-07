@@ -30,6 +30,7 @@ Current Status:
   be some bugs present.
 
   To Do:
+    - handle other languages
     - manual pages
 
 Notes:

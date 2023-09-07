@@ -248,7 +248,6 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     } else {
       libmp4tag->tags [tagidx].coveridx = coveridx;
     }
-fprintf (stdout, "add-covr: idx: %d len: %d\n", libmp4tag->tags [tagidx].coveridx, libmp4tag->tags [tagidx].datalen);
   }
 
   if (sz == MP4TAG_STRING) {
