@@ -149,7 +149,7 @@ install: $(VERSFN)
 
 # the wiki/ directory has the changelog in it
 .PHONY: source
-source:
+source: $(VERSFN)
 	@VERS=$$(cat $(VERSFN)); \
 	SRCDIR=libmp4tag-$${VERS}; \
 	$(MAKE) tclean; \
@@ -158,7 +158,7 @@ source:
 	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcezip; \
 	$(RM) -rf $${SRCDIR} $(SRCFLAG)
 
-$(SRCFLAG): $(VERSFN)
+$(SRCFLAG):
 	test -d $${SRCDIR} && $(RM) -rf $${SRCDIR}; \
 	mkdir $${SRCDIR}; \
 	cp -pfr \
