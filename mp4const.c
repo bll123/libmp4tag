@@ -71,11 +71,11 @@ const mp4tagdef_t mp4taglist [] = {
   {  6, "©mvi", MP4TAG_ID_NUM, 2 },       // 2-byte (movement number)
   {  7, "©mvn", MP4TAG_ID_STRING, 0 },    // string (movement name)
   {  0, "©nam", MP4TAG_ID_STRING, 0 },    // string (title)
-  {  7, "©nrt", MP4TAG_ID_STRING, 0 },
+  {  7, "©nrt", MP4TAG_ID_STRING, 0 },    // string (narrator)
   {  7, "©pub", MP4TAG_ID_STRING, 0 },    // string (publisher)
-  {  5, "©too", MP4TAG_ID_STRING, 0 },    // string
-  {  7, "©wrk", MP4TAG_ID_STRING, 0 },    // string
-  {  2, "©wrt", MP4TAG_ID_STRING, 0 },    // string
+  {  5, "©too", MP4TAG_ID_STRING, 0 },    // string (encoded by)
+  {  7, "©wrk", MP4TAG_ID_STRING, 0 },    // string (work)
+  {  2, "©wrt", MP4TAG_ID_STRING, 0 },    // string (writer/composer)
 };
 
 const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);
@@ -83,6 +83,7 @@ const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);
 /* an idiotic way to do things, */
 /* but we must convert any old gnre data to ©gen. */
 /* itunes still puts data into the 'gnre' field, yick. */
+/* this is the ID3 genre list, it may not be correct */
 const char *mp4tagoldgenrelist [] = {
   "Blues",              "Classic Rock",           "Country",
   "Dance",              "Disco",                  "Funk",

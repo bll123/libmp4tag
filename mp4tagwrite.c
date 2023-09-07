@@ -730,7 +730,7 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
       dptr = mp4tag_append_len_16 (dptr, t64);
     }
     if (mp4tag->internallen == 4) {
-      dptr = mp4tag_append_len_16 (dptr, t64);
+      dptr = mp4tag_append_len_32 (dptr, t64);
     }
     if (mp4tag->internallen == 8) {
       dptr = mp4tag_append_len_64 (dptr, t64);
