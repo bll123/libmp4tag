@@ -41,7 +41,6 @@ main (int argc, char *argv [])
   int           options = 0;
 
   static struct option mp4tagcli_options [] = {
-    { "autofix",        no_argument,        NULL,   'F' },
     { "binary",         no_argument,        NULL,   'b' },
     { "clean",          no_argument,        NULL,   'c' },
     { "copyfrom",       required_argument,  NULL,   'f' },
@@ -87,10 +86,6 @@ main (int argc, char *argv [])
         if (optarg != NULL) {
           infname = optarg;
         }
-        break;
-      }
-      case 'F': {
-        options |= MP4TAG_OPTION_AUTO_FIX;
         break;
       }
       case 't': {

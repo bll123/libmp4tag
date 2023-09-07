@@ -67,7 +67,6 @@ enum {
 
 enum {
   MP4TAG_OPTION_NONE      = 0x0000,
-  MP4TAG_OPTION_AUTO_FIX  = 0x0001,
 };
 
 enum {

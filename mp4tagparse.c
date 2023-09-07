@@ -107,19 +107,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       remaininglen = bd.boxlen;
     }
 
-    /* check for length error */
-    if (remaininglen > 0 && (ssize_t) bd.boxlen > remaininglen) {
-      if (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX) {
-        mp4tag_auto_fix (libmp4tag, remaininglen, level);
-      }
-
-      /* set up for a re-read */
-      if (fseek (libmp4tag->fh, - MP4TAG_BOXHEAD_SZ, SEEK_CUR) != 0) {
-        libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
-      }
-      return libmp4tag->mp4error;
-    }
-
     /* save the name of the box */
     if (*bh.nm == '\xa9') {
       /* maximum 5 bytes */
@@ -223,8 +210,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
         /* box after the 'ilst' or 'free' boxes */
         /* unlimited will be false */
         libmp4tag->checkforfree = false;
-        if (! (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) &&
-            ! (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX)) {
+        if (! (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
           break;
         }
       }
@@ -328,12 +314,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     }
 
     rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
-  }
-
-  if (remaininglen > 0) {
-    if (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX) {
-      mp4tag_auto_fix (libmp4tag, remaininglen, level);
-    }
   }
 
   if (level == 0) {
