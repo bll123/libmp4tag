@@ -215,12 +215,10 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
 
     if (libmp4tag->checkforfree) {
       if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
-fprintf (stdout, "found free-box: %d\n", (int) bd.boxlen);
         libmp4tag->taglist_len += bd.boxlen;
         libmp4tag->after_ilst_offset += bd.boxlen;
         /* continue on and see if there are more 'free' boxes to add */
       } else {
-fprintf (stdout, "after free-box: %s\n", bd.nm);
         /* if this spot was reached, there is some other */
         /* box after the 'ilst' or 'free' boxes */
         /* unlimited will be false */
@@ -247,7 +245,7 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
         libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
         // fprintf (stdout, "%*s %2d store base %s %d len:%ld offset:%08lx\n", level*2, " ", level, bd.nm, level, bd.len + MP4TAG_BOXHEAD_SZ, libmp4tag->base_offsets [level]);
         libmp4tag->base_offset_count = level + 1;
-        libmp4tag->parentidx = level;
+//        libmp4tag->parentidx = level;
       }
 
       if (skiplen > 0) {
@@ -262,6 +260,12 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
     }
 
     /* if descended into the hierarchy, now done */
+
+    if (strcmp (bd.nm, MP4TAG_MOOV) == 0 &&
+        libmp4tag->noilst_offset == 0) {
+      libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag);
+      libmp4tag->after_ilst_offset = libmp4tag->noilst_offset;
+    }
 
     /* out of 'ilst', do not process more tags */
     /* only need to check for any 'free' boxes trailing the 'ilst'.*/
@@ -323,15 +327,9 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
       return libmp4tag->mp4error;
     }
 
-    if (level == 0 && libmp4tag->noilst_offset == 0) {
-      libmp4tag->noilst_offset = mp4tag_get_curr_offset (libmp4tag);
-      libmp4tag->after_ilst_offset = libmp4tag->noilst_offset;
-    }
-
     rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
   }
 
-fprintf (stdout, "level: %d end remaining-len: %ld\n", level, remaininglen);
   if (remaininglen > 0) {
     if (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX) {
       mp4tag_auto_fix (libmp4tag, remaininglen, level);
@@ -630,7 +628,7 @@ mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag,
 {
   uint32_t    tlen;
   uint32_t    clen = 0;
-  uint32_t    tflag = MP4TAG_ID_JPG;
+  uint32_t    type = MP4TAG_ID_JPG;
   const char  *p = data;
   int         cflag = 0;
   const char  *cdata = NULL;
@@ -642,27 +640,26 @@ mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag,
     blen -= tlen;
     if (memcmp (p + sizeof (uint32_t), MP4TAG_DATA, MP4TAG_ID_LEN) == 0) {
       if (cflag > 0 && cdata != NULL) {
-        mp4tag_add_tag (libmp4tag, MP4TAG_COVR, cdata, clen, tflag, clen, cname);
+        mp4tag_add_tag (libmp4tag, MP4TAG_COVR, cdata, clen, type, clen, cname);
         cname = NULL;
         cdata = NULL;
         cflag = 0;
       }
-      mp4tag_process_data (p, &tlen, &tflag);
-      if (tflag == 0) {
-        tflag = MP4TAG_ID_JPG;
+      mp4tag_process_data (p, &tlen, &type);
+      if (type == 0) {
+        type = MP4TAG_ID_JPG;
       }
       p += MP4TAG_DATA_SZ;
       clen = tlen;
       cdata = p;
       ++cflag;
     } else if (memcmp (p + sizeof (uint32_t), MP4TAG_NAME, MP4TAG_ID_LEN) == 0) {
-      p += MP4TAG_BOXHEAD_SZ;
-      cname = p;
+      cname = p + MP4TAG_BOXHEAD_SZ;
     }
     p += tlen;
   }
   if (cflag > 0 && cdata != NULL) {
-    mp4tag_add_tag (libmp4tag, MP4TAG_COVR, cdata, clen, tflag, clen, cname);
+    mp4tag_add_tag (libmp4tag, MP4TAG_COVR, cdata, clen, type, clen, cname);
   }
 }
 

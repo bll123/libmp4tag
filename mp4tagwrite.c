@@ -121,11 +121,13 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     return libmp4tag->mp4error;
   }
 
+fprintf (stdout, "seek taglist-offset: %ld\n", libmp4tag->taglist_offset);
   if (fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) != 0) {
     libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
     return libmp4tag->mp4error;
   }
 
+fprintf (stdout, "write data: %ld\n", (long) datalen);
   if (datalen > 0) {
     if (fwrite (data, datalen, 1, libmp4tag->fh) != 1) {
       libmp4tag->mp4error = MP4TAG_ERR_FILE_WRITE_ERROR;
@@ -176,6 +178,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     }
 
     t32 = datalen + MP4TAG_BOXHEAD_SZ;
+fprintf (stdout, "update ilst length %d\n", t32);
     t32 = htobe32 (t32);
     if (fwrite (&t32, sizeof (uint32_t), 1, libmp4tag->fh) != 1) {
       libmp4tag->mp4error = MP4TAG_ERR_FILE_WRITE_ERROR;
@@ -252,8 +255,10 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
     if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
       fprintf (stdout, "  no ilst, insert boxes\n");
     }
+
     /* there is no 'ilst' block in the audio file */
 
+    /* only update the 'moov' box length */
     libmp4tag->parentidx = 0;
 
     /* allocation size: udta + meta + hdlr + ilst-box */
@@ -580,6 +585,7 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   if (mp4tag->identtype == MP4TAG_ID_STRING) {
     savelen = mp4tag->datalen;
   }
+
   /* boxhead: idlen + ident */
   /* data: dlen + data-ident + data-flags + data-reserved */
   tlen = MP4TAG_BOXHEAD_SZ + MP4TAG_DATA_SZ + savelen;
@@ -635,6 +641,9 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     /* if a cover name is present, include that length for the realloc */
     tlen += MP4TAG_BOXHEAD_SZ + strlen (mp4tag->covername);
   }
+if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+fprintf (stdout, "allocating: %d\n", tlen);
+}
 
   data = realloc (data, *dlen + tlen);
   if (data == NULL) {
@@ -651,19 +660,20 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     tlen -= MP4TAG_BOXHEAD_SZ;
     tlen -= strlen (mp4tag->covername);
   }
+if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+fprintf (stdout, "updated-tlen: %d\n", tlen);
+fprintf (stdout, "cover-idx: %d\n", mp4tag->coveridx);
+}
 
   if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0 &&
       libmp4tag->coverstart_offset == -1) {
     /* save the offset for the start of the cover box */
     /* if there are multiple covers or cover names, it is needed */
     libmp4tag->coverstart_offset = (int32_t) (dptr - data);
-// fprintf (stdout, "save cover-start: %ld\n", (long) libmp4tag->coverstart_offset);
+fprintf (stdout, "save cover-start: %ld\n", (long) libmp4tag->coverstart_offset);
   }
-if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
-// fprintf (stdout, "cover-idx: %d\n", mp4tag->coveridx);
-}
 
-  /* if this is a second cover, the identifier is not added */
+  /* if this is a second cover, the identifier has already been processed */
   if (mp4tag->coveridx == 0) {
     /* box length */
     dptr = mp4tag_append_len_32 (dptr, tlen);
@@ -708,6 +718,9 @@ if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
     tlen -= MP4TAG_BOXHEAD_SZ;
   }
 
+if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+fprintf (stdout, "data-len: %d\n", tlen);
+}
   dptr = mp4tag_append_len_32 (dptr, tlen);
   dptr = mp4tag_append_data (dptr, MP4TAG_DATA, MP4TAG_ID_LEN);
 
@@ -756,9 +769,12 @@ if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
       dptr = mp4tag_append_data (dptr, mp4tag->data, mp4tag->datalen);
     }
   }
+
   if (mp4tag->identtype == MP4TAG_ID_JPG ||
       mp4tag->identtype == MP4TAG_ID_PNG) {
+fprintf (stdout, "covr: len: %d\n", mp4tag->datalen);
     dptr = mp4tag_append_data (dptr, mp4tag->data, mp4tag->datalen);
+
     if (mp4tag->coveridx > 0 && libmp4tag->coverstart_offset != -1) {
       /* datalen + size of a data box */
       mp4tag_update_cover_len (libmp4tag, data,
@@ -773,6 +789,7 @@ if (memcmp (mp4tag->tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
       dptr = mp4tag_append_len_32 (dptr, tcnlen);
       dptr = mp4tag_append_data (dptr, MP4TAG_NAME, MP4TAG_ID_LEN);
       dptr = mp4tag_append_data (dptr, mp4tag->covername, cnlen);
+fprintf (stdout, "add covr-name: %s %d\n", mp4tag->covername, tcnlen);
 
       mp4tag_update_cover_len (libmp4tag, data, tcnlen);
     }
@@ -863,7 +880,9 @@ mp4tag_update_cover_len (libmp4tag_t *libmp4tag, char *data, uint32_t len)
   coverstart = data + libmp4tag->coverstart_offset;
   memcpy (&t32, coverstart, sizeof (uint32_t));
   t32 = be32toh (t32);
+fprintf (stdout, "old-cover-len: %d\n", t32);
   t32 += len;
+fprintf (stdout, "new-cover-len: %d\n", t32);
   t32 = htobe32 (t32);
   memcpy (coverstart, &t32, sizeof (uint32_t));
 }

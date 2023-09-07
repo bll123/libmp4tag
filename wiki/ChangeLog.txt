@@ -11,10 +11,9 @@
 **1.2.5 beta 2023-9---**
 
 * Bug Fixes:
+    * Fix internal parsing issue.
     * Fix update of parent container lengths.
-* New Features:
-    * Added mp4tag_set_option function.
-    * Auto-fix option to fix certain MP4 errors.
+    * Fix bug re-writing when only 'udta' is present.
 
 **1.2.4 beta 2023-9-4**
 
