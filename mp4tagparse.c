@@ -80,7 +80,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
   boxdata_t       bd;
   size_t          rrc;
   uint32_t        skiplen;
-  uint64_t        remaininglen;
+  ssize_t         remaininglen;
   bool            needdata = false;
   bool            descend = false;
 
@@ -108,18 +108,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     }
 
     /* check for length error */
-    if (remaininglen > 0 && bd.boxlen > remaininglen) {
+    if (remaininglen > 0 && (ssize_t) bd.boxlen > remaininglen) {
       if (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX) {
-        int     savedidx;
-
-        savedidx = libmp4tag->parentidx;
-        libmp4tag->parentidx = level - 1;
-        mp4tag_update_parent_lengths (libmp4tag, libmp4tag->fh, - remaininglen);
-        /* update base lengths to match */
-        for (int i = libmp4tag->parentidx; i >= 0; --i) {
-          libmp4tag->base_lengths [i] -= remaininglen;
-        }
-        libmp4tag->parentidx = savedidx;
+        mp4tag_auto_fix (libmp4tag, remaininglen, level);
       }
 
       /* set up for a re-read */
@@ -172,6 +163,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       /* want to descend into this hierarchy */
       /* skip the 4 bytes of flags */
       skiplen = MP4TAG_META_SZ - MP4TAG_BOXHEAD_SZ;
+      libmp4tag->insert_delta += MP4TAG_META_SZ;
       descend = true;
     }
 
@@ -183,6 +175,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
           MP4TAG_BOXHEAD_SZ;
       libmp4tag->after_ilst_offset =
           libmp4tag->noilst_offset + MP4TAG_BOXHEAD_SZ;
+      libmp4tag->insert_delta = MP4TAG_BOXHEAD_SZ;
     }
 
     if (strcmp (bd.nm, MP4TAG_ILST) == 0) {
@@ -232,7 +225,8 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
         /* box after the 'ilst' or 'free' boxes */
         /* unlimited will be false */
         libmp4tag->checkforfree = false;
-        if (! (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
+        if (! (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) &&
+            ! (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX)) {
           break;
         }
       }
@@ -253,6 +247,7 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
         libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
         // fprintf (stdout, "%*s %2d store base %s %d len:%ld offset:%08lx\n", level*2, " ", level, bd.nm, level, bd.len + MP4TAG_BOXHEAD_SZ, libmp4tag->base_offsets [level]);
         libmp4tag->base_offset_count = level + 1;
+        libmp4tag->parentidx = level;
       }
 
       if (skiplen > 0) {
@@ -261,7 +256,7 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
         }
       }
 
-      mp4tag_parse_file (libmp4tag, bd.boxlen, level + 1);
+      mp4tag_parse_file (libmp4tag, bd.boxlen - skiplen, level + 1);
       /* when descending, the box's data has already been skipped or read */
       skiplen = 0;
     }
@@ -323,6 +318,7 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
     if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
       fprintf (stdout, "%*s %2d %.5s: %" PRId64 " %" PRId64 " (%" PRId64 ") end\n", level*2, " ", level, bd.nm, bd.boxlen, bd.len, remaininglen);
     }
+
     if (remaininglen <= 0 && boxlen != 0) {
       return libmp4tag->mp4error;
     }
@@ -335,13 +331,23 @@ fprintf (stdout, "after free-box: %s\n", bd.nm);
     rrc = fread (&bh, MP4TAG_BOXHEAD_SZ, 1, libmp4tag->fh);
   }
 
-  if (level == 0 && libmp4tag->checkforfree) {
-    /* if checkforfree is still true, check and see if the end of file */
-    /* was reached */
-    mp4tag_parse_check_end (libmp4tag);
+fprintf (stdout, "level: %d end remaining-len: %ld\n", level, remaininglen);
+  if (remaininglen > 0) {
+    if (libmp4tag->options & MP4TAG_OPTION_AUTO_FIX) {
+      mp4tag_auto_fix (libmp4tag, remaininglen, level);
+    }
   }
 
-  mp4tag_sort_tags (libmp4tag);
+  if (level == 0) {
+    if (libmp4tag->checkforfree) {
+      /* if checkforfree is still true, check and see if the end of file */
+      /* was reached */
+      mp4tag_parse_check_end (libmp4tag);
+    }
+
+    mp4tag_sort_tags (libmp4tag);
+  }
+
   return libmp4tag->mp4error;
 }
 

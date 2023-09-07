@@ -8,10 +8,13 @@
 
 -->
 
-**1.2.5 beta 2023-9-6**
+**1.2.5 beta 2023-9---**
 
 * Bug Fixes:
     * Fix update of parent container lengths.
+* New Features:
+    * Added mp4tag_set_option function.
+    * Auto-fix option to fix certain MP4 errors.
 
 **1.2.4 beta 2023-9-4**
 

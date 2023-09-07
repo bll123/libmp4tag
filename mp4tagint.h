@@ -118,6 +118,7 @@ typedef struct libmp4tag {
   int       parentidx;
   ssize_t   noilst_offset;
   ssize_t   after_ilst_offset;
+  uint32_t  insert_delta;
   ssize_t   stco_offset;
   uint32_t  stco_len;
   ssize_t   co64_offset;
@@ -167,6 +168,7 @@ int   mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data, uint32_t data
 
 /* mp4writeutil.c */
 void mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta);
+void mp4tag_auto_fix (libmp4tag_t *libmp4tag, uint64_t delta, int level);
 
 /* mp4tagutil.c */
 

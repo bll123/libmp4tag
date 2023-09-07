@@ -254,6 +254,8 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
     }
     /* there is no 'ilst' block in the audio file */
 
+    libmp4tag->parentidx = 0;
+
     /* allocation size: udta + meta + hdlr + ilst-box */
     alloclen = MP4TAG_BOXHEAD_SZ;
     alloclen += MP4TAG_META_SZ + MP4TAG_HDLR_SZ + MP4TAG_BOXHEAD_SZ;
@@ -276,11 +278,13 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
       dptr = buff;
 
       /* udta */
+fprintf (stdout, "write: udta: %ld\n", len);
       dptr = mp4tag_append_len_32 (dptr, len);
       dptr = mp4tag_append_data (dptr, MP4TAG_UDTA, MP4TAG_ID_LEN);
 
       /* meta */
       len -= MP4TAG_BOXHEAD_SZ;
+fprintf (stdout, "write: meta: %ld\n", len);
       dptr = mp4tag_append_len_32 (dptr, len);
       dptr = mp4tag_append_data (dptr, MP4TAG_META, MP4TAG_ID_LEN);
       /* meta version+flags */
@@ -303,6 +307,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
       len -= MP4TAG_META_SZ;
       len -= MP4TAG_HDLR_SZ;
       len -= MP4TAG_BOXHEAD_SZ + MP4TAG_FREE_SPACE_SZ;
+fprintf (stdout, "write: ilst: %ld\n", len);
       dptr = mp4tag_append_len_32 (dptr, len);
       dptr = mp4tag_append_data (dptr, MP4TAG_ILST, MP4TAG_ID_LEN);
 
@@ -358,6 +363,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
     /* if the udta & etc. were inserted, adjust the delta size */
     delta += MP4TAG_BOXHEAD_SZ;
     delta += MP4TAG_META_SZ + MP4TAG_HDLR_SZ + MP4TAG_BOXHEAD_SZ;
+    delta -= libmp4tag->insert_delta;
   }
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
     fprintf (stdout, "  taglist-len: %d\n", libmp4tag->taglist_len);
@@ -365,12 +371,8 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
     fprintf (stdout, "        delta: %d\n", delta);
   }
 
-  /* if it is not an insert, update the parent offsets */
-  if (rc == MP4TAG_OK && libmp4tag->taglist_offset != 0) {
-    mp4tag_update_parent_lengths (libmp4tag, ofh, delta);
-  }
-
   if (rc == MP4TAG_OK) {
+    mp4tag_update_parent_lengths (libmp4tag, ofh, delta);
     mp4tag_update_offsets (libmp4tag, ofh, delta, offset);
   }
 
@@ -478,7 +480,7 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
   }
 
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
-    fprintf (stdout, "    offsetsz: %d\n", offsetsz);
+    fprintf (stdout, "    offsetsz: %d %s\n", offsetsz, offsetsz == sizeof (uint32_t) ? "stco" : "co64");
     fprintf (stdout, "    foffset: %ld\n", (long) foffset);
     fprintf (stdout, "    boffset: %d\n", boffset);
     fprintf (stdout, "    blen: %d\n", blen);

@@ -49,3 +49,17 @@ mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta)
   }
 }
 
+void
+mp4tag_auto_fix (libmp4tag_t *libmp4tag, uint64_t delta, int level)
+{
+  int     savedidx;
+
+  savedidx = libmp4tag->parentidx;
+  libmp4tag->parentidx = level - 1;
+  mp4tag_update_parent_lengths (libmp4tag, libmp4tag->fh, - delta);
+  /* update base lengths to match */
+  for (int i = libmp4tag->parentidx; i >= 0; --i) {
+    libmp4tag->base_lengths [i] -= delta;
+  }
+  libmp4tag->parentidx = savedidx;
+}
