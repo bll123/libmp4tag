@@ -116,6 +116,9 @@ Using the mp4tagcli executable:
     mp4tagcli filename.m4a covr:1=picB.png
     mp4tagcli filename.m4a covr:1=picB.png covr:1:name=Back
     mp4tagcli filename.m4a covr:0:name=Front
+    # the indexes are only useful if there is already an existing cover
+    # image at that index. e.g. setting covr:1 in a file with no cover
+    # images will place the cover at index 0.
 
   Deleting a tag:
     mp4tagcli filename.m4a nam=

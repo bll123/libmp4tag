@@ -54,6 +54,7 @@ mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
     }
   }
 
+  libmp4tag->covercount = 0;
   libmp4tag->coverstart_offset = -1;
   for (int pri = 0; pri < MP4TAG_PRI_MAX; ++pri) {
     for (int i = 0; i < libmp4tag->tagcount; ++i) {
@@ -563,8 +564,8 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   char        *dptr;
   char        tnm [MP4TAG_ID_LEN + 1];
   bool        iscustom = false;
-  char        *vendor = NULL;
-  size_t      vendorlen;
+  char        *appname = NULL;
+  size_t      appnamelen;
   char        *customname = NULL;
   size_t      customnamelen;
   char        *custom = NULL;
@@ -601,17 +602,17 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
       return data;
     }
 
-    /* the vendor (my name) string */
+    /* the appname string */
     p = strtok_r (NULL, MP4TAG_CUSTOM_DELIM, &tokstr);
     if (p == NULL) {
       free (custom);
       return data;
     }
-    vendor = p;
+    appname = p;
 
     /* the custom name */
     /* do not parse here, as there may be a : in the name */
-    p += strlen (vendor) + 1;
+    p += strlen (appname) + 1;
     if (p == NULL) {
       free (custom);
       return data;
@@ -620,15 +621,15 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
     /* 'mean' len, 'mean' id, flags */
     tlen += sizeof (uint32_t) * 2 + MP4TAG_ID_LEN;
-    vendorlen = strlen (vendor);
-    tlen += vendorlen;
+    appnamelen = strlen (appname);
+    tlen += appnamelen;
     /* 'name' len, 'name' id, flags */
     tlen += sizeof (uint32_t) * 2 + MP4TAG_ID_LEN;
     customnamelen = strlen (customname);
     tlen += customnamelen;
   }
 
-  if (mp4tag->coveridx > 0) {
+  if (libmp4tag->covercount > 0) {
     /* if processing a second cover, do not allocate extra space for the */
     /* ident-len and ident */
     tlen -= MP4TAG_BOXHEAD_SZ;
@@ -663,7 +664,7 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   }
 
   /* if this is a second cover, the identifier has already been processed */
-  if (mp4tag->coveridx == 0) {
+  if (libmp4tag->covercount == 0) {
     /* box length */
     dptr = mp4tag_append_len_32 (dptr, tlen);
 
@@ -684,13 +685,13 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
       /* update tlen to remove 'mean' */
       tlen -= sizeof (uint32_t) * 3;
-      tlen -= vendorlen;
+      tlen -= appnamelen;
 
-      tmplen = sizeof (uint32_t) * 3 + vendorlen;
+      tmplen = sizeof (uint32_t) * 3 + appnamelen;
       dptr = mp4tag_append_len_32 (dptr, tmplen);
       dptr = mp4tag_append_data (dptr, MP4TAG_MEAN, MP4TAG_ID_LEN);
       dptr = mp4tag_append_len_32 (dptr, 0);
-      dptr = mp4tag_append_data (dptr, vendor, vendorlen);
+      dptr = mp4tag_append_data (dptr, appname, appnamelen);
 
       /* update tlen to remove 'name' */
       tlen -= sizeof (uint32_t) * 3;
@@ -760,7 +761,7 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
       mp4tag->identtype == MP4TAG_ID_PNG) {
     dptr = mp4tag_append_data (dptr, mp4tag->data, mp4tag->datalen);
 
-    if (mp4tag->coveridx > 0 && libmp4tag->coverstart_offset != -1) {
+    if (libmp4tag->covercount > 0 && libmp4tag->coverstart_offset != -1) {
       /* datalen + size of a data box */
       mp4tag_update_cover_len (libmp4tag, data,
           MP4TAG_DATA_SZ + mp4tag->datalen);
@@ -777,6 +778,8 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
       mp4tag_update_cover_len (libmp4tag, data, tcnlen);
     }
+
+    libmp4tag->covercount += 1;
   }
 
   if (iscustom) {

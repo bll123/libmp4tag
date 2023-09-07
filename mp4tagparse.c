@@ -82,7 +82,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
   size_t          rrc;
   uint32_t        skiplen;
   uint32_t        boxheadsz;
-  ssize_t         remaininglen;
+  uint64_t        remaininglen;
   bool            needdata = false;
   bool            descend = false;
 
@@ -110,6 +110,12 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
 
     /* the box-length includes the length and the identifier */
     bd.boxlen = be32toh (bh.len);
+
+    if (bd.boxlen == 0) {
+      /* indicates that the 'mdat' box continues to the end of the file */
+      libmp4tag->parsedone = true;
+      break;
+    }
 
     if (bd.boxlen == 1) {
       uint64_t    t64 = 0;
@@ -533,7 +539,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
     tlen = be32toh (tlen);
     tlen -= MP4TAG_BOXHEAD_SZ;
     tlen -= sizeof (uint32_t);
-    /* what does 'mean' stand for? I would call it 'vendor' */
+    /* mean = something application name */
     /* ident len + ident (== "mean") + 4 bytes flags */
     p += MP4TAG_BOXHEAD_SZ;
     p += sizeof (uint32_t);
@@ -641,7 +647,7 @@ mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag,
   const char  *p = data;
   int         cflag = 0;
   const char  *cdata = NULL;
-  const char  *cname = NULL;
+  char        *cname = NULL;
 
   while (blen > 0) {
     memcpy (&tlen, p, sizeof (uint32_t));
@@ -650,6 +656,9 @@ mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag,
     if (memcmp (p + sizeof (uint32_t), MP4TAG_DATA, MP4TAG_ID_LEN) == 0) {
       if (cflag > 0 && cdata != NULL) {
         mp4tag_add_tag (libmp4tag, MP4TAG_COVR, cdata, clen, type, clen, cname);
+        if (cname != NULL) {
+          free (cname);
+        }
         cname = NULL;
         cdata = NULL;
         cflag = 0;
@@ -663,12 +672,25 @@ mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag,
       cdata = p;
       ++cflag;
     } else if (memcmp (p + sizeof (uint32_t), MP4TAG_NAME, MP4TAG_ID_LEN) == 0) {
-      cname = p + MP4TAG_BOXHEAD_SZ;
+      const char  *tcname = NULL;
+      int         tclen;
+
+      tcname = p + MP4TAG_BOXHEAD_SZ;
+      tclen = tlen - MP4TAG_BOXHEAD_SZ;
+      if (cname != NULL) {
+        free (cname);
+      }
+      cname = malloc (tclen + 1);
+      memcpy (cname, tcname, tclen);
+      cname [tclen] = '\0';
     }
     p += tlen;
   }
   if (cflag > 0 && cdata != NULL) {
     mp4tag_add_tag (libmp4tag, MP4TAG_COVR, cdata, clen, type, clen, cname);
+  }
+  if (cname != NULL) {
+    free (cname);
   }
 }
 

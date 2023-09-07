@@ -123,8 +123,10 @@ typedef struct libmp4tag {
   uint32_t  stco_len;
   ssize_t   co64_offset;
   uint32_t  co64_len;
+  /* covercount is a temporary variable used by both add-tag */
+  /* and the write process */
   int       covercount;
-  /* coverstart is a temporary variable used by the write process */
+  /* temporary variable used by the write process */
   int32_t   coverstart_offset;
   /* tag list */
   int       tagcount;

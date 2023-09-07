@@ -242,6 +242,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
         return;
       }
     }
+
     if (coveridx == -1) {
       libmp4tag->tags [tagidx].coveridx = libmp4tag->covercount;
       libmp4tag->covercount += 1;
@@ -314,7 +315,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
       int     coveridx;
 
       /* handle cover tags separately */
-      /* only cover names are allowed for set-tag-str */
+      /* only cover filenames are allowed for set-tag-str */
 
       offset = mp4tag_parse_cover_tag (tag, &coveridx);
       if (offset > 0) {
@@ -331,7 +332,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
       }
     } else {
 
-      /* existing: not a cover tag */
+      /* existing: not a cover image tag */
 
       if (mp4tag->binary) {
         libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;

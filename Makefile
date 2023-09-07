@@ -147,22 +147,34 @@ install: $(VERSFN)
 # source
 
 # the wiki/ directory has the changelog in it
-.PHONY: sourcetar
-sourcetar: $(VERSFN)
+.PHONY: source
+source: $(VERSFN)
 	@$(MAKE) tclean
 	VERS=$$(cat $(VERSFN)); \
-	TARGZ=libmp4tag-src-$${VERS}.tar.gz; \
-	TDIR=libmp4tag-$${VERS}; \
+	SRCDIR=libmp4tag-$${VERS}; \
 	test -f $${TARGZ} && $(RM) -f $${TARGZ}; \
-	test -d $${TDIR} && $(RM) -rf $${TDIR}; \
-	mkdir $${TDIR}; \
+	test -d $${SRCDIR} && $(RM) -rf $${SRCDIR}; \
+	mkdir $${SRCDIR}; \
 	cp -pfr \
 		*.c *.h CMakeLists.txt Makefile config.h.in libmp4tag.pc.in \
 		README.txt LICENSE.txt \
-		wiki \
-		$${TDIR}; \
-	tar -c -z -f libmp4tag-src-$${VERS}.tar.gz $${TDIR}; \
-	$(RM) -rf $${TDIR}
+		tests wiki \
+		$${SRCDIR}; \
+	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcetar; \
+	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcezip; \
+	$(RM) -rf $${SRCDIR}
+
+.PHONY: sourcetar
+sourcetar:
+	TARGZ=libmp4tag-src-$(VERS).tar.gz; \
+	test -f $${TARGZ} && $(RM) -f $${TARGZ}; \
+	tar -c -z -f $${TARGZ} $(SRCDIR)
+
+.PHONY: sourcezip
+sourcezip:
+	ZIPF=libmp4tag-src-$(VERS).zip; \
+	test -f $${ZIPF} && $(RM) -f $${ZIPF}; \
+	zip -q -o -r -9 $${ZIPF} $(SRCDIR)
 
 # cleaning
 
@@ -170,7 +182,7 @@ sourcetar: $(VERSFN)
 distclean:
 	@-$(MAKE) tclean
 	@-$(RM) -rf build tmp
-	@-$(RM) -f libmp4tag-src-*.tar.gz libmp4tag.pc
+	@-$(RM) -f libmp4tag-src-[0-9]*[0-9].[tz]* libmp4tag.pc
 	@mkdir $(BUILDDIR)
 
 .PHONY: clean

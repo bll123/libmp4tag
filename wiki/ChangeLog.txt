@@ -4,13 +4,16 @@
 
 <!--
 
-**1.2.6 beta 2023-9---**
+**1.2.7 beta 2023-9---**
+
+-->
+
+**1.2.6 beta 2023-9-7**
 
 * Bug Fixes:
     * Fix writing 4-byte numeric values (typo).
-    * Fix cover name processing. PENDING
-
--->
+    * Fix parse of cover name.
+    * Fix cover image processing.
 
 **1.2.5 beta 2023-9-6**
 

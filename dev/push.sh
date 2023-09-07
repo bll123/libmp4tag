@@ -22,6 +22,10 @@ if [[ ! -f libmp4tag-src-${VERS}.tar.gz ]]; then
   echo "no source tar"
   exit 1
 fi
+if [[ ! -f libmp4tag-src-${VERS}.zip ]]; then
+  echo "no source zip"
+  exit 1
+fi
 
 make tclean
 
@@ -30,6 +34,8 @@ sshpass -e rsync -v -e ssh ${fn} \
     ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/${fn}
 
 sshpass -e rsync -v -e ssh libmp4tag-src-${VERS}.tar.gz \
+    ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/
+sshpass -e rsync -v -e ssh libmp4tag-src-${VERS}.zip \
     ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/
 
 # mkdir linux

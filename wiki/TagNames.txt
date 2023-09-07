@@ -13,7 +13,7 @@ name.
 <br>'covr:1:name' is the name of the second cover.
 
 Custom tag names.  Custom tags have a tag name with three parts.
-'----', the vendor identification and the name of the tag.  e.g.
+'----', the application-name, and the name of the tag.  e.g.
 '----:BDJ4:DANCE' and
 '----:com.apple.iTunes:MusicBrainz&nbsp;Track&nbsp;Id' are custom
 tags.

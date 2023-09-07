@@ -39,6 +39,7 @@ main (int argc, char *argv [])
   int           fnidx = -1;
   int           dbgflags = 0;
   int           options = 0;
+  int           rc = MP4TAG_OK;
 
   static struct option mp4tagcli_options [] = {
     { "binary",         no_argument,        NULL,   'b' },
@@ -141,11 +142,12 @@ main (int argc, char *argv [])
   if (clean && ! copy) {
     if (mp4tag_clean_tags (libmp4tag) != MP4TAG_OK) {
       fprintf (stderr, "Unable to clean tags (%s)\n", mp4tag_error_str (libmp4tag));
+      rc = mp4tag_error (libmp4tag);
     }
     write = true;
   }
 
-  if (! clean && ! copy) {
+  if (rc == MP4TAG_OK && ! clean && ! copy) {
     for (int i = fnidx + 1; i < argc; ++i) {
       char    *tstr;
       char    *tokstr;
@@ -165,6 +167,7 @@ main (int argc, char *argv [])
             write = true;
           } else {
             fprintf (stderr, "Unable to delete tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
+            rc = mp4tag_error (libmp4tag);
           }
         }
         if (p != NULL) {
@@ -179,6 +182,7 @@ main (int argc, char *argv [])
                 write = true;
               } else {
                 fprintf (stderr, "Unable to set tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
+                rc = mp4tag_error (libmp4tag);
               }
             }
           } else {
@@ -186,6 +190,7 @@ main (int argc, char *argv [])
               write = true;
             } else {
               fprintf (stderr, "Unable to set tag: %s (%s)\n", tagname, mp4tag_error_str (libmp4tag));
+              rc = mp4tag_error (libmp4tag);
             }
           }
         } /* data is being set for the tag */
@@ -196,13 +201,13 @@ main (int argc, char *argv [])
     } /* for each argument on the command line */
   } /* not clean */
 
-  if (write) {
+  if (rc == MP4TAG_OK && write) {
     if (mp4tag_write_tags (libmp4tag) != MP4TAG_OK) {
       fprintf (stderr, "Unable to write tags (%s)\n", mp4tag_error_str (libmp4tag));
     }
   }
 
-  if (display && ! clean && ! copy) {
+  if (rc == MP4TAG_OK && display && ! clean && ! copy) {
     int     rc;
 
     rc = mp4tag_get_tag_by_name (libmp4tag, tagname, &mp4tagpub);
@@ -221,11 +226,11 @@ main (int argc, char *argv [])
     }
   }
 
-  if (! write && duration) {
+  if (rc == MP4TAG_OK && ! write && duration) {
     fprintf (stdout, "%" PRId64 "\n", mp4tag_duration (libmp4tag));
   }
 
-  if (! write && ! display && ! duration && ! clean) {
+  if (rc == MP4TAG_OK && ! write && ! display && ! duration && ! clean) {
     fprintf (stdout, "duration=%" PRId64 "\n", mp4tag_duration (libmp4tag));
 
     mp4tag_iterate_init (libmp4tag);
@@ -235,7 +240,7 @@ main (int argc, char *argv [])
   }
 
   mp4tag_free (libmp4tag);
-  exit (0);
+  return rc;
 }
 
 static void
