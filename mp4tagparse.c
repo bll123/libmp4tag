@@ -91,6 +91,10 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
   assert (sizeof (boxmdhd4_t) == 24);
   assert (sizeof (boxmdhd8pack_t) == 36);
 
+  if (libmp4tag->parsedone) {
+    return libmp4tag->mp4error;
+  }
+
   remaininglen = boxlen;
   /* subtract the box's header size, as it is not included */
   /* within the container's contents */
@@ -226,6 +230,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
         /* unlimited will be false */
         libmp4tag->checkforfree = false;
         if (! (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
+          libmp4tag->parsedone = true;
           break;
         }
       }
@@ -341,6 +346,13 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     }
 
     mp4tag_sort_tags (libmp4tag);
+  }
+
+  /* at this time, do not look for more free boxes after the 'udta' */
+  /* hierarchy.  processing gets messy.  and i don't have a sample */
+  if (libmp4tag->checkforfree) {
+    libmp4tag->checkforfree = false;
+    libmp4tag->parsedone = true;
   }
 
   return libmp4tag->mp4error;

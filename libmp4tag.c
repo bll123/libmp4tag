@@ -98,6 +98,7 @@ mp4tag_open (const char *fn, int *mp4error)
   libmp4tag->parsed = false;
   libmp4tag->processdata = false;
   libmp4tag->checkforfree = false;
+  libmp4tag->parsedone = false;
 
   libmp4tag->fh = mp4tag_fopen (fn, "rb+");
   if (libmp4tag->fh == NULL) {

@@ -139,6 +139,7 @@ typedef struct libmp4tag {
   /* used by the parser */
   bool      processdata : 1;
   bool      checkforfree : 1;
+  bool      parsedone : 1;
 } libmp4tag_t;
 
 /* mp4const.c */
