@@ -9,6 +9,7 @@ BUILDDIR = build
 GCC = gcc
 CLANG = clang
 VERSFN = tmp/vers.txt
+SRCFLAG = tmp/source.txt
 RM = rm
 
 PREFIX = /usr
@@ -148,11 +149,16 @@ install: $(VERSFN)
 
 # the wiki/ directory has the changelog in it
 .PHONY: source
-source: $(VERSFN)
-	@$(MAKE) tclean
-	VERS=$$(cat $(VERSFN)); \
+source:
+	@VERS=$$(cat $(VERSFN)); \
 	SRCDIR=libmp4tag-$${VERS}; \
-	test -f $${TARGZ} && $(RM) -f $${TARGZ}; \
+	$(MAKE) tclean; \
+	$(MAKE) SRCDIR=$${SRCDIR} $(SRCFLAG); \
+	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcetar; \
+	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcezip; \
+	$(RM) -rf $${SRCDIR} $(SRCFLAG)
+
+$(SRCFLAG): $(VERSFN)
 	test -d $${SRCDIR} && $(RM) -rf $${SRCDIR}; \
 	mkdir $${SRCDIR}; \
 	cp -pfr \
@@ -160,18 +166,16 @@ source: $(VERSFN)
 		README.txt LICENSE.txt \
 		tests wiki \
 		$${SRCDIR}; \
-	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcetar; \
-	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcezip; \
-	$(RM) -rf $${SRCDIR}
+	touch $(SRCFLAG)
 
 .PHONY: sourcetar
-sourcetar:
+sourcetar: $(SRCFLAG)
 	TARGZ=libmp4tag-src-$(VERS).tar.gz; \
 	test -f $${TARGZ} && $(RM) -f $${TARGZ}; \
 	tar -c -z -f $${TARGZ} $(SRCDIR)
 
 .PHONY: sourcezip
-sourcezip:
+sourcezip: $(SRCFLAG)
 	ZIPF=libmp4tag-src-$(VERS).zip; \
 	test -f $${ZIPF} && $(RM) -f $${ZIPF}; \
 	zip -q -o -r -9 $${ZIPF} $(SRCDIR)
