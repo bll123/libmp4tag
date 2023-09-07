@@ -38,17 +38,4 @@ sshpass -e rsync -v -e ssh libmp4tag-src-${VERS}.tar.gz \
 sshpass -e rsync -v -e ssh libmp4tag-src-${VERS}.zip \
     ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/
 
-# mkdir linux
-# cp -pf build/libmp4tag.so linux
-# cp -pf build/mp4tagcli linux
-
-for d in linux win64 macos; do
-  if [[ -d ${d} ]]; then
-    sshpass -e rsync -r -v -e ssh ${d} \
-        ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/${VERS}/
-  fi
-done
-
-test -d linux && rm -rf linux
-
 exit 0
