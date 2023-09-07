@@ -8,8 +8,10 @@ MAKEFLAGS += --no-print-directory
 BUILDDIR = build
 GCC = gcc
 CLANG = clang
-VERSFN = tmp/vers.txt
-SRCFLAG = tmp/source.txt
+LOCTMP = tmp
+VERSFN = $(LOCTMP)/vers.txt
+SRCFLAG = $(LOCTMP)/source.txt
+PFXFN = $(LOCTMP)/prefix.txt
 RM = rm
 
 PREFIX = /usr
@@ -38,6 +40,7 @@ sanitizeaddressclang:
 .PHONY: cmakeclang cmake-unix cmake-windows
 
 $(VERSFN): libmp4tag.h
+	@test -d $(LOCTMP) || mkdir $(LOCTMP)
 	@MAJVERS=$$(grep '^#define LIBMP4TAG_VERS_MAJOR [0-9]' libmp4tag.h \
 		| sed 's,.* ,,'); \
 	MINVERS=$$(grep '^#define LIBMP4TAG_VERS_MINOR [0-9]' libmp4tag.h \
@@ -45,7 +48,6 @@ $(VERSFN): libmp4tag.h
 	REVVERS=$$(grep '^#define LIBMP4TAG_VERS_REVISION [0-9]' libmp4tag.h \
 		| sed 's,.* ,,'); \
 	VERS="$${MAJVERS}.$${MINVERS}.$${REVVERS}"; \
-	test -d tmp || mkdir tmp; \
 	echo $${VERS} > $(VERSFN)
 
 # parallel doesn't seem to work under msys2
@@ -78,6 +80,12 @@ cmake: $(VERSFN)
 	    $(MAKE) cmake-windows; \
 	    $(MAKE) build; \
             ;; \
+	  *) \
+	    COMP=$(GCC) \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-windows; \
+	    $(MAKE) build; \
+            ;; \
 	esac
 
 .PHONY: cmakeclang
@@ -103,7 +111,13 @@ cmakeclang: $(VERSFN)
 	    pmode=--parallel $(MAKE) build; \
             ;; \
 	  MINGW*) \
-	    COMP=/mingw64/bin/clang.exe \
+	    COMP=/ucrt64/bin/clang.exe \
+	    VERS=$${VERS} \
+	    $(MAKE) cmake-windows; \
+	    $(MAKE) build; \
+            ;; \
+	  *) \
+	    COMP=clang \
 	    VERS=$${VERS} \
 	    $(MAKE) cmake-windows; \
 	    $(MAKE) build; \
@@ -140,10 +154,11 @@ build:
 # for the pkgconfig file.
 .PHONY: install
 install: $(VERSFN)
-	@$(RM) -f libmp4tag.pc tmp/prefix.txt
+	@$(RM) -f libmp4tag.pc $(PFXFN)
 	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
-	@echo $(PREFIX) > tmp/prefix.txt
+	@echo $(PREFIX) > $(PFXFN)
 	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
+	@$(RM) -f libmp4tag.pc $(PFXFN)
 
 # source
 
@@ -159,14 +174,16 @@ source: $(VERSFN)
 	$(RM) -rf $${SRCDIR} $(SRCFLAG)
 
 $(SRCFLAG):
-	test -d $${SRCDIR} && $(RM) -rf $${SRCDIR}; \
-	mkdir $${SRCDIR}; \
-	cp -pfr \
+	@test -d $(LOCTMP) || mkdir $(LOCTMP)
+	@if [ "$(SRCDIR)" = "" ]; then echo "No source-dir set"; exit 1; fi
+	@-test -d $(SRCDIR) && $(RM) -rf $(SRCDIR)
+	@mkdir $(SRCDIR)
+	@cp -pfr \
 		*.c *.h CMakeLists.txt Makefile config.h.in libmp4tag.pc.in \
 		README.txt LICENSE.txt \
 		tests wiki \
-		$${SRCDIR}; \
-	touch $(SRCFLAG)
+		$(SRCDIR)
+	@touch $(SRCFLAG)
 
 .PHONY: sourcetar
 sourcetar: $(SRCFLAG)
@@ -185,7 +202,7 @@ sourcezip: $(SRCFLAG)
 .PHONY: distclean
 distclean:
 	@-$(MAKE) tclean
-	@-$(RM) -rf build tmp
+	@-$(RM) -rf build $(LOCTMP)
 	@-$(RM) -f libmp4tag-src-[0-9]*[0-9].[tz]* libmp4tag.pc
 	@mkdir $(BUILDDIR)
 

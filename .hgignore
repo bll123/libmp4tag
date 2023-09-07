@@ -16,3 +16,4 @@ syntax: regexp
 ^www$
 ^TODO$
 ^libmp4tag-src-[0-9.]*\.tar\.gz$
+^libmp4tag-src-[0-9.]*\.zip$
