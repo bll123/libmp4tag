@@ -63,6 +63,7 @@ typedef struct {
   uint64_t    duration;
   uint32_t    moreflags;
 } boxmdhd8_t;
+
 static void mp4tag_process_mdhd (libmp4tag_t *libmp4tag, const char *data);
 static void mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
@@ -80,6 +81,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
   boxdata_t       bd;
   size_t          rrc;
   uint32_t        skiplen;
+  uint32_t        boxheadsz;
   ssize_t         remaininglen;
   bool            needdata = false;
   bool            descend = false;
@@ -100,9 +102,22 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
   }
 
   while (! feof (libmp4tag->fh) && rrc == 1) {
-    /* the total length includes the length and the identifier */
+    boxheadsz = MP4TAG_BOXHEAD_SZ;
+
+    /* the box-length includes the length and the identifier */
     bd.boxlen = be32toh (bh.len);
-    bd.len = bd.boxlen - MP4TAG_BOXHEAD_SZ;
+
+    if (bd.boxlen == 1) {
+      uint64_t    t64 = 0;
+
+      if (fread (&t64, sizeof (uint64_t), 1, libmp4tag->fh) != 1) {
+        libmp4tag->mp4error = MP4TAG_ERR_FILE_READ_ERROR;
+      }
+      bd.boxlen = be64toh (t64);
+      boxheadsz += sizeof (uint64_t);
+    }
+
+    bd.len = bd.boxlen - boxheadsz;
     if (boxlen == 0) {
       remaininglen = bd.boxlen;
     }
@@ -306,7 +321,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
 
     remaininglen -= bd.boxlen;
     if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
-      fprintf (stdout, "%*s %2d %.5s: %" PRId64 " %" PRId64 " (%" PRId64 ") end\n", level*2, " ", level, bd.nm, bd.boxlen, bd.len, remaininglen);
+      fprintf (stdout, "%*s    %.5s: end: (%" PRId64 ")\n", level*2, " ", bd.nm, remaininglen);
     }
 
     if (remaininglen <= 0 && boxlen != 0) {
