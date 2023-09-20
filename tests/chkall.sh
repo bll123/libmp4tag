@@ -25,6 +25,7 @@ rm -f ${TEXPA} ${TEXPS} ${TACT} ${TFN}
 # no-tags.m4a has no udta box, tag space is unlimited
 # alac.m4a tags are not at the end
 for f in samples/no-tags.m4a samples/alac.m4a; do
+  grc=0
   echo -n "chk: $f "
   if [[ ! -f $f ]]; then
     echo "not found"
@@ -121,10 +122,51 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   diff ${TEXPS} ${TACT} > /dev/null 2>&1
   rc=$?
   if [[ $rc -eq 0 ]]; then
+    echo -n "ok "
+  else
+    echo -n "fail "
+    grc=1
+  fi
+
+  # string tags
+  for tag in aART catg cprt desc keyw ldes ownr purd purl soaa \
+      soal soar soco sonm sosn tven tvnn tvsh ${CS}ART ${CS}alb ${CS}cmt \
+      ${CS}day ${CS}dir ${CS}gen ${CS}grp ${CS}lyr ${CS}mvn \
+      ${CS}nam ${CS}nrt ${CS}pub ${CS}too ${CS}wrk ${CS}wrt \
+      ; do
+    ${MP4TAGCLI} ${TFN} ${tag}=
+  done
+
+  # custom tags
+  for tag in ----:TEST:A ----:TEST:BBB \
+      ; do
+    ${MP4TAGCLI} ${TFN} -- ${tag}=
+  done
+
+  # numeric tags
+  for tag in cpil hdvd pgap shwm tmpo tves tvsn ${CS}mvc ${CS}mvi \
+      ; do
+    ${MP4TAGCLI} ${TFN} ${tag}=
+  done
+
+  # disk/trkn tags
+  for tag in disk trkn \
+      ; do
+    ${MP4TAGCLI} ${TFN} ${tag}=
+  done
+
+  ${MP4TAGCLI} ${TFN} covr:2=
+  ${MP4TAGCLI} ${TFN} covr:1=
+  ${MP4TAGCLI} ${TFN} covr=
+
+  val=$(${MP4TAGCLI} ${TFN} |
+      grep -E -v -- '(duration|----:com)' | wc -l)
+  if [[ $val -eq 0 ]]; then
     echo "ok"
   else
     echo "fail"
-    diff ${TEXPS} ${TACT}
+    grc=1
   fi
+
   rm -f ${TEXPA} ${TEXPS} ${TACT} ${TFN}
 done

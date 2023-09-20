@@ -1,6 +1,6 @@
 prefix=@LIBMP4TAG_INST_PREFIX@
 includedir=${prefix}/include
-libdir=${prefix}/@LIBMP4TAG_INST_LIBDIR@
+libdir=${prefix}/@LIBMP4TAG_INST_LIBRARY@
 
 Name: libmp4tag
 Description: MP4 tagging lbirary

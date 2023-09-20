@@ -4,13 +4,13 @@
 
 ### Tag Names
 
-Cover tags.  Cover tags may specify the cover index and also a cover
-name.
+Cover image tags.  Cover tags may specify the cover image index and
+also a cover name.
 
 'covr' and 'covr:0' are the same tag for the first cover image.
-<br>'covr:0:name' is the name of the first cover.
+<br>'covr:0:name' is the name of the first cover image.
 <br>'covr:1' is the second cover image.
-<br>'covr:1:name' is the name of the second cover.
+<br>'covr:1:name' is the name of the second cover image.
 
 Custom tag names.  Custom tags have a tag name with three parts.
 '----', the application-name, and the name of the tag.  e.g.

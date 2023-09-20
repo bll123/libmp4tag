@@ -25,8 +25,8 @@ and **mp4tag_iterate**.
 
 **data** : The value of the tag.
 
-**covername** : If the tag is 'covr', the cover name may also be
-returned.  If there is no cover name, or the tag is not 'covr',
+**covername** : If the tag is 'covr', the cover image name may also be
+returned.  If there is no cover image name, or the tag is not 'covr',
 **covername** is NULL.
 
 **datalen** : The size of the value.

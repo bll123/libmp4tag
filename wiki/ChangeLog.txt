@@ -4,7 +4,10 @@
 
 <!--
 
-**1.2.7 beta 2023-9---**
+**1.2.7 beta 2023-9-20**
+
+* Bug Fixes:
+    * Fix pkg-config file to install in correct library location.
 
 -->
 
@@ -12,7 +15,7 @@
 
 * Bug Fixes:
     * Fix writing 4-byte numeric values (typo).
-    * Fix parse of cover name.
+    * Fix parse of cover image name.
     * Fix cover image processing.
 
 **1.2.5 beta 2023-9-6**

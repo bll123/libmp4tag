@@ -9,6 +9,8 @@ set (CMAKE_CXX_COMPILER_WORKS 1)
 
 project (LIBMP4TAG VERSION ${LIBMP4TAG_BUILD_VERS})
 
+option (BUILD_SHARED_LIBS "Build dynamic library" ON)
+
 set (default_build_type "Release")
 
 set (CMAKE_SHARED_LIBRARY_PREFIX "")
@@ -131,6 +133,7 @@ if (NOT WIN32)
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
     add_compile_options (-mmacosx-version-min=10.12)
     add_link_options (-mmacosx-version-min=10.12)
+    # universal binary
     set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
   endif()
 else()
@@ -158,7 +161,7 @@ configure_file (config.h.in config.h)
 
 #### libraries
 
-add_library (libmp4tag SHARED
+add_library (libmp4tag
   libmp4tag.c
   mp4tagfileop.c
   mp4tagparse.c
@@ -170,6 +173,15 @@ add_library (libmp4tag SHARED
 if (WIN32)
   target_link_libraries (libmp4tag PUBLIC ws2_32)
 endif()
+
+# I don't know if this is needed.  windows works fine for me.
+if (WIN32)
+  set_target_properties (libmp4tag PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+set_target_properties (libmp4tag PROPERTIES
+  VERSION ${CMAKE_PROJECT_VERSION}
+  SOVERSION ${CMAKE_PROJECT_VERSION}
+)
 
 #### executables
 
@@ -185,45 +197,40 @@ endif()
 
 #### install
 
+include (GNUInstallDirs)
+
 # the cmake install process is bizarre. variables are not set.
-# why doesn't it load the cache?
 # cmake-install-libdir cannot be used as a variable for
 # the pre-install build of the .pc file.
 
-install (TARGETS
-  libmp4tag
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-install (TARGETS
-  mp4tagcli
-  DESTINATION bin
-)
-install (FILES
-  libmp4tag.h
-  DESTINATION include
+file (WRITE tmp/library.txt ${CMAKE_INSTALL_LIBDIR})
+
+install (TARGETS libmp4tag
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+  INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
-# Want to get the installation prefix. Not cmake defaults or staging dirs.
-# Not from whatever it is set to during the cmake build.
-# During the install process, the version is not set, so read it in.
-# The Makefile removes libmp4tag.pc before starting the install,
-# so this code is always run.
+install (FILES
+  libmp4tag.h
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+# pkgconfig
 install (CODE
   [[
   file (READ tmp/vers.txt LIBMP4TAG_BUILD_VERS)
-  file (READ tmp/prefix.txt LIBMP4TAG_INST_PREFIX)
   string (REGEX REPLACE "\n$" "" LIBMP4TAG_BUILD_VERS "${LIBMP4TAG_BUILD_VERS}")
+  file (READ tmp/prefix.txt LIBMP4TAG_INST_PREFIX)
   string (REGEX REPLACE "\n$" "" LIBMP4TAG_INST_PREFIX "${LIBMP4TAG_INST_PREFIX}")
-  if (WIN32)
-    set (LIBMP4TAG_INST_LIBDIR bin)
-  else()
-    set (LIBMP4TAG_INST_LIBDIR lib)
-  endif()
+  file (READ tmp/library.txt LIBMP4TAG_INST_LIBRARY)
+  string (REGEX REPLACE "\n$" "" LIBMP4TAG_INST_LIBRARY "${LIBMP4TAG_INST_LIBRARY}")
   configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
   ]]
 )
 
 install (FILES
   libmp4tag.pc
-  DESTINATION lib/pkgconfig
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
