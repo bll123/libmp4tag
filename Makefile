@@ -6,7 +6,6 @@
 MAKEFLAGS += --no-print-directory
 
 BUILDDIR = build
-GCC = gcc
 CLANG = clang
 LOCTMP = tmp
 VERSFN = $(LOCTMP)/vers.txt
@@ -57,7 +56,7 @@ cmake: $(VERSFN)
 	@VERS=$$(cat $(VERSFN)); \
 	case $$(uname -s) in \
           Linux) \
-	    COMP=$(GCC) \
+	    COMP=$(CC) \
 	    VERS=$${VERS} \
 	    $(MAKE) cmake-unix; \
             pmode=--parallel $(MAKE) build; \
@@ -75,13 +74,13 @@ cmake: $(VERSFN)
 	    pmode=--parallel $(MAKE) build; \
             ;; \
 	  MINGW*) \
-	    COMP=$(GCC) \
+	    COMP=$(CC) \
 	    VERS=$${VERS} \
 	    $(MAKE) cmake-windows; \
 	    $(MAKE) build; \
             ;; \
 	  *) \
-	    COMP=$(GCC) \
+	    COMP=$(CC) \
 	    VERS=$${VERS} \
 	    $(MAKE) cmake-windows; \
 	    $(MAKE) build; \
@@ -124,6 +123,7 @@ cmakeclang: $(VERSFN)
             ;; \
 	esac
 
+# internal use
 .PHONY: cmake-unix
 cmake-unix:
 	cmake \
@@ -132,6 +132,7 @@ cmake-unix:
 		-DLIBMP4TAG_BUILD_VERS:STATIC=$(VERS) \
 		-S . -B $(BUILDDIR) -Werror=deprecated
 
+# internal use
 .PHONY: cmake-windows
 cmake-windows:
 	cmake \
@@ -173,6 +174,7 @@ source: $(VERSFN)
 	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcezip; \
 	$(RM) -rf $${SRCDIR} $(SRCFLAG)
 
+# internal use
 $(SRCFLAG):
 	@test -d $(LOCTMP) || mkdir $(LOCTMP)
 	@if [ "$(SRCDIR)" = "" ]; then echo "No source-dir set"; exit 1; fi
@@ -185,12 +187,14 @@ $(SRCFLAG):
 		$(SRCDIR)
 	@touch $(SRCFLAG)
 
+# internal use
 .PHONY: sourcetar
 sourcetar: $(SRCFLAG)
 	TARGZ=libmp4tag-src-$(VERS).tar.gz; \
 	test -f $${TARGZ} && $(RM) -f $${TARGZ}; \
 	tar -c -z -f $${TARGZ} $(SRCDIR)
 
+# internal use
 .PHONY: sourcezip
 sourcezip: $(SRCFLAG)
 	ZIPF=libmp4tag-src-$(VERS).zip; \

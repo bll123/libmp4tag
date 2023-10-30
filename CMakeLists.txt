@@ -13,8 +13,11 @@ option (BUILD_SHARED_LIBS "Build dynamic library" ON)
 
 set (default_build_type "Release")
 
-set (CMAKE_SHARED_LIBRARY_PREFIX "")
-set (CMAKE_STATIC_LIBRARY_PREFIX "")
+set (LIBMP4TAG_LIBNAME mp4tag)
+if (WIN32)
+  set (CMAKE_SHARED_LIBRARY_PREFIX "lib")
+  set (CMAKE_STATIC_LIBRARY_PREFIX "lib")
+endif()
 
 include_directories (
   "${CMAKE_BINARY_DIR}"
@@ -161,7 +164,7 @@ configure_file (config.h.in config.h)
 
 #### libraries
 
-add_library (libmp4tag
+add_library (${LIBMP4TAG_LIBNAME}
   libmp4tag.c
   mp4tagfileop.c
   mp4tagparse.c
@@ -171,14 +174,14 @@ add_library (libmp4tag
   mp4const.c
 )
 if (WIN32)
-  target_link_libraries (libmp4tag PUBLIC ws2_32)
+  target_link_libraries (${LIBMP4TAG_LIBNAME} PUBLIC ws2_32)
 endif()
 
 # I don't know if this is needed.  windows works fine for me.
 if (WIN32)
-  set_target_properties (libmp4tag PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
-set_target_properties (libmp4tag PROPERTIES
+set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES
   VERSION ${CMAKE_PROJECT_VERSION}
   SOVERSION ${CMAKE_PROJECT_VERSION}
 )
@@ -189,7 +192,7 @@ add_executable (mp4tagcli
   mp4tagcli.c
 )
 target_link_libraries (mp4tagcli PRIVATE
-  libmp4tag
+  ${LIBMP4TAG_LIBNAME}
 )
 if (WIN32)
   target_link_libraries (mp4tagcli PUBLIC ws2_32)
@@ -205,7 +208,8 @@ include (GNUInstallDirs)
 
 file (WRITE tmp/library.txt ${CMAKE_INSTALL_LIBDIR})
 
-install (TARGETS libmp4tag
+# this works for some reason, even on windows.
+install (TARGETS ${LIBMP4TAG_LIBNAME}
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"

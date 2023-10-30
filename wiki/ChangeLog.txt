@@ -4,12 +4,19 @@
 
 <!--
 
+**1.2.9 beta 2023-9-20**
+
+-->
+
+**1.2.8 beta 2023-10-30**
+
+* Bug Fixes:
+    * Makefile cleanup; fix static library name on windows.
+
 **1.2.7 beta 2023-9-20**
 
 * Bug Fixes:
     * Fix pkg-config file to install in correct library location.
-
--->
 
 **1.2.6 beta 2023-9-7**
 
