@@ -13,6 +13,8 @@ option (BUILD_SHARED_LIBS "Build dynamic library" ON)
 
 set (default_build_type "Release")
 
+include (GNUInstallDirs)
+
 set (LIBMP4TAG_LIBNAME mp4tag)
 if (WIN32)
   set (CMAKE_SHARED_LIBRARY_PREFIX "lib")
@@ -127,10 +129,10 @@ endif()
 
 if (NOT WIN32)
   if (NOT APPLE)
-    SET (CMAKE_INSTALL_RPATH "\${ORIGIN}")
+    SET (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} "\${ORIGIN}")
   endif()
   if (APPLE)
-    SET (CMAKE_INSTALL_RPATH "@loader_path")
+    SET (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} "@loader_path")
     # 10.12 = Sierra, 10.13 = High Sierra
     # 10.14 = Mojave, 10.15 = Catalina
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
@@ -197,30 +199,13 @@ target_link_libraries (mp4tagcli PRIVATE
 if (WIN32)
   target_link_libraries (mp4tagcli PUBLIC ws2_32)
 endif()
-if (APPLE)
-  set_property (TARGET mp4tagcli
-    PROPERTY INSTALL_RPATH
-    "@loader_path"
-  )
-endif()
-if (NOT APPLE AND NOT WIN32)
-  set_property (TARGET mp4tagcli
-    PROPERTY INSTALL_RPATH
-    "\${ORIGIN}"
-  )
-endif()
+
+# libmp4tag.pc
+
+configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
 
 #### install
 
-include (GNUInstallDirs)
-
-# the cmake install process is bizarre. variables are not set.
-# cmake-install-libdir cannot be used as a variable for
-# the pre-install build of the .pc file.
-
-file (WRITE tmp/library.txt ${CMAKE_INSTALL_LIBDIR})
-
-# this works for some reason, even on windows.
 install (TARGETS ${LIBMP4TAG_LIBNAME}
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -234,20 +219,7 @@ install (FILES libmp4tag.h
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
-# pkgconfig
-install (CODE
-  [[
-  file (READ tmp/vers.txt LIBMP4TAG_BUILD_VERS)
-  string (REGEX REPLACE "\n$" "" LIBMP4TAG_BUILD_VERS "${LIBMP4TAG_BUILD_VERS}")
-  file (READ tmp/prefix.txt LIBMP4TAG_INST_PREFIX)
-  string (REGEX REPLACE "\n$" "" LIBMP4TAG_INST_PREFIX "${LIBMP4TAG_INST_PREFIX}")
-  file (READ tmp/library.txt LIBMP4TAG_INST_LIBRARY)
-  string (REGEX REPLACE "\n$" "" LIBMP4TAG_INST_LIBRARY "${LIBMP4TAG_INST_LIBRARY}")
-  configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
-  ]]
-)
-
 install (FILES
-  libmp4tag.pc
+  ${CMAKE_BINARY_DIR}/libmp4tag.pc
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )

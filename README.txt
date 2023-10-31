@@ -4,11 +4,18 @@ libmp4tag
   hasn't yet been tested thoroughly.
 
 Contents:
+  Release Notes
   About
   Notes
   Build Requirements
   Building
   Using the mp4tagcli executable
+
+Release Notes
+
+  1.2.9
+    The build/install process has been brought into line with cmake's
+    methods.  See the Building section.
 
 About
 
@@ -49,11 +56,10 @@ Build Requirements:
   libmp4tag does not use any external libraries.
 
 Building:
-  make
-  make PREFIX=target-dir install
-  # e.g. make PREFIX=/usr/local install
-  # if staging:
-  make PREFIX=target-dir DESTDIR=stage-dir install
+  make PREFIX=target-install-dir
+  make install
+  # for staging
+  make DESTDIR=stage-dir install
 
 Using the mp4tagcli executable:
 

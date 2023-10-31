@@ -1,6 +1,6 @@
-prefix=@LIBMP4TAG_INST_PREFIX@
-includedir=${prefix}/include
-libdir=${prefix}/@LIBMP4TAG_INST_LIBRARY@
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
 
 Name: libmp4tag
 Description: MP4 tagging lbirary

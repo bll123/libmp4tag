@@ -10,10 +10,7 @@ CLANG = clang
 LOCTMP = tmp
 VERSFN = $(LOCTMP)/vers.txt
 SRCFLAG = $(LOCTMP)/source.txt
-PFXFN = $(LOCTMP)/prefix.txt
 RM = rm
-
-PREFIX = /usr
 
 .PHONY: release
 release:
@@ -126,8 +123,10 @@ cmakeclang: $(VERSFN)
 # internal use
 .PHONY: cmake-unix
 cmake-unix:
+	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
 	cmake \
 		-DCMAKE_C_COMPILER=$(COMP) \
+		-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
 		-DLIBMP4TAG_BUILD:STATIC=$(LIBMP4TAG_BUILD) \
 		-DLIBMP4TAG_BUILD_VERS:STATIC=$(VERS) \
 		-S . -B $(BUILDDIR) -Werror=deprecated
@@ -135,8 +134,10 @@ cmake-unix:
 # internal use
 .PHONY: cmake-windows
 cmake-windows:
+	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
 	cmake \
-		-DCMAKE_C_COMPILER="$(COMP)" \
+		-DCMAKE_C_COMPILER=$(COMP) \
+		-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
 		-DLIBMP4TAG_BUILD:STATIC=$(LIBMP4TAG_BUILD) \
 		-DLIBMP4TAG_BUILD_VERS:STATIC=$(VERS) \
 		-G "MSYS Makefiles" \
@@ -155,11 +156,7 @@ build:
 # for the pkgconfig file.
 .PHONY: install
 install: $(VERSFN)
-	@$(RM) -f libmp4tag.pc $(PFXFN)
-	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
-	@echo $(PREFIX) > $(PFXFN)
-	cmake --install $(BUILDDIR) --prefix "$(PREFIX)"
-	@$(RM) -f libmp4tag.pc $(PFXFN)
+	cmake --install $(BUILDDIR)
 
 # source
 
@@ -207,14 +204,13 @@ sourcezip: $(SRCFLAG)
 distclean:
 	@-$(MAKE) tclean
 	@-$(RM) -rf build $(LOCTMP)
-	@-$(RM) -f libmp4tag-src-[0-9]*[0-9].[tz]* libmp4tag.pc
+	@-$(RM) -f libmp4tag-src-[0-9]*[0-9].[tz]*
 	@mkdir $(BUILDDIR)
 
 .PHONY: clean
 clean:
 	@-$(MAKE) tclean
 	@-test -d build && cmake --build build --target clean
-	@$(RM) -f libmp4tag.pc
 
 .PHONY: tclean
 tclean:
