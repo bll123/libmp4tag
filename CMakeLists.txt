@@ -197,6 +197,18 @@ target_link_libraries (mp4tagcli PRIVATE
 if (WIN32)
   target_link_libraries (mp4tagcli PUBLIC ws2_32)
 endif()
+if (APPLE)
+  set_property (TARGET mp4tagcli
+    PROPERTY INSTALL_RPATH
+    "@loader_path"
+  )
+endif()
+if (NOT APPLE AND NOT WIN32)
+  set_property (TARGET mp4tagcli
+    PROPERTY INSTALL_RPATH
+    "\${ORIGIN}"
+  )
+endif()
 
 #### install
 
@@ -212,12 +224,13 @@ file (WRITE tmp/library.txt ${CMAKE_INSTALL_LIBDIR})
 install (TARGETS ${LIBMP4TAG_LIBNAME}
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-  INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
-install (FILES
-  libmp4tag.h
+install (TARGETS mp4tagcli
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+)
+
+install (FILES libmp4tag.h
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 

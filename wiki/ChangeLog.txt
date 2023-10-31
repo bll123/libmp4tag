@@ -4,9 +4,14 @@
 
 <!--
 
-**1.2.9 beta 2023-9-20**
+**1.2.10 beta 2023-9-20**
 
 -->
+
+**1.2.9 beta 2023-10-31**
+
+* Bug Fixes:
+    * Fix installation of mp4tagcli executable.
 
 **1.2.8 beta 2023-10-30**
 
