@@ -215,4 +215,5 @@ clean:
 .PHONY: tclean
 tclean:
 	@-$(RM) -f w ww www core
+	@-$(RM) -f test-*.txt test-xx.m4a
 	@-$(RM) -f *~ */*~ *.orig */*.orig

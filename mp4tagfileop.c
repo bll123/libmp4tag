@@ -20,10 +20,6 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 
-#ifdef _WIN32
-static void * mp4tag_towide (const char *buff);
-#endif
-
 FILE *
 mp4tag_fopen (const char *fname, const char *mode)
 {
@@ -182,20 +178,36 @@ mp4tag_file_move (const char *fname, const char *nfn)
 
 #ifdef _WIN32
 
-static void *
+wchar_t *
 mp4tag_towide (const char *buff)
 {
-    wchar_t     *tbuff = NULL;
-    size_t      len;
+  wchar_t     *tbuff = NULL;
+  size_t      len;
 
-    /* the documentation lies; len does not include room for the null byte */
-    len = MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), NULL, 0);
-    tbuff = malloc ((len + 1) * sizeof (wchar_t));
-    if (tbuff != NULL) {
-      MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), tbuff, len);
-      tbuff [len] = L'\0';
-    }
-    return tbuff;
+  /* the documentation lies; len does not include room for the null byte */
+  len = MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), NULL, 0);
+  tbuff = malloc ((len + 1) * sizeof (wchar_t));
+  if (tbuff != NULL) {
+    MultiByteToWideChar (CP_UTF8, 0, buff, strlen (buff), tbuff, len);
+    tbuff [len] = L'\0';
+  }
+  return tbuff;
+}
+
+char *
+mp4tag_fromwide (const wchar_t *buff)
+{
+  char        *tbuff = NULL;
+  size_t      len;
+
+  /* the documentation lies; len does not include room for the null byte */
+  len = WideCharToMultiByte (CP_UTF8, 0, buff, -1, NULL, 0, NULL, NULL);
+  tbuff = malloc (len + 1);
+  if (tbuff != NULL) {
+    WideCharToMultiByte (CP_UTF8, 0, buff, -1, tbuff, len, NULL, NULL);
+    tbuff [len] = '\0';
+  }
+  return tbuff;
 }
 
 #endif

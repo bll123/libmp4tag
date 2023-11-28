@@ -12,15 +12,26 @@
 #include <getopt.h>
 #include <errno.h>
 
+#if _hdr_windows
+# include <windows.h>
+#endif
+
 #include "libmp4tag.h"
+
+typedef struct {
+  int       nargc;
+  char      **utf8argv;
+} argcopy_t;
 
 static libmp4tag_t * openparse (const char *fname, int dbgflags, int options);
 static void setTagName (const char *tag, char *buff, size_t sz);
 static void displayTag (mp4tagpub_t *mp4tagpub);
+static void cleanargs (argcopy_t *argcopy);
 
 int
 main (int argc, char *argv [])
 {
+  argcopy_t     argcopy;
   libmp4tag_t   *libmp4tag;
   mp4tagpub_t   mp4tagpub;
   int           c;
@@ -40,6 +51,11 @@ main (int argc, char *argv [])
   int           dbgflags = 0;
   int           options = 0;
   int           rc = MP4TAG_OK;
+  char          *targ;
+#if _lib_GetCommandLineW
+  wchar_t       **wargv;
+  int           targc;
+#endif
 
   static struct option mp4tagcli_options [] = {
     { "binary",         no_argument,        NULL,   'b' },
@@ -55,9 +71,27 @@ main (int argc, char *argv [])
     { NULL,             0,                  NULL,   0 }
   };
 
+  /* msys2 does not convert argv to utf8 on windows */
+  argcopy.nargc = argc;
+  argcopy.utf8argv = NULL;
+  if (argc > 0) {
+    argcopy.utf8argv = malloc (sizeof (char *) * argc);
+  }
+#if _lib_GetCommandLineW
+  wargv = CommandLineToArgvW (GetCommandLineW(), &targc);
+  for (int i = 0; i < argc; ++i) {
+    argcopy.utf8argv [i] = mp4tag_fromwide (wargv [i]);
+  }
+  LocalFree (wargv);
+#else
+  for (int i = 0; i < argc; ++i) {
+    argcopy.utf8argv [i] = strdup (argv [i]);
+  }
+#endif
+
   *tagname = '\0';
 
-  while ((c = getopt_long_only (argc, argv, "cd:Df:Ft:ux:",
+  while ((c = getopt_long_only (argc, argcopy.utf8argv, "cd:Df:Ft:ux:",
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'b': {
@@ -79,19 +113,22 @@ main (int argc, char *argv [])
       case 'd': {
         display = true;
         if (optarg != NULL) {
-          setTagName (optarg, tagname, sizeof (tagname));
+          targ = argcopy.utf8argv [optind - 1];
+          setTagName (targ, tagname, sizeof (tagname));
         }
         break;
       }
       case 'f': {
         if (optarg != NULL) {
-          infname = optarg;
+          targ = argcopy.utf8argv [optind - 1];
+          infname = targ;
         }
         break;
       }
       case 't': {
         if (optarg != NULL) {
-          copyto = optarg;
+          targ = argcopy.utf8argv [optind - 1];
+          copyto = targ;
         }
         break;
       }
@@ -122,9 +159,10 @@ main (int argc, char *argv [])
     fnidx = optind;
     if (fnidx <= 0 || fnidx >= argc) {
       fprintf (stderr, "no file specified\n");
+      cleanargs (&argcopy);
       exit (1);
     }
-    infname = argv [fnidx];
+    infname = argcopy.utf8argv [fnidx];
   }
 
   libmp4tag = openparse (infname, dbgflags, options);
@@ -153,7 +191,7 @@ main (int argc, char *argv [])
       char    *tokstr;
       char    *p;
 
-      tstr = strdup (argv [i]);
+      tstr = strdup (argcopy.utf8argv [i]);
       if (tstr == NULL) {
         continue;
       }
@@ -240,6 +278,7 @@ main (int argc, char *argv [])
   }
 
   mp4tag_free (libmp4tag);
+  cleanargs (&argcopy);
   return rc;
 }
 
@@ -304,4 +343,18 @@ openparse (const char *fname, int dbgflags, int options)
 
   mp4tag_parse (libmp4tag);
   return libmp4tag;
+}
+
+static void
+cleanargs (argcopy_t *argcopy)
+{
+  if (argcopy->utf8argv != NULL) {
+    for (int i = 0; i < argcopy->nargc; ++i) {
+      if (argcopy->utf8argv [i] != NULL) {
+        free (argcopy->utf8argv [i]);
+      }
+    }
+
+    free (argcopy->utf8argv);
+  }
 }

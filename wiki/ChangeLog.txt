@@ -4,9 +4,16 @@
 
 <!--
 
-**1.2.10 beta 2023-9-20**
+**1.2.11 beta 2023-11---**
 
 -->
+
+**1.2.10 beta 2023-11-28**
+
+* Bug Fixes:
+    * Windows: mp4tagcli fixed to properly handle windows command line arguments.
+    * Fix test scripts to work on windows.
+    * Windows: mp4tag_towide and mp4tag_fromwide changed to public interfaces.
 
 **1.2.9 beta 2023-10-31**
 

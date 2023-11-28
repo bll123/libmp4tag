@@ -109,6 +109,10 @@ ssize_t mp4tag_file_size (const char *fn);
 char    * mp4tag_read_file (const char *fn, size_t *sz, int *mp4error);
 int     mp4tag_file_delete (const char *fname);
 int     mp4tag_file_move (const char *fname, const char *nfn);
+#ifdef _WIN32
+wchar_t * mp4tag_towide (const char *buff);
+char * mp4tag_fromwide (const wchar_t *buff);
+#endif
 
 /* versioning */
 
@@ -120,7 +124,7 @@ int     mp4tag_file_move (const char *fname, const char *nfn);
 
 #define LIBMP4TAG_VERS_MAJOR 1
 #define LIBMP4TAG_VERS_MINOR 2
-#define LIBMP4TAG_VERS_REVISION 9
+#define LIBMP4TAG_VERS_REVISION 10
 #define LIBMP4TAG_RELEASE_STATE "beta"
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \

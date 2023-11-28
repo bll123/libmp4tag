@@ -157,6 +157,7 @@ check_include_file (windows.h _hdr_windows)
 check_include_file (winsock2.h _hdr_winsock2)
 
 set (CMAKE_REQUIRED_INCLUDES windows.h)
+check_function_exists (CommandLineToArgvW _lib_CommandLinetoArgvW)
 check_function_exists (_wrename _lib__wrename)
 check_function_exists (_wstat64 _lib__wstat64)
 check_function_exists (_wunlink _lib__wunlink)
