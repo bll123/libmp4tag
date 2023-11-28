@@ -69,9 +69,12 @@ Using the mp4tagcli executable:
   The duration is displayed in milliseconds.
 
   Usage:
-      mp4tagcli <filename> [--version] [--debug <value>] \
+      mp4tagcli --version
+      mp4tagcli <filename> \
+          [--debug <value>] \
           [--duration] [--clean] [--display <tag> [--dump=<filename>]]
           [--binary] [<tag>={|<value>|<filename>}] ...]
+          [--copyfrom in-filename --copyto out-filename]
 
       --dump is only relevant for binary data.
       --binary is only needed when adding an unknown binary data tag
@@ -108,7 +111,7 @@ Using the mp4tagcli executable:
     mp4tagcli filename.m4a -- ----:com.apple.iTunes:CONDUCTOR=Beethoven
     mp4tagcli filename.m4a -- ----:BDJ4:DANCE=Waltz
     mp4tagcli filename.m4a -- \
-        '----:com.apple.iTunes:MusicBrainz Track Id'=1234
+        '----:com.apple.iTunes:MusicBrainz Track Id=1234'
 
   Binary Data:
     # existing tags and cover images do not need the --binary argument.

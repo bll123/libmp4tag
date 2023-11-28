@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <wchar.h>
+#include <ctype.h>
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
@@ -613,7 +613,8 @@ static int
 mp4tag_check_covr (const char *tag, const char *fn)
 {
   int     identtype = MP4TAG_ID_DATA;
-  size_t  len;
+  char    *p;
+  char    ext [10];
 
   if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) != 0) {
     return identtype;
@@ -623,12 +624,27 @@ mp4tag_check_covr (const char *tag, const char *fn)
     return identtype;
   }
 
-  len = strlen (fn);
-  if (len >= 5 && strcmp (fn + len - 4, ".png") == 0) {
-    identtype = MP4TAG_ID_PNG;
-  } else if (len >= 5 && strcmp (fn + len - 4, ".jpg") == 0) {
+  p = strrchr (fn, '.');
+  if (p == NULL) {
+    /* file type is unknown, assume jpg */
     identtype = MP4TAG_ID_JPG;
-  } else if (len >= 6 && strcmp (fn + len - 5, ".jpeg") == 0) {
+    return identtype;
+  }
+
+  /* it really isn't important what the full extension is, */
+  /* the check is only for a few known extensions */
+  /* and the extensions are ascii */
+  strncpy (ext, p, sizeof (ext));
+  ext [sizeof (ext) - 1] = '\0';
+  for (size_t i = 0; i < strlen (ext); ++i) {
+    ext [i] = tolower (ext [i]);
+  }
+
+  if (strcmp (ext, ".png") == 0) {
+    identtype = MP4TAG_ID_PNG;
+  } else if (strcmp (ext, ".jpg") == 0) {
+    identtype = MP4TAG_ID_JPG;
+  } else if (strcmp (ext, ".jpeg") == 0) {
     identtype = MP4TAG_ID_JPG;
   }
 

@@ -14,6 +14,7 @@
     * Windows: mp4tagcli fixed to properly handle windows command line arguments.
     * Fix test scripts to work on windows.
     * Windows: mp4tag_towide and mp4tag_fromwide changed to public interfaces.
+    * Fix extension check for cover images to handle upper case.
 
 **1.2.9 beta 2023-10-31**
 
