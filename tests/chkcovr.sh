@@ -1,16 +1,26 @@
 #!/bin/bash
 
+systype=$(uname -s)
+sopt=-c
+sfmt=%s
+case ${systype} in
+  Darwin)
+    sopt=-f
+    sfmt=%z
+    ;;
+esac
+
 TFN=xx.m4a
 
 MP4TAGCLI=./build/mp4tagcli
 PICA=samples/bdj4-b.png
-PICALEN=$(stat --format '%s' ${PICA})
+PICALEN=$(stat ${sopt} "${sfmt}" ${PICA})
 PICB=samples/bdj4-y.png
-PICBLEN=$(stat --format '%s' ${PICB})
+PICBLEN=$(stat ${sopt} "${sfmt}" ${PICB})
 PICC=samples/bdj4-b.jpg
-PICCLEN=$(stat --format '%s' ${PICC})
+PICCLEN=$(stat ${sopt} "${sfmt}" ${PICC})
 PICD=samples/bdj4-y.jpg
-PICDLEN=$(stat --format '%s' ${PICD})
+PICDLEN=$(stat ${sopt} "${sfmt}" ${PICD})
 
 if [[ ! -f ${MP4TAGCLI} ]]; then
   echo "executable not found"

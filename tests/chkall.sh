@@ -1,19 +1,29 @@
 #!/bin/bash
 
+systype=$(uname -s)
+sopt=--format
+sfmt=%s
+case ${systype} in
+  Darwin)
+    sopt=-f
+    sfmt=%z
+    ;;
+esac
+
 CS=©
-TEXPA=x1
-TEXPS=x1s
-TACT=x2
-TFN=xx.m4a
+TEXPA=test-exp-tmp.txt
+TEXPS=test-exp-sort.txt
+TACT=test-actual.txt
+TFN=test-xx.m4a
 
 PICA=samples/bdj4-b.png
-PICALEN=$(stat --format '%s' ${PICA})
+PICALEN=$(stat ${sopt} "${sfmt}" ${PICA})
 PICB=samples/bdj4-y.png
-PICBLEN=$(stat --format '%s' ${PICB})
+PICBLEN=$(stat ${sopt} "${sfmt}" ${PICB})
 PICC=samples/bdj4-b.jpg
-PICCLEN=$(stat --format '%s' ${PICC})
+PICCLEN=$(stat ${sopt} "${sfmt}" ${PICC})
 PICD=samples/bdj4-y.jpg
-PICDLEN=$(stat --format '%s' ${PICD})
+PICDLEN=$(stat ${sopt} "${sfmt}" ${PICD})
 
 MP4TAGCLI=./build/mp4tagcli
 if [[ ! -f ${MP4TAGCLI} ]]; then
@@ -36,9 +46,9 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
 
   # string tags
   for tag in aART catg cprt desc keyw ldes ownr purd purl soaa \
-      soal soar soco sonm sosn tven tvnn tvsh ${CS}ART ${CS}alb ${CS}cmt \
-      ${CS}day ${CS}dir ${CS}gen ${CS}grp ${CS}lyr ${CS}mvn \
-      ${CS}nam ${CS}nrt ${CS}pub ${CS}too ${CS}wrk ${CS}wrt \
+      soal soar soco sonm sosn tven tvnn tvsh ART alb cmt \
+      day dir gen grp lyr mvn \
+      nam nrt pub too wrk wrt \
       ; do
     ${MP4TAGCLI} ${TFN} ${tag}=${tag}123456
     # don't save these in the final output file
@@ -52,7 +62,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   done
 
   # numeric tags
-  for tag in cpil hdvd pgap shwm tmpo tves tvsn ${CS}mvc ${CS}mvi \
+  for tag in cpil hdvd pgap shwm tmpo tves tvsn mvc mvi \
       ; do
     ${MP4TAGCLI} ${TFN} ${tag}=1
     echo ${tag}=1 >> ${TEXPA}
@@ -95,9 +105,9 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   # these replacements should all be in-place,
   # as longer names were used above.
   for tag in aART catg cprt desc keyw ldes ownr purd purl soaa \
-      soal soar soco sonm sosn tven tvnn tvsh ${CS}ART ${CS}alb ${CS}cmt \
-      ${CS}day ${CS}dir ${CS}gen ${CS}grp ${CS}lyr ${CS}mvn \
-      ${CS}nam ${CS}nrt ${CS}pub ${CS}too ${CS}wrk ${CS}wrt \
+      soal soar soco sonm sosn tven tvnn tvsh ART alb cmt \
+      day dir gen grp lyr mvn \
+      nam nrt pub too wrk wrt \
       ; do
     ${MP4TAGCLI} ${TFN} ${tag}=${tag}
     echo ${tag}=${tag} >> ${TEXPA}
@@ -116,6 +126,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   # the expected results file
   ${MP4TAGCLI} ${TFN} |
       grep -E -v -- '(duration|----:com)' |
+      sed 's,©,,g' |
       LANG=C sort > ${TACT}
 
   LANG=C sort < ${TEXPA} > ${TEXPS}
@@ -125,14 +136,15 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
     echo -n "ok "
   else
     echo -n "fail "
+exit 1
     grc=1
   fi
 
   # string tags
   for tag in aART catg cprt desc keyw ldes ownr purd purl soaa \
-      soal soar soco sonm sosn tven tvnn tvsh ${CS}ART ${CS}alb ${CS}cmt \
-      ${CS}day ${CS}dir ${CS}gen ${CS}grp ${CS}lyr ${CS}mvn \
-      ${CS}nam ${CS}nrt ${CS}pub ${CS}too ${CS}wrk ${CS}wrt \
+      soal soar soco sonm sosn tven tvnn tvsh ART alb cmt \
+      day dir gen grp lyr mvn \
+      nam nrt pub too wrk wrt \
       ; do
     ${MP4TAGCLI} ${TFN} ${tag}=
   done
@@ -144,7 +156,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   done
 
   # numeric tags
-  for tag in cpil hdvd pgap shwm tmpo tves tvsn ${CS}mvc ${CS}mvi \
+  for tag in cpil hdvd pgap shwm tmpo tves tvsn mvc mvi \
       ; do
     ${MP4TAGCLI} ${TFN} ${tag}=
   done
