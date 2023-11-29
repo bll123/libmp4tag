@@ -23,19 +23,19 @@ The file to be processed was not found or could not be opened.
 
 ##### MP4TAG_ERR_FILE_READ_ERROR
 
-An error occured while reading the file.
+An error occurred while reading the file.
 
 ##### MP4TAG_ERR_FILE_SEEK_ERROR
 
-An error occured while seeking within the file.
+An error occurred while seeking within the file.
 
 ##### MP4TAG_ERR_FILE_TELL_ERROR
 
-An error occured while determining the position with the file.
+An error occurred while determining the position within the file.
 
 ##### MP4TAG_ERR_FILE_WRITE_ERROR
 
-An error occured while writing the file.
+An error occurred while writing the file.
 
 ##### MP4TAG_ERR_MISMATCH
 
@@ -70,7 +70,7 @@ A null value was specified.
 
 ##### MP4TAG_ERR_OUT_OF_MEMORY
 
-An out of memory condition occured during processing.
+An out of memory condition occurred during processing.
 
 ##### MP4TAG_ERR_TAG_NOT_FOUND
 

@@ -13,28 +13,32 @@ typedef struct {
   const char  *covername;
   size_t      datalen;
   int         coveridx;
+  int         covertype;
   bool        binary;
 
 } mp4tagpub_t;
 ~~~
 
-The mp4tagpub_t structure is filled in by **mp4tag_get_tag_by_name**
-and **mp4tag_iterate**.
+The mp4tagpub_t structure is filled in by __mp4tag_get_tag_by_name__
+and __mp4tag_iterate__.
 
-**tag** : The name of the tag.
+__tag__ : The name of the tag.
 
-**data** : The value of the tag.
+__data__ : The value of the tag.
 
-**covername** : If the tag is 'covr', the cover image name may also be
+__covername__ : If the tag is 'covr', the cover image name may also be
 returned.  If there is no cover image name, or the tag is not 'covr',
-**covername** is NULL.
+__covername__ is NULL.
 
-**datalen** : The size of the value.
+__datalen__ : The size of the value.
 
-**coveridx** : The index of the cover image. The first cover will have
+__coveridx__ : The index of the cover image. The first cover will have
 a value of zero.
 
-**binary** : If true, the data is in binary format.
+__covertype__ : The type of the cover image.  May be MP4TAG_COVER_JPG
+or MP4TAG_COVER_PNG.
+
+__binary__ : If true, the data is in binary format.
 
 -------------
 ##### mp4tag_duration
@@ -47,7 +51,7 @@ Returns the duration in milliseconds.
 int64_t mp4tag_duration (libmp4tag_t *libmp4tag)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
 Returns: duration in milliseconds or 0.
 
@@ -58,11 +62,11 @@ Returns: duration in milliseconds or 0.
 int mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag, mp4tagpub_t *mp4tagpub)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
-**tag** : The name of the tag to retrieve.
+__tag__ : The name of the tag to retrieve.
 
-**mp4tagpub** : A pointer to a mp4tagpub_t structure to fill in.
+__mp4tagpub__ : A pointer to a mp4tagpub_t structure to fill in.
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
@@ -73,7 +77,7 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 int mp4tag_iterate_init (libmp4tag_t *libmp4tag)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
@@ -84,8 +88,8 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 int mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
-**mp4tagpub** : A pointer to a mp4tagpub_t structure to fill in.
+__mp4tagpub__ : A pointer to a mp4tagpub_t structure to fill in.
 
 Returns: MP4TAG_OK, MP4TAG_FINISH or other [error&nbsp;code](ErrorCodes).

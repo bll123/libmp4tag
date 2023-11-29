@@ -39,7 +39,7 @@ mp4tagcli \- mp4 tag command line interface
 [\fB\-\-display\fP \fItag\fP [\fB\-\-dump\fP \fIfilename\fP]]
 .PP
 .SH Description
-\fImp4tagcli\fP is used to read and write tags from an MPEG audio or
+\fImp4tagcli\fP is used to read and write tags from an MP4 audio or
 video file.  Existing tags and existing custom tags will not be lost
 when writing or replacing tags.
 .SH Overview
@@ -82,14 +82,14 @@ values for \fIfilename\fP.  The duration is also displayed.  Each tag is
 output as \fItag\fP\fB=\fP\fIvalue\fP on a separate line.
 .TP
 \fBmp4tagcli\fP \fIfilename\fP {\fB\-u\fP|\fB\-\-duration\fP}
-Prints the duration of the MPEG file without any label.
+Prints the duration of the MP4 file without any label.
 .TP
 \fBmp4tagcli\fP \fIfilename\fP \fB{\-d|\-\-display}\fP \fItag\fP
 Display \fItag\fP and its value.
 .SS Setting Tags
 .TP
 \fBmp4tagcli\fP \fIfilename\fP [\fB\-\-binary\fP] [\fItag\fP {|\fIvalue\fP|\fIfilename\fP} ...]
-Without any value specified, the tag is removed from the MPEG file.
+Without any value specified, the tag is removed from the MP4 file.
 .IP
 If a value is specified for a tag, the tag is set to \fIvalue\fP.
 .IP
@@ -104,7 +104,7 @@ Multiple tags may be specified on the command line.
 .SS Removing All Tags
 .TP
 \fBmp4tagcli\fP \fIfilename\fP \fB\-\-clean\fP
-Removes all tags from the MPEG file.
+Removes all tags from the MP4 file.
 .PP
 .SS Copying Tags
 .TP
@@ -112,6 +112,8 @@ Removes all tags from the MPEG file.
 Copies the tags from from \fIinfile\fP to \fIoutfile\fP.  Any existing
 tags in \fIoutfile\fP are completely removed.
 .PP
+.SH See Also
+\fBlibmp4tag\fP(3)
 .SH Links
 \fBMain\fP: https://sourceforge.net/p/libmp4tag/
 .br

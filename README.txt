@@ -1,8 +1,5 @@
 libmp4tag
 
-  Please make a backup before using this software.  It is new, and
-  hasn't yet been tested thoroughly.
-
 Contents:
   Release Notes
   About
@@ -30,16 +27,13 @@ About
 
 Current Status:
 
-  Beta
+  Production
 
-  Beta software is under development.  The API should be (mostly)
-  stable, and most functionality should be working.  There may still
-  be some bugs present.
+  The API is stable, and all functionality is working.
 
   To Do:
-    - handle other languages ?
-      i do not have any good samples of this.
-    - manual pages
+    - Other languages ?
+      I do not have any good samples of this.
 
 Notes:
 

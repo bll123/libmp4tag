@@ -13,9 +13,9 @@ These routines are written to work both on posix systems and on Windows.
 FILE * mp4tag_fopen (const char *filename, const char *mode)
 ~~~
 
-**filename** : The file to open.
+__filename__ : The file to open.
 
-**mode** : The mode to use to open the file (see **fopen**).
+__mode__ : The mode to use to open the file (see __fopen__).
 
 Returns: A FILE pointer or NULL on error.
 
@@ -26,7 +26,7 @@ Returns: A FILE pointer or NULL on error.
 ssize_t mp4tag_file_size (const char *filename)
 ~~~
 
-**filename** : The file to open.
+__filename__ : The file to open.
 
 Returns: The size of the file or -1 on error.
 
@@ -34,12 +34,14 @@ Returns: The size of the file or -1 on error.
 ##### mp4tag_read_file
 
 ~~~
-char * mp4tag_read_file (libmp4tag_t *libmp4tag, const char *filename, size_t *sz)
+char * mp4tag_read_file (const char *filename, size_t *sz, int *mp4error)
 ~~~
 
-**filename** : The file to get the size of.
+__filename__ : The file to read.
 
-**sz** : How much data to read.
+__sz__ : Returned size.
+
+__mp4error__ : Error return.
 
 Returns: An allocated pointer to the data.  The application takes
 ownership of the returned data and must free it.
@@ -51,7 +53,7 @@ ownership of the returned data and must free it.
 int mp4tag_file_delete (const char *filename)
 ~~~
 
-**filename** : The file to delete.
+__filename__ : The file to delete.
 
 Returns: 0 on success.
 
@@ -64,8 +66,34 @@ Renames a file.
 int mp4tag_file_move (const char *filename, const char *nfn)
 ~~~
 
-**filename** : The old filename.
+__filename__ : The old filename.
 
-**nfn** : The new filename.
+__nfn__ : The new filename.
 
 Returns: 0 on success.
+##### mp4tag_towide
+
+Converts a utf8 string to Windows unicode.
+
+~~~
+wchar_t *mp4tag_towide (const char *buff)
+~~~
+
+__buff__ : utf8 string
+
+Returns: pointer to wchar_t
+
+The caller takes ownership of the returned string and must free it.
+##### mp4tag_fromwide
+
+Converts a Windows unicode string to utf8.
+
+~~~
+char *mp4tag_fromwide (const wchar_t *buff)
+~~~
+
+__buff__ : Windows unicode string
+
+Returns: pointer to char
+
+The caller takes ownership of the returned string and must free it.

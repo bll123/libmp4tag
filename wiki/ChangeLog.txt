@@ -4,7 +4,11 @@
 
 <!--
 
-**1.2.11 beta 2023-11---**
+**1.2.12 2023-12---**
+
+-->
+
+**1.2.11 2023-11---**
 
 * Bug Fixes:
     * mp4tagcli: Fix --dump <filename>
@@ -13,8 +17,7 @@
     * mp4tagcli: also display type of cover image.
 * New Features:
     * Added manual page for mp4tagcli.
-
--->
+    * Added manual page for libmp4tag.
 
 **1.2.10 beta 2023-11-28**
 

@@ -1,0 +1,333 @@
+'\" t
+.\"
+.\" libmp4tag.3
+.\"
+.\" Copyright 2023 Brad Lanam Pleasant Hill CA USA
+.\"
+.\" brad.lanam.di_at_gmail.com
+.\"
+.TH libmp4tag 3 "28 Nov 2023"
+.SH Name
+\fBlibmp4tag\fP - mp4 tag library
+.SH Synopsis
+.SS Initialization
+\fB#include <stdint.h>\fP
+.br
+\fB#include <libmp4tag.h>\fP
+.PP
+\fBlibmp4tag_t * mp4tag_open (const char *\fP\fIfilename\fP\fB, int *\fP\fImp4error\fP\fB)\fP
+.br
+\fBint mp4tag_parse (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.br
+\fBvoid mp4tag_free (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.SS Getting Tags
+.EX
+.B "typedef struct {"
+.BR "  const char  *tag;" "       /* tag name */"
+.BR "  const char  *data;" "      /* tag value or binary data */"
+.BR "  const char  *covername;" " /* name associated with the cover image */"
+.BR "  size_t      datalen;" "    /* length of the tag value or binary data */"
+.BR "  int         coveridx;" "   /* index value for the cover image */"
+.BR "  int         covertype;" "  /* type of cover image */"
+.BR "  bool        binary;" "     /* true if binary data */"
+.BR "} mp4tagpub_t;"
+.EE
+.PP
+\fBint64_t mp4tag_duration (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.br
+\fBint mp4tag_get_tag_by_name (libmp4tag_t *\fP\fIlibmp4tag\fP\fB, const char *\fP\fItag\fP\fB, mp4tagpub_t *\fP\fImp4tagpub\fP\fB)\fP
+.br
+\fBint mp4tag_iterate_init (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.br
+\fBint mp4tag_iterate (libmp4tag_t *\fP\fIlibmp4tag\fP\fB, mp4tagpub_t *\fP\fImp4tagpub\fP\fB)\fP
+.SS Modifying Tags
+\fBint mp4tag_set_tag (libmp4tag_t *\fP\fIlibmp4tag\fP\fB, const char *\fP\fItag\fP\fB, const char *\fP\fIdata\fP\fB, bool \fP\fIforcebinary\fP\fB)\fP
+.br
+\fBint mp4tag_set_binary_tag (libmp4tag_t *\fP\fIlibmp4tag\fP\fB, const char *\fP\fItag\fP\fB, const char *\fP\fIdata\fP\fB, size_t \fP\fIdatalen\fP\fB)\fP
+.br
+\fBint mp4tag_delete_tag (libmp4tag_t *\fP\fIlibmp4tag\fP\fB, const char *\fP\fItag\fP\fB)\fP
+.br
+\fBint mp4tag_clean_tags (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.SS Writing Tags
+\fBint mp4tag_write_tags (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.SS Other Functions
+\fBint mp4tag_error (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.br
+\fBconst char *mp4tag_version (void)\fP
+.br
+\fBconst char *mp4tag_error_str (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.br
+\fBvoid mp4tag_set_debug_flags (libmp4tag_t *\fP\fIlibmp4tag\fP\fB, int \fP\fIdbgflags\fP\fB)\fP
+.SS Helper Functions
+\fBFILE * mp4tag_fopen (const char *\fP\fIfilename\fP\fB, const char *\fP\fImode\fP\fB)\fP
+.br
+\fBssize_t mp4tag_file_size (const char *\fP\fIfilename\fP\fB)\fP
+.br
+\fBchar * mp4tag_read_file (libmp4tag_t *\fP\fIlibmp4tag\fP\fB, const char *\fP\fIfilename\fP\fB, size_t *\fP\fIsz\fP\fB)\fP
+.br
+\fBint mp4tag_file_delete (const char *\fP\fIfilename\fP\fB)\fP
+.br
+\fBint mp4tag_file_move (const char *\fP\fIfilename\fP\fB, const char *\fP\fInewfilename\fP\fB)\fP
+.br
+\fBwchar_t *mp4tag_towide (const char *\fP\fIbuff\fP\fB)\fP
+.br
+\fBchar *mp4tag_fromwide (const wchar_t *\fP\fIbuff\fP\fB)\fP
+.SH Overview
+.SS Initialization
+\fBmp4tag_open\fP opens \fIfilename\fP, returning a pointer to a
+libmp4tag_t, with the error return in \fImp4error\fP.
+The returned pointer must be freed with \fBmp4tag_free\fP.
+.PP
+\fBmp4tag_parse\fP parses the open file and returns an error code.
+.PP
+The libmp4tag_t structure is opaque and has no user accessible fields.
+.SS Getting Tags
+\fBmp4tag_duration\fP returns the duration in milliseconds or 0.
+.PP
+\fBmp4tag_get_tag_by_name\fP returns MP4TAG_OK, MP4TAG_ERR_TAG_NOT_FOUND,
+MP4TAG_NO_TAGS, or other error code.
+On success, the mp4tagpub_t structure is filled in.
+.PP
+\fBmp4tag_iterate_init\fP initializes the internal iterator.
+Returns MP4TAG_OK or other error code.
+.PP
+\fBmp4tag_iterate\fP returns MP4TAG_OK or
+MP4TAG_FINISH when there are no more tags to process.
+On MP4TAG_OK, the mp4tagpub_t structure is filled in.
+.PP
+There may be more than one cover image present.
+The \ficoveridx\fP field specifies the index of the cover image.
+.PP
+If the cover image has an associated name, the \fIcovername\fP field
+will be set.
+.PP
+The \fBcovertype\fP field in the mp4tagpub_t structure will be
+set to MP4TAG_COVER_JPG or MP4TAG_COVER_PNG for cover tags.
+.SS Modifying Tags
+.PP
+Modifying a tag does not commit the changes to the MP4 file.
+See the Writing Tags section.
+.PP
+\fBmp4tag_set_tag\fP will set \fItag\fP to \fIdata\fP when \fItag\fP is
+not set to binary data.
+.PP
+If \fItag\fP holds binary data or \fIforcebinary\fP is true,
+\fIdata\FP is treated as a filename,
+the binary data is read from the file, and the value of \fItag\fP
+is set to the binary data.
+.PP
+Disc and track numbers should either be a single numeric value or a
+numeric value and total specified as N/T or (N,T).
+.PP
+There may be more than one cover image present.  If there is more than
+one cover image, \fBmp4tag_set_tag\fP will expect a tag name
+of \fBcovr:1\fP with the appropriate index value.
+.PP
+If there is a name associated with the cover image, A tag name
+of \fBcovr:1:name\fP using the appropriate index value should be used.
+.PP
+The indexes are only used if there is already an existing cover image
+at that index.  Setting a cover image at index 1 in a file with no cover
+image present will place the cover image at index 0.
+.PP
+\fBmp4tag_set_binary_tag\fP is used when the binary data is already in
+memory.  The value of \fItag\fP is set to \fIdata\fP with size \fIdatalen\fP.
+.PP
+\fBmp4tag_delete_tag\fP removes \fItag\fP.
+.PP
+\fBmp4tag_clean_tags\fP removes all tags from the MP4 file.
+.SS Writing Tags
+\fBmp4tag_write_tags\fP will write the tags to the MP4 file.
+.PP
+The MP4 file is not modified until the \fBmp4tag_write_tags\fP function
+is called.
+.PP
+If possible, the MP4 file is modified in place.
+If there is not enough room in the MP4 file to write the tags,
+the MP4 file is re-written and replaced.
+.PP
+Determining whether any tags have changed and whether calling
+\fBmp4tag_write_tags\fP is necessary is the responsibility of the
+calling application.
+.PP
+.SS Other
+\fBmp4tag_error\fP returns the last error code that was generated.
+.PP
+\fBmp4tag_version\fP returns the \fBlibmp4tag\fP version string.
+.PP
+\fBmp4tag_error_str\fP returns a readable error string corresponding to
+the current error.  This function is intended for debugging purposes and
+not for display to the end user.
+.PP
+\fBmp4tag_set_debug_flags\fP sets the debug flags to \fIdbgflags\fP.
+.SS Helper Functions
+The helper functions provide some functions that work across
+different platforms.
+All filenames and other strings should be in utf8.
+.PP
+\fBmp4tag_fopen\fP opens a file (See fopen(3)).
+.PP
+\fBmp4tag_file_size\fP returns the size of a file.
+.PP
+\fBmp4tag_read_file\fP reads the contents of \fIfilename\fP and
+returns the data.
+The application takes ownership of the data and must free it.
+.PP
+The data length returned is stored in \fIsz\fP, and any error is returned in
+f\Imp4error\fP.
+.PP
+\fBmp4tag_file_delete deletes \fIfilename\fP.  Returns any error.
+.PP
+\fBmp4tag_file_move\fP renames \fIfilename\fP to \fInewfilename\fP.
+.PP
+(Windows) \fBmp4tag_towide\fP converts a utf8 string to unicode.
+The caller takes ownership of the returned data and must free it.
+.PP
+(Windows) \fBmp4tag_fromwide\fP converts a unicode string to utf8.
+The caller takes ownership of the returned data and must free it.
+.SH Custom Tags
+Custom tags are composed of three parts, \fB\-\-\-\-\fP,
+the application name and the name of the tag, formatted as:
+\fB\-\-\-\-:\fP\fIApplication\fP\fB:\fP\fITag\-Name\fP.
+.PP
+e.g. \-\-\-\-:BDJ4:DANCE
+.br
+\-\-\-\-:com.apple.iTunes:MusicBrainz Track Id
+.SH Error Codes
+.TP
+MP4TAG_OK
+Success
+.TP
+MP4TAG_FINISH
+Returned by \fBmp4tag_iterate\fP.
+Indicates that there are no more tags to process.
+.TP
+MP4TAG_ERR_BAD_STRUCT
+The \fBlibmp4tag_t\fP structure is invalid.
+.TP
+MP4TAG_ERR_FILE_NOT_FOUND
+The file to be process was not found or could not be opened.
+.TP
+MP4TAG_ERR_FILE_READ_ERROR
+An error occurred while reading a file.
+.TP
+MP4TAG_ERR_FILE_SEEK_ERROR
+An error occurred while performing a seek on a file.
+.TP
+MP4TAG_ERR_FILE_TELL_ERROR
+An error occurred while determining the position within a file.
+.TP
+MP4TAG_ERR_FILE_WRITE_ERROR
+An error occurred while writing a file.
+.TP
+MP4TAG_ERR_MISMATCH
+There was a mismatch in the tag type.
+A binary value was specified for a string tag or a string value
+was specified for a tag with binary data.
+.TP
+MP4TAG_ERR_NOT_MP4
+The open failed, as it could not be determined that the file specified
+was an MP4 file.
+.TP
+MP4TAG_ERR_NOT_IMPLEMENTED
+The library function is not implemented.
+.TP
+MP4TAG_ERR_NOT_OPEN
+Tried to process a file that is not open.
+.TP
+MP4TAG_ERR_NOT_PARSED
+Unable to process as the file has not yet been parsed.
+.TP
+MP4TAG_ERR_NULL_VALUE
+A null value was specified.
+.TP
+MP4TAG_ERR_OUT_OF_MEMORY
+An out of memory condition occurred.
+.TP
+MP4TAG_ERR_TAG_NOT_FOUND
+The specified tag was not found or is not valid.
+.TP
+MP4TAG_ERR_UNABLE_TO_PROCESS
+Cannot write the file as neither the tag list, nor the hierarchy in
+which to place the tag list can be found.
+.SH Tags
+Standard MP4 tag names
+.PP
+.TS
+l l l.
+Tag	Description	Type
+_
+\fBaART\fP	Album Artist	string
+\fBakID\fP	iTunes	numeric
+\fBatID\fP	iTunes Artist ID	numeric
+\fBcatg\fP	Category	string
+\fBcmID\fP	iTunes Composer ID	numeric
+\fBcnID\fP	iTunes Catalog ID	numeric
+\fBcovr\fP	Cover Image and Cover names	binary/string
+\fBcpil\fP	Compilation	flag
+\fBcprt\fP	Copyright	string
+\fBdesc\fP	Description	string
+\fBdisk\fP	Disc Number and Total Discs	numeric/numeric (1)
+\fBegid\fP	iTunes Podcast GUID	string
+\fBgeID\fP	iTunes Genre ID	numeric
+\fBgnre\fP	ID3 Genre	numeric
+\fBhdvd\fP	HD DVD	flag
+\fBkeyw\fP	Keywords	string
+\fBldes\fP	Lyrics Description	string
+\fBownr\fP	Owner	string
+\fBpcst\fP	Podcast	flag
+\fBpgap\fP	Play Gapless	flag
+\fBplID\fP	iTunes Album ID	numeric
+\fBpurd\fP	Purchase Date	string
+\fBpurl\fP	Podcast URL	string
+\fBrtng\fP	Advisory Rating	numeric
+\fBsfID\fP	iTunes Country ID	numeric
+\fBshwm\fP	Show Movement	flag
+\fBsoaa\fP	Album Artist Sort	string
+\fBsoal\fP	Album Sort	string
+\fBsoar\fP	Artist Sort	string
+\fBsoco\fP	Composer Sort	string
+\fBsonm\fP	Title Sort	string
+\fBsosn\fP	TV Show Sort	string
+\fBstik\fP	Media Type	numeric
+\fBtmpo\fP	BPM	numeric
+\fBtrkn\fP	Track Number and Total Tracks	numeric/numeric (1)
+\fBtven\fP	TV Episode Name	string
+\fBtves\fP	TV Episode	numeric
+\fBtvnn\fP	TV Network Name	string
+\fBtvsh\fP	TV Show Name	string
+\fBtvsn\fP	TV Season	numeric
+\fB©ART\fP	Artist	string
+\fB©alb\fP	Album	string
+\fB©cmt\fP	Comment	string
+\fB©day\fP	Year	string
+\fB©dir\fP	Director	string
+\fB©gen\fP	Genre	string
+\fB©grp\fP	Grouping	string
+\fB©lyr\fP	Lyrics	string
+\fB©mvc\fP	Movement Total	numeric
+\fB©mvi\fP	Movement Number	numeric
+\fB©mvn\fP	Movement Name	string
+\fB©nam\fP	Title	string
+\fB©nrt\fP	Narrator	string
+\fB©pub\fP	Publisher	string
+\fB©too\fP	Encoded By	string
+\fB©wrk\fP	Work	string
+\fB©wrt\fP	Writer, Composer	string
+.TE
+.PP
+(1) \fBlibmp4tag\fP accepts N, N/T or (N,T) formats to specify the
+disc or track numbers.
+.SH See Also
+\fBmp4tagcli\fP(1)
+.SH Links
+\fBMain\fP: https://sourceforge.net/p/libmp4tag/
+.br
+\fBWiki\fP: https://sourceforge.net/p/libmp4tag/wiki/
+.br
+\fBChange Log\fP: https://sourceforge.net/p/libmp4tag/wiki/ChangeLog/
+.br
+\fBBugs\fP: https://sourceforge.net/p/libmp4tag/tickets/
+.SH Copyright
+Copyright 2023 Brad Lanam Pleasant Hill
+CA USA

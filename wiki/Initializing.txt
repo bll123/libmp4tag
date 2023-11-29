@@ -17,13 +17,13 @@ libmp4tag functions.
 libmp4tag_t *mp4tag_open (const char *filename, int *mp4error)
 ~~~
 
-**filename** : The file to open.
+__filename__ : The file to open.
 
-**mp4error** : A pointer to an integer.  Returns the
+__mp4error__ : A pointer to an integer.  Returns the
 [error&nbsp;code](ErrorCodes).
 
 Returns: A pointer to an allocated libmp4tag_t structure.  This
-pointer must be freed in a call to **mp4tag_free**.
+pointer must be freed in a call to __mp4tag_free__.
 
 -------------
 ##### mp4tag_parse
@@ -32,7 +32,7 @@ pointer must be freed in a call to **mp4tag_free**.
 int mp4tag_parse (libmp4tag_t *libmp4tag)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
@@ -45,4 +45,4 @@ Closes any open files and frees all memory.
 void mp4tag_free (libmp4tag_t *libmp4tag)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.

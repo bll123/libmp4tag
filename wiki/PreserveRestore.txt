@@ -83,24 +83,24 @@ main (int argc, const char *argv [])
 libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
 Returns: Allocated libmp4tagpreserve_t structure.  The
-*8mp4tag_preserve_free** function must be called to free this value.
+*8mp4tag_preserve_free__ function must be called to free this value.
 
 -------------
 ##### mp4tag_restore_tags
 
-Be sure to call **mp4tag_write_tags** after restoring the tags.
+Be sure to call __mp4tag_write_tags__ after restoring the tags.
 
 ~~~
 int mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve)
 ~~~
 
-**libmp4tag** : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
-**preserve** : The libmp4tagpreserve_t structure returned from
-**mp4tag_preserve_tags**.
+__preserve__ : The libmp4tagpreserve_t structure returned from
+__mp4tag_preserve_tags__.
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 
@@ -111,7 +111,7 @@ Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
 int mp4tag_preserve_free (libmp4tagpreserve_t *preserve)
 ~~~
 
-**preserve** : The libmp4tagpreserve_t structure returned from
-**mp4tag_preserve_tags**.
+__preserve__ : The libmp4tagpreserve_t structure returned from
+__mp4tag_preserve_tags__.
 
 Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
