@@ -180,7 +180,7 @@ $(SRCFLAG):
 	@cp -pfr \
 		*.c *.h CMakeLists.txt Makefile config.h.in libmp4tag.pc.in \
 		README.txt LICENSE.txt \
-		tests wiki \
+		man tests wiki \
 		$(SRCDIR)
 	@touch $(SRCFLAG)
 
