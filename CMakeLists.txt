@@ -205,6 +205,25 @@ endif()
 
 configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
 
+# compressed manual pages
+
+# these do not work
+#add_custom_command (
+#  OUTPUT mp4tagcli.1.gz
+#  DEPENDS ${PROJECT_SOURCE_DIR}/man/mp4tagcli.1
+#  COMMAND cat ${PROJECT_SOURCE_DIR}/man/mp4tagcli.1 |
+#      gzip -9 > ${CMAKE_BINARY_DIR}/mp4tagcli.1.gz
+#  VERBATIM
+#)
+#
+#add_custom_command (
+#  OUTPUT libmp4tag.3.gz
+#  DEPENDS ${PROJECT_SOURCE_DIR}/man/libmp4tag.3
+#  COMMAND cat ${PROJECT_SOURCE_DIR}/man/libmp4tag.3 |
+#      gzip -9 > ${CMAKE_BINARY_DIR}/libmp4tag.3.gz
+#  VERBATIM
+#)
+
 #### install
 
 install (TARGETS ${LIBMP4TAG_LIBNAME}
@@ -218,6 +237,13 @@ install (TARGETS mp4tagcli
 
 install (FILES libmp4tag.h
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install (FILES man/mp4tagcli.1
+  DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+)
+install (FILES man/libmp4tag.3
+  DESTINATION "${CMAKE_INSTALL_MANDIR}/man3"
 )
 
 install (FILES
