@@ -60,7 +60,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
     FAILLIST+="a-count "
     grc=1
   fi
-  ${MP4TAGCLI} ${TFN} | grep "^covr=.data: ${PICDLEN} bytes.$" > /dev/null 2>&1
+  ${MP4TAGCLI} ${TFN} | grep "^covr=.data: jpg ${PICDLEN} bytes.$" > /dev/null 2>&1
   rc=$?
   if [[ $rc -ne 0 ]]; then
     FAILLIST+="a-data "
@@ -75,7 +75,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
     FAILLIST+="b-count "
     grc=1
   fi
-  ${MP4TAGCLI} ${TFN} | grep "^covr=.data: ${PICALEN} bytes.$" > /dev/null 2>&1
+  ${MP4TAGCLI} ${TFN} | grep "^covr=.data: png ${PICALEN} bytes.$" > /dev/null 2>&1
   rc=$?
   if [[ $rc -ne 0 ]]; then
     FAILLIST+="b-data "
@@ -90,7 +90,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
     FAILLIST+="c-count "
     grc=1
   fi
-  ${MP4TAGCLI} ${TFN} | grep "^covr:1=.data: ${PICDLEN} bytes.$" > /dev/null 2>&1
+  ${MP4TAGCLI} ${TFN} | grep "^covr:1=.data: jpg ${PICDLEN} bytes.$" > /dev/null 2>&1
   rc=$?
   if [[ $rc -ne 0 ]]; then
     FAILLIST+="c-data "
@@ -104,7 +104,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
     FAILLIST+="d-count "
     grc=1
   fi
-  ${MP4TAGCLI} ${TFN} | grep "^covr:2=.data: ${PICCLEN} bytes.$" > /dev/null 2>&1
+  ${MP4TAGCLI} ${TFN} | grep "^covr:2=.data: jpg ${PICCLEN} bytes.$" > /dev/null 2>&1
   rc=$?
   if [[ $rc -ne 0 ]]; then
     FAILLIST+="d-data "
@@ -120,7 +120,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
     FAILLIST+="e-count "
     grc=1
   fi
-  ${MP4TAGCLI} ${TFN} | grep "^covr:1=.data: ${PICBLEN} bytes.$" > /dev/null 2>&1
+  ${MP4TAGCLI} ${TFN} | grep "^covr:1=.data: png ${PICBLEN} bytes.$" > /dev/null 2>&1
   rc=$?
   if [[ $rc -ne 0 ]]; then
     FAILLIST+="e-data "
@@ -135,7 +135,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   if [[ $val -ne 6 ]]; then
     grc=1
   fi
-  ${MP4TAGCLI} ${TFN} | grep "^covr:1=.data: ${PICDLEN} bytes.$" > /dev/null 2>&1
+  ${MP4TAGCLI} ${TFN} | grep "^covr:1=.data: jpg ${PICDLEN} bytes.$" > /dev/null 2>&1
   rc=$?
   if [[ $rc -ne 0 ]]; then
     FAILLIST+="f-data "

@@ -14,7 +14,7 @@ CS=©
 TEXPA=test-exp-tmp.txt
 TEXPS=test-exp-sort.txt
 TACT=test-actual.txt
-TFN=test-xx.m4a
+TFN=test-tmp.m4a
 
 PICA=samples/bdj4-b.png
 PICALEN=$(stat ${sopt} "${sfmt}" ${PICA})
@@ -78,17 +78,17 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   # cover images
 
   ${MP4TAGCLI} ${TFN} covr=${PICA}
-  echo "covr=(data: ${PICALEN} bytes)" >> ${TEXPA}
+  echo "covr=(data: png ${PICALEN} bytes)" >> ${TEXPA}
   ${MP4TAGCLI} ${TFN} covr:0:name=xyzzy
   echo "covr:0:name=xyzzy" >> ${TEXPA}
 
   ${MP4TAGCLI} ${TFN} covr:1=${PICD}
-  echo "covr:1=(data: ${PICDLEN} bytes)" >> ${TEXPA}
+  echo "covr:1=(data: jpg ${PICDLEN} bytes)" >> ${TEXPA}
   ${MP4TAGCLI} ${TFN} covr:1:name=plugh
   echo "covr:1:name=plugh" >> ${TEXPA}
 
   ${MP4TAGCLI} ${TFN} covr:2=${PICC} covr:2:name=three
-  echo "covr:2=(data: ${PICCLEN} bytes)" >> ${TEXPA}
+  echo "covr:2=(data: jpg ${PICCLEN} bytes)" >> ${TEXPA}
   echo "covr:2:name=three" >> ${TEXPA}
 
   # replace cover 1 with an alternate
@@ -135,8 +135,8 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   if [[ $rc -eq 0 ]]; then
     echo -n "ok "
   else
+diff ${TEXPS} ${TACT}
     echo -n "fail "
-exit 1
     grc=1
   fi
 

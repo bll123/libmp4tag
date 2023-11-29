@@ -70,11 +70,15 @@ Using the mp4tagcli executable:
 
   Usage:
       mp4tagcli --version
+      mp4tagcli \
+          [--debug <value>] \
+          --copyfrom in-filename --copyto out-filename
+      mp4tagcli <filename> [--debug <value>] --clean
+      mp4tagcli <filename> [--debug <value>] --duration
       mp4tagcli <filename> \
           [--debug <value>] \
-          [--duration] [--clean] [--display <tag> [--dump=<filename>]]
-          [--binary] [<tag>={|<value>|<filename>}] ...]
-          [--copyfrom in-filename --copyto out-filename]
+          [--binary] [<tag>={|<value>|<filename>}] ...] \
+          [--display <tag> [--dump <filename>]]
 
       --dump is only relevant for binary data.
       --binary is only needed when adding an unknown binary data tag
@@ -92,7 +96,7 @@ Using the mp4tagcli executable:
     mp4tagcli filename.m4a --display gen
 
   Dump binary data:
-    mp4tagcli filename.m4a --display covr --dump > picture-data
+    mp4tagcli filename.m4a --display covr --dump pic.png
 
   Setting a tag:
     mp4tagcli filename.m4a nam=My-Title

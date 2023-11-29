@@ -39,6 +39,7 @@ main (int argc, char *argv [])
   char          tagname [MP4TAG_ID_MAX];
   const         char *infname = NULL;
   const         char *copyto = NULL;
+  const         char *dumpfn = NULL;
   bool          display = false;
   bool          dump = false;
   bool          duration = false;
@@ -64,7 +65,7 @@ main (int argc, char *argv [])
     { "copyto",         required_argument,  NULL,   't' },
     { "debug",          required_argument,  NULL,   'x' },
     { "display",        required_argument,  NULL,   'd' },
-    { "dump",           no_argument,        NULL,   'D' },
+    { "dump",           required_argument,  NULL,   'D' },
     { "duration",       no_argument,        NULL,   'u' },
     { "testbin",        no_argument,        NULL,   'B' },
     { "version",        no_argument,        NULL,   'v' },
@@ -91,7 +92,8 @@ main (int argc, char *argv [])
 
   *tagname = '\0';
 
-  while ((c = getopt_long_only (argc, argcopy.utf8argv, "cd:Df:Ft:ux:",
+  /* do not specify the 'c' clean short argument */
+  while ((c = getopt_long_only (argc, argcopy.utf8argv, "d:D:f:Ft:ux:",
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'b': {
@@ -108,6 +110,9 @@ main (int argc, char *argv [])
       }
       case 'D': {
         dump = true;
+        if (optarg != NULL) {
+          dumpfn = argcopy.utf8argv [optind - 1];
+        }
         break;
       }
       case 'd': {
@@ -259,7 +264,13 @@ main (int argc, char *argv [])
       if (dump &&
           mp4tagpub.binary &&
           mp4tagpub.tag != NULL) {
-        fwrite (mp4tagpub.data, mp4tagpub.datalen, 1, stdout);
+        FILE    *fh;
+
+        fh = fopen (dumpfn, "wb");
+        if (fh != NULL) {
+          fwrite (mp4tagpub.data, mp4tagpub.datalen, 1, fh);
+          fclose (fh);
+        }
       }
     }
   }
@@ -308,12 +319,20 @@ displayTag (mp4tagpub_t *mp4tagpub)
   }
   if (mp4tagpub->binary &&
       mp4tagpub->tag != NULL) {
+    const char  *covertypedisp = "";
+
+    if (strcmp (mp4tagpub->tag, "covr") == 0) {
+      covertypedisp = "jpg ";
+      if (mp4tagpub->covertype == MP4TAG_COVER_PNG) {
+        covertypedisp = "png ";
+      }
+    }
     if (mp4tagpub->coveridx > 0) {
-      fprintf (stdout, "%s:%d=(data: %" PRId64 " bytes)\n",
-          mp4tagpub->tag, mp4tagpub->coveridx, (uint64_t) mp4tagpub->datalen);
+      fprintf (stdout, "%s:%d=(data: %s%" PRId64 " bytes)\n",
+          mp4tagpub->tag, mp4tagpub->coveridx, covertypedisp, (uint64_t) mp4tagpub->datalen);
     } else {
-      fprintf (stdout, "%s=(data: %" PRId64 " bytes)\n",
-          mp4tagpub->tag, (uint64_t) mp4tagpub->datalen);
+      fprintf (stdout, "%s=(data: %s%" PRId64 " bytes)\n",
+          mp4tagpub->tag, covertypedisp, (uint64_t) mp4tagpub->datalen);
     }
     if (mp4tagpub->covername != NULL &&
         *mp4tagpub->covername) {

@@ -41,12 +41,13 @@ static const char *mp4tagerrmsgs [] = {
   [MP4TAG_ERR_NOT_PARSED] = "not parsed",
 };
 
-static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
-
 typedef struct libmp4tagpreserve {
   mp4tag_t  *tags;
   int       tagcount;
 } libmp4tagpreserve_t;
+
+static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
+static void mp4tag_copy_to_pub (mp4tagpub_t *mp4tagpub, mp4tag_t *mp4tag);
 
 libmp4tag_t *
 mp4tag_open (const char *fn, int *mp4error)
@@ -218,12 +219,7 @@ mp4tag_get_tag_by_name (libmp4tag_t *libmp4tag, const char *tag,
     mp4tag_t    *mp4tag;
 
     mp4tag = &libmp4tag->tags [idx];
-    mp4tagpub->tag = mp4tag->tag;
-    mp4tagpub->data = mp4tag->data;
-    mp4tagpub->datalen = mp4tag->datalen;
-    mp4tagpub->covername = mp4tag->covername;
-    mp4tagpub->coveridx = mp4tag->coveridx;
-    mp4tagpub->binary = mp4tag->binary;
+    mp4tag_copy_to_pub (mp4tagpub, mp4tag);
   } else {
     libmp4tag->mp4error = MP4TAG_ERR_TAG_NOT_FOUND;
   }
@@ -276,12 +272,7 @@ mp4tag_iterate (libmp4tag_t *libmp4tag, mp4tagpub_t *mp4tagpub)
     return MP4TAG_FINISH;
   }
 
-  mp4tagpub->tag = libmp4tag->tags [libmp4tag->iterator].tag;
-  mp4tagpub->data = libmp4tag->tags [libmp4tag->iterator].data;
-  mp4tagpub->datalen = libmp4tag->tags [libmp4tag->iterator].datalen;
-  mp4tagpub->covername = libmp4tag->tags [libmp4tag->iterator].covername;
-  mp4tagpub->coveridx = libmp4tag->tags [libmp4tag->iterator].coveridx;
-  mp4tagpub->binary = libmp4tag->tags [libmp4tag->iterator].binary;
+  mp4tag_copy_to_pub (mp4tagpub, &libmp4tag->tags [libmp4tag->iterator]);
   ++libmp4tag->iterator;
 
   return libmp4tag->mp4error;
@@ -696,3 +687,14 @@ mp4tag_free_tags (libmp4tag_t *libmp4tag)
   libmp4tag->tagalloccount = 0;
 }
 
+static void
+mp4tag_copy_to_pub (mp4tagpub_t *mp4tagpub, mp4tag_t *mp4tag)
+{
+  mp4tagpub->tag = mp4tag->tag;
+  mp4tagpub->data = mp4tag->data;
+  mp4tagpub->datalen = mp4tag->datalen;
+  mp4tagpub->covername = mp4tag->covername;
+  mp4tagpub->coveridx = mp4tag->coveridx;
+  mp4tagpub->covertype = mp4tag->identtype;
+  mp4tagpub->binary = mp4tag->binary;
+}

@@ -1,0 +1,125 @@
+.\"
+.\" mp4tagcli.1
+.\"
+.\" Copyright 2023 Brad Lanam Pleasant Hill CA USA
+.\"
+.\" brad.lanam.di_at_gmail.com
+.\"
+.TH mp4tagcli 1 "28 Nov 2023"
+.SH Name
+mp4tagcli \- mp4 tag command line interface
+.SH Synopsis
+.\" mp4tagcli --version
+.\" mp4tagcli --copyfrom in-filename --copyto out-filename
+.\" mp4tagcli <filename> --clean
+.\" mp4tagcli <filename> --duration
+.\" mp4tagcli <filename>
+.\" [--binary] [<tag>={|<value>|<filename>}] ...]
+.\" [<tag>={|<value>|<filename>}] ...]
+.\" [--display <tag> [--dump=<filename>]]
+.B mp4tagcli
+\fB\-\-version\fP
+.br
+.B mp4tagcli
+\fB\-\-copyfrom\fP \fIinfile\fP
+\fB\-\-copyto\fP \fIoutfile\fP
+.br
+.B mp4tagcli
+\fIfilename\fP
+\fB\-\-clean\fP
+.br
+.B mp4tagcli
+\fIfilename\fP
+\fB\-\-duration\fP
+.br
+.B mp4tagcli
+\fIfilename\fP
+[\fB\-\-binary\fP]
+[\fItag\fP={|\fIvalue\fP|\fIfilename\fP}]
+[\fB\-\-display\fP \fItag\fP [\fB\-\-dump\fP \fIfilename\fP]]
+.PP
+.SH Description
+\fImp4tagcli\fP is used to read and write tags from an MPEG audio or
+video file.  Existing tags and existing custom tags will not be lost
+when writing or replacing tags.
+.SH Overview
+.PP
+Tags may be specified without the preceding copyright symbol (©).  Any
+tag that is three characters in length will have the copyright symbol
+pre-pended.
+.PP
+The \fBgnre\fP tag is automatically converted to \fB©gen\fP.  Always
+use the \fBgen\fP tag.
+.PP
+When specifying a particular tag, a "\fBnot found\fP" message will be
+displayed if the tag is not present (for display) or is not known
+(when setting a tag).
+.SS Cover Images
+.PP
+There may be more than one cover image present.  If there is more than
+one cover image, the subsequent cover images will display a tag name
+of \fBcovr:1\fP with the appropriate index value.
+.PP
+If there is a name associated with the cover image, the tag name will
+be displayed as \fBcovr:1:name\fP using the appropriate index value.
+.PP
+The indexes are only used if there is already an existing cover image
+at that index.  Setting a cover image at index 1 in a file with no cover
+image present will place the cover image at index 0.
+.SS Custom Tags
+Custom tags are specified as \-\-\-\-:\fIAPP\fP:\fItagname\fP.  To
+prevent the command line parser from recognizing a custom tag as an
+option, the end of option specifier \-\- must be added to the
+command line before the custom tag.
+.PP
+e.g. mp4tagcli sample.m4a \-\- \-\-\-\-:BDJ4:DANCE=Waltz
+.PP
+.SS Displaying Tag Information
+.TP
+\fBmp4tagcli\fP \fIfilename\fP
+Running mp4tagcli without any arguments displays all tags and their
+values for \fIfilename\fP.  The duration is also displayed.  Each tag is
+output as \fItag\fP\fB=\fP\fIvalue\fP on a separate line.
+.TP
+\fBmp4tagcli\fP \fIfilename\fP {\fB\-u\fP|\fB\-\-duration\fP}
+Prints the duration of the MPEG file without any label.
+.TP
+\fBmp4tagcli\fP \fIfilename\fP \fB{\-d|\-\-display}\fP \fItag\fP
+Display \fItag\fP and its value.
+.SS Setting Tags
+.TP
+\fBmp4tagcli\fP \fIfilename\fP [\fB\-\-binary\fP] [\fItag\fP {|\fIvalue\fP|\fIfilename\fP} ...]
+Without any value specified, the tag is removed from the MPEG file.
+.IP
+If a value is specified for a tag, the tag is set to \fIvalue\fP.
+.IP
+For tags with associated binary data (e.g. cover images), the data for
+the tag is read from \fIfilename\fP.
+.IP
+The \fB\-\-binary\fP option is only used when setting a new tag with
+binary data.  It is not necessary to use the \fB\-\-binary\fP option
+with cover images or tags with existing binary data.
+.IP
+Multiple tags may be specified on the command line.
+.SS Removing All Tags
+.TP
+\fBmp4tagcli\fP \fIfilename\fP \fB\-\-clean\fP
+Removes all tags from the MPEG file.
+.PP
+.SS Copying Tags
+.TP
+\fBmp4tagcli\fP {\fB\-f|\-\-copyfrom\fP} \fIinfile\fP {\fB\-t|\-\-copyto\fP} \fIoutfile\fP
+Copies the tags from from \fIinfile\fP to \fIoutfile\fP.  Any existing
+tags in \fIoutfile\fP are completely removed.
+.PP
+.SH Links
+\fBMain\fP: https://sourceforge.net/p/libmp4tag/
+.br
+\fBWiki\fP: https://sourceforge.net/p/libmp4tag/wiki/
+.br
+\fBChange Log\fP: https://sourceforge.net/p/libmp4tag/wiki/ChangeLog/
+.br
+\fBBugs\fP: https://sourceforge.net/p/libmp4tag/tickets/
+.SH Copyright
+Copyright 2023 Brad Lanam Pleasant Hill
+CA USA

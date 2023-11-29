@@ -25,6 +25,7 @@ typedef struct {
   const char  *covername;
   size_t      datalen;
   int         coveridx;
+  int         covertype;
   bool        binary;
 } mp4tagpub_t;
 
@@ -71,6 +72,8 @@ enum {
 
 enum {
   MP4TAG_ID_MAX = 255,
+  MP4TAG_COVER_JPG = 0x0d,
+  MP4TAG_COVER_PNG = 0x0e,
 };
 
 libmp4tag_t * mp4tag_open (const char *fn, int *mp4error);
