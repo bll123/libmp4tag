@@ -6,10 +6,8 @@ syntax: regexp
 ^libmp4tag\.pc$
 ^samples/
 ^tmp/
-\.jpg$
 \.m4a$
 \.mpr$
-\.png$
 ~$
 ^w$
 ^ww$
