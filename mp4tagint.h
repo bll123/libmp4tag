@@ -74,9 +74,14 @@ enum {
 
 enum {
   MP4TAG_DBG_NONE                   = 0x0000,
+  /* only prints file structure that is relevant to libmp4tag */
   MP4TAG_DBG_PRINT_FILE_STRUCTURE   = 0x0001,
   MP4TAG_DBG_WRITE                  = 0x0002,
   MP4TAG_DBG_DUMP_CO                = 0x0004,
+};
+
+enum {
+  MP4TAG_IDENT = 0x6c69626d70347467,
 };
 
 /* any changes to this structure must be reflected in mp4tag_clone_tag() */
@@ -97,6 +102,7 @@ typedef struct mp4tag {
 } mp4tag_t;
 
 typedef struct libmp4tag {
+  int64_t   libmp4tagident;
   char      *fn;
   size_t    filesz;
   FILE      *fh;
