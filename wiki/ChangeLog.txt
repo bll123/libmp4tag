@@ -8,7 +8,7 @@
 
 -->
 
-**1.2.11 2023-11---**
+**1.2.11 2023-11-29**
 
 * Bug Fixes:
     * mp4tagcli: Fix --dump <filename>

@@ -43,7 +43,7 @@ if [[ ! -d $TMP ]]; then
 fi
 
 cd $TMP
-sshpass -e rsync -c -vv -e ssh -aS --delete \
+sshpass -e rsync -c -v -e ssh -aS --delete \
     . \
     ${remuser}@${server}:${wwwpath}
 cd ..
