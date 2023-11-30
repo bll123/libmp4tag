@@ -11,7 +11,7 @@
 **1.2.11 2023-11-29**
 
 * Bug Fixes:
-    * mp4tagcli: Fix --dump <filename>
+    * mp4tagcli: Fix --dump filename
 * Changes:
     * Make cover image type (jpg, png) available to caller.
     * mp4tagcli: also display type of cover image.

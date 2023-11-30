@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 33.866667 33.866667"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="libmp4tag.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="false"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     borderlayer="false"
+     inkscape:zoom="6.65625"
+     inkscape:cx="53.107981"
+     inkscape:cy="63.248826"
+     inkscape:window-width="1969"
+     inkscape:window-height="1099"
+     inkscape:window-x="74"
+     inkscape:window-y="34"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:0.996;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.396875;stroke-linecap:round"
+       id="rect310"
+       width="33.866665"
+       height="33.866665"
+       x="8.9009603e-07"
+       y="8.9009603e-07" />
+    <g
+       id="g1070"
+       transform="translate(0.27069406,-0.34187768)">
+      <text
+         xml:space="preserve"
+         style="font-size:12.7px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffcd00;fill-opacity:1;stroke-width:0.264583"
+         x="6.0774584"
+         y="21.562508"
+         id="text236"><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.7px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#ffcd00;fill-opacity:1;stroke-width:0.264583"
+           x="6.0774584"
+           y="21.562508"
+           id="tspan240">MP</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:12.7px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffcd00;fill-opacity:1;stroke-width:0.264583"
+         x="19.676189"
+         y="21.562508"
+         id="text236-2"><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.7px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#ffcd00;fill-opacity:1;stroke-width:0.264583"
+           x="19.676189"
+           y="21.562508"
+           id="tspan240-7">4</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:9.87778px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="6.1097517"
+       y="9.8478479"
+       id="text236-3"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#ffcd00;fill-opacity:1;stroke-width:0.264583"
+         x="6.1097517"
+         y="9.8478479"
+         id="tspan240-5">lib</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:9.87778px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffcd00;fill-opacity:1;stroke-width:0.264583"
+       x="10.065657"
+       y="30.331362"
+       id="text236-35"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#ffcd00;fill-opacity:1;stroke-width:0.264583"
+         x="10.065657"
+         y="30.331362"
+         id="tspan240-1">tag</tspan></text>
+  </g>
+</svg>
