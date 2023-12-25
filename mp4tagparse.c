@@ -450,14 +450,19 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
         libmp4tag->mp7meta = true;
       }
       if (memcmp (buff + idx, "3g2a", 4) == 0) {
-        /* I don't really know what this is */
+        ++ok;
+      }
+      if (memcmp (buff + idx, "3gp4", 4) == 0) {
+        ++ok;
+      }
+      if (memcmp (buff + idx, "3gp5", 4) == 0) {
         ++ok;
       }
       if (memcmp (buff + idx, "isom", 4) == 0) {
         /* generic iso media */
         ++ok;
       }
-      /* isom, iso2, qt, avc1, 3gp, mmp4 */
+      /* isom, iso2, qt, avc1, 3g2, 3gp, mmp4 */
     }
     idx += 4;
   }
