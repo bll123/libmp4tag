@@ -7,7 +7,6 @@
 [Introduction](Introduction)
 
 [Initializing](Initializing)
-<br>[Tag Names](TagNames)
 <br>[Getting Tag Information](GettingTags)
 <br>[Modifying Tags](ModifyingTags)
 <br>[Writing Tags](WritingTags)
@@ -15,6 +14,7 @@
 <br>[Other Routines](Other)
 <br>[Helper Utilities](HelperUtilities)
 <br>[Error Codes](ErrorCodes)
+<br>[Tag Names](TagNames)
 
 </div>
 <div markdown style="float: left; margin-right: 20px;">

@@ -20,62 +20,62 @@ tags.
 
 Standard MP4 Tags:
 
-  Name|Description
-  ----|-----------
-  aART|Album Artist
-  akID|iTunes (numeric)
-  atID|iTunes Artist ID (numeric)
-  catg|Category
-  cmID|iTunes Composer ID (numeric)
-  cnID|iTunes Catalog ID (numeric)
-  covr|Cover Image and Cover names
-  cpil|Compilation (flag)
-  cprt|Copyright
-  desc|Description
-  disk|Disc Number and Total Discs
-  egid|iTunes Podcast GUID
-  geID|iTunes Genre ID (numeric)
-  gnre|ID3 Genre (numeric)
-  hdvd|HD DVD (flag)
-  keyw|Keywords
-  ldes|Lyrics Description
-  ownr|Owner
-  pcst|Podcast (flag)
-  pgap|Play Gapless (flag)
-  plID|iTunes Album ID (numeric)
-  purd|Purchase Date
-  purl|Podcast URL
-  rtng|Advisory Rating (numeric)
-  sfID|iTunes Country ID (numeric)
-  shwm|Show Movement (flag)
-  soaa|Album Artist Sort
-  soal|Album Sort
-  soar|Artist Sort
-  soco|Composer Sort
-  sonm|Title Sort
-  sosn|TV Show Sort
-  stik|Media Type (numeric)
-  tmpo|BPM (numeric)
-  trkn|Track Number and Total Tracks
-  tven|TV Episode Name
-  tves|TV Episode (numeric)
-  tvnn|TV Network Name
-  tvsh|TV Show Name
-  tvsn|TV Season (numeric)
-  ©ART|Artist
-  ©alb|Album
-  ©cmt|Comment
-  ©day|Year
-  ©dir|Director
-  ©gen|Genre
-  ©grp|Grouping
-  ©lyr|Lyrics
-  ©mvc|Movement Total (numeric)
-  ©mvi|Movement Number (numeric)
-  ©mvn|Movement Name
-  ©nam|Title
-  ©nrt|Narrator
-  ©pub|Publisher
-  ©too|Encoded By
-  ©wrk|Work
-  ©wrt|Writer, Composer
+  Name|Description|Type
+  ----|-----------|----
+  aART|Album Artist|string
+  akID|iTunes|numeric
+  atID|iTunes Artist ID|numeric
+  catg|Category|string
+  cmID|iTunes Composer ID|numeric
+  cnID|iTunes Catalog ID|numeric
+  covr|Cover Image and Cover names|binary-data/string
+  cpil|Compilation|flag
+  cprt|Copyright|string
+  desc|Description|string
+  disk|Disc Number and Total Discs|string (converted)
+  egid|iTunes Podcast GUID|string
+  geID|iTunes Genre ID|numeric
+  gnre|ID3 Genre|numeric
+  hdvd|HD DVD|flag
+  keyw|Keywords|string
+  ldes|Lyrics Description|string
+  ownr|Owner|string
+  pcst|Podcast|flag
+  pgap|Play Gapless|flag
+  plID|iTunes Album ID|numeric
+  purd|Purchase Date|string
+  purl|Podcast URL|string
+  rtng|Advisory Rating|numeric
+  sfID|iTunes Country ID|numeric
+  shwm|Show Movement|flag
+  soaa|Album Artist Sort|string
+  soal|Album Sort|string
+  soar|Artist Sort|string
+  soco|Composer Sort|string
+  sonm|Title Sort|string
+  sosn|TV Show Sort|string
+  stik|Media Type|numeric
+  tmpo|BPM|numeric
+  trkn|Track Number and Total Tracks|string (converted)
+  tven|TV Episode Name|string
+  tves|TV Episode|numeric
+  tvnn|TV Network Name|string
+  tvsh|TV Show Name|string
+  tvsn|TV Season|numeric
+  ©ART|Artist|string
+  ©alb|Album|string
+  ©cmt|Comment|string
+  ©day|Year|string
+  ©dir|Director|string
+  ©gen|Genre|string
+  ©grp|Grouping|string
+  ©lyr|Lyrics|string
+  ©mvc|Movement Total|numeric
+  ©mvi|Movement Number|numeric
+  ©mvn|Movement Name|string
+  ©nam|Title|string
+  ©nrt|Narrator|string
+  ©pub|Publisher|string
+  ©too|Encoded By|string
+  ©wrk|Work|string
+  ©wrt|Writer, Composer|string
