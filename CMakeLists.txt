@@ -229,6 +229,8 @@ configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
 install (TARGETS ${LIBMP4TAG_LIBNAME}
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  # windows seems to need this
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 
 install (TARGETS mp4tagcli
