@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Brad Lanam Pleasant Hill CA
+# Copyright 2023-2024 Brad Lanam Pleasant Hill CA
 #
 cmake_minimum_required (VERSION 3.18)
 
@@ -157,11 +157,14 @@ check_include_file (windows.h _hdr_windows)
 check_include_file (winsock2.h _hdr_winsock2)
 
 set (CMAKE_REQUIRED_INCLUDES windows.h)
+check_function_exists (Sleep _lib_Sleep)
 check_function_exists (CommandLineToArgvW _lib_CommandLinetoArgvW)
 check_function_exists (_wrename _lib__wrename)
 check_function_exists (_wstat64 _lib__wstat64)
 check_function_exists (_wunlink _lib__wunlink)
 set (CMAKE_REQUIRED_INCLUDES "")
+
+check_function_exists (nanosleep _lib_nanosleep)
 
 configure_file (config.h.in config.h)
 

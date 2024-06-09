@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Brad Lanam Pleasant Hill CA
+ * Copyright 2023-2024 Brad Lanam Pleasant Hill CA
  *
  * Resources:
  *    https://xhelmboyx.tripod.com/formats/mp4-layout.txt
@@ -39,6 +39,7 @@ static const char *mp4tagerrmsgs [] = {
   [MP4TAG_ERR_FILE_TELL_ERROR] = "file tell error",
   [MP4TAG_ERR_UNABLE_TO_PROCESS] = "unable to process",
   [MP4TAG_ERR_NOT_PARSED] = "not parsed",
+  [MP4TAG_ERR_CANNOT_WRITE] = "cannot write",
 };
 
 typedef struct libmp4tagpreserve {
@@ -46,6 +47,7 @@ typedef struct libmp4tagpreserve {
   int       tagcount;
 } libmp4tagpreserve_t;
 
+static libmp4tag_t *mp4tag_alloc (int *mp4error);
 static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
 static void mp4tag_copy_to_pub (mp4tagpub_t *mp4tagpub, mp4tag_t *mp4tag);
 
@@ -60,62 +62,34 @@ mp4tag_open (const char *fn, int *mp4error)
     return NULL;
   }
 
-  libmp4tag = malloc (sizeof (libmp4tag_t));
-  if (libmp4tag == NULL) {
-    *mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+  *mp4error = MP4TAG_OK;
+  libmp4tag = mp4tag_alloc (mp4error);
+  if (*mp4error != MP4TAG_OK) {
     return NULL;
   }
-
-  libmp4tag->libmp4tagident = MP4TAG_IDENT;
-  libmp4tag->tags = NULL;
-  libmp4tag->creationdate = 0;
-  libmp4tag->modifieddate = 0;
-  libmp4tag->duration = 0;
-  libmp4tag->samplerate = 0;
-  for (int i = 0; i < MP4TAG_BASE_OFF_MAX; ++i) {
-    libmp4tag->base_offsets [i] = 0;
-  }
-  libmp4tag->base_offset_count = 0;
-  libmp4tag->taglist_offset = 0;
-  libmp4tag->taglist_orig_len = 0;
-  libmp4tag->taglist_len = 0;
-  libmp4tag->noilst_offset = 0;
-  libmp4tag->after_ilst_offset = 0;
-  libmp4tag->insert_delta = 0;
-  libmp4tag->stco_offset = 0;
-  libmp4tag->stco_len = 0;
-  libmp4tag->co64_offset = 0;
-  libmp4tag->co64_len = 0;
-  libmp4tag->parentidx = -1;
-  libmp4tag->coverstart_offset = -1;
-  libmp4tag->tagcount = 0;
-  libmp4tag->tagalloccount = 0;
-  libmp4tag->iterator = 0;
-  libmp4tag->mp7meta = false;
-  libmp4tag->unlimited = false;
-  libmp4tag->dbgflags = 0;
-  libmp4tag->covercount = 0;
-  libmp4tag->mp4error = MP4TAG_OK;
-  libmp4tag->options = MP4TAG_OPTION_NONE;
-  libmp4tag->parsed = false;
-  libmp4tag->processdata = false;
-  libmp4tag->checkforfree = false;
-  libmp4tag->parsedone = false;
 
   libmp4tag->fh = mp4tag_fopen (fn, "rb+");
   if (libmp4tag->fh == NULL) {
-    *mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
-    free (libmp4tag);
-    return NULL;
+    /* if the file cannot be opened, try opening w/o write capabilities */
+    libmp4tag->fh = mp4tag_fopen (fn, "rb");
+    if (libmp4tag->fh == NULL) {
+      *mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
+      libmp4tag->libmp4tagident = 0;
+      free (libmp4tag);
+      return NULL;
+    }
+    libmp4tag->canwrite = false;
   }
 
   /* needed for parse, write */
   libmp4tag->filesz = mp4tag_file_size (fn);
+  libmp4tag->offset = 0;
 
   rc = mp4tag_parse_ftyp (libmp4tag);
   if (rc != MP4TAG_OK) {
     *mp4error = rc;
     fclose (libmp4tag->fh);
+    libmp4tag->libmp4tagident = 0;
     free (libmp4tag);
     return NULL;
   }
@@ -124,9 +98,84 @@ mp4tag_open (const char *fn, int *mp4error)
   if (libmp4tag->fn == NULL) {
     *mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
     fclose (libmp4tag->fh);
+    libmp4tag->libmp4tagident = 0;
     free (libmp4tag);
     return NULL;
   }
+
+  /* for debugging only */
+#if 0
+  libmp4tag->isstream = true;
+  libmp4tag->canwrite = false;
+  libmp4tag->offset = ftell (libmp4tag->fh);
+  libmp4tag->timeout = 10;
+#endif
+
+  return libmp4tag;
+}
+
+libmp4tag_t *
+mp4tag_openstream (FILE *fh, size_t offset, long timeout, int *mp4error)
+{
+  libmp4tag_t *libmp4tag = NULL;
+
+  *mp4error = MP4TAG_OK;
+  libmp4tag = mp4tag_alloc (mp4error);
+  if (*mp4error != MP4TAG_OK) {
+    return NULL;
+  }
+
+  libmp4tag->fh = fh;
+  if (libmp4tag->fh == NULL) {
+    *mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
+    libmp4tag->libmp4tagident = 0;
+    free (libmp4tag);
+    return NULL;
+  }
+
+  /* needed for parse, write */
+  libmp4tag->filesz = MP4TAG_NO_FILESZ;
+
+  /* the assumption is made that the stream being passed in is known */
+  /* to be an mp4 */
+
+  libmp4tag->isstream = true;
+  libmp4tag->canwrite = false;
+  libmp4tag->timeout = timeout;
+  libmp4tag->offset = offset;
+
+  return libmp4tag;
+}
+
+libmp4tag_t *
+mp4tag_openstreamfd (int fd, size_t offset, long timeout, int *mp4error)
+{
+  libmp4tag_t *libmp4tag = NULL;
+
+  *mp4error = MP4TAG_OK;
+  libmp4tag = mp4tag_alloc (mp4error);
+  if (*mp4error != MP4TAG_OK) {
+    return NULL;
+  }
+
+  libmp4tag->fh = fdopen (fd, "rb");
+  if (libmp4tag->fh == NULL) {
+    *mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
+    libmp4tag->libmp4tagident = 0;
+    free (libmp4tag);
+    return NULL;
+  }
+
+  /* needed for parse, write */
+  libmp4tag->filesz = MP4TAG_NO_FILESZ;
+
+  /* the assumption is made that the stream being passed in is known */
+  /* to be an mp4 */
+
+  libmp4tag->isstream = true;
+  libmp4tag->canwrite = false;
+  libmp4tag->timeout = timeout;
+  libmp4tag->offset = offset;
 
   return libmp4tag;
 }
@@ -160,16 +209,18 @@ mp4tag_free (libmp4tag_t *libmp4tag)
     return;
   }
 
-  if (libmp4tag->fh != NULL) {
+  if (libmp4tag->isstream == false && libmp4tag->fh != NULL) {
     fclose (libmp4tag->fh);
-    libmp4tag->fh = NULL;
   }
+  libmp4tag->fh = NULL;
 
   if (libmp4tag->fn != NULL) {
     free (libmp4tag->fn);
     libmp4tag->fn = NULL;
   }
+
   mp4tag_free_tags (libmp4tag);
+
   libmp4tag->libmp4tagident = 0;
   free (libmp4tag);
 }
@@ -494,7 +545,13 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
   int       rc;
 
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
-    return MP4TAG_ERR_BAD_STRUCT;
+    libmp4tag->mp4error = MP4TAG_ERR_BAD_STRUCT;
+    return libmp4tag->mp4error;
+  }
+
+  if (libmp4tag->canwrite == false) {
+    libmp4tag->mp4error = MP4TAG_ERR_CANNOT_WRITE;
+    return libmp4tag->mp4error;
   }
 
   if (! libmp4tag->parsed) {
@@ -508,6 +565,7 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
   if (libmp4tag->mp4error != MP4TAG_OK) {
     return libmp4tag->mp4error;
   }
+
   /* if data is null and dlen == 0 , it is a complete clean of the tags */
   rc = mp4tag_write_data (libmp4tag, data, dlen);
   if (data != NULL) {
@@ -669,6 +727,68 @@ mp4tag_set_option (libmp4tag_t *libmp4tag, int option)
 
 
 /* internal routines */
+
+static libmp4tag_t *
+mp4tag_alloc (int *mp4error)
+{
+  libmp4tag_t   *libmp4tag = NULL;
+
+  libmp4tag = malloc (sizeof (libmp4tag_t));
+  if (libmp4tag == NULL) {
+    *mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    return NULL;
+  }
+
+  libmp4tag->libmp4tagident = MP4TAG_IDENT;
+  libmp4tag->fn = NULL;
+  libmp4tag->filesz = MP4TAG_NO_FILESZ;
+  libmp4tag->fh = NULL;
+  libmp4tag->offset = 0;
+  libmp4tag->tags = NULL;
+  libmp4tag->creationdate = 0;
+  libmp4tag->modifieddate = 0;
+  libmp4tag->duration = 0;
+  libmp4tag->samplerate = 0;
+  libmp4tag->timeout = 0;
+  for (int i = 0; i < MP4TAG_BASE_OFF_MAX; ++i) {
+    libmp4tag->base_lengths [i] = 0;
+    libmp4tag->base_offsets [i] = 0;
+    libmp4tag->base_name [i][0] = '\0';
+  }
+  libmp4tag->base_offset_count = 0;
+  libmp4tag->taglist_base_offset = 0;
+  libmp4tag->taglist_offset = 0;
+  libmp4tag->taglist_orig_len = 0;
+  libmp4tag->taglist_len = 0;
+  libmp4tag->parentidx = -1;
+  libmp4tag->noilst_offset = 0;
+  libmp4tag->after_ilst_offset = 0;
+  libmp4tag->insert_delta = 0;
+  libmp4tag->stco_offset = 0;
+  libmp4tag->stco_len = 0;
+  libmp4tag->co64_offset = 0;
+  libmp4tag->co64_len = 0;
+  libmp4tag->covercount = 0;
+  libmp4tag->coverstart_offset = -1;
+  libmp4tag->tagcount = 0;
+  libmp4tag->tagalloccount = 0;
+  libmp4tag->iterator = 0;
+  libmp4tag->mp4error = MP4TAG_OK;
+  libmp4tag->dbgflags = 0;
+  libmp4tag->options = MP4TAG_OPTION_NONE;
+  libmp4tag->mp7meta = false;
+  libmp4tag->unlimited = false;
+  libmp4tag->covercount = 0;
+  libmp4tag->parsed = false;
+  libmp4tag->processdata = false;
+  libmp4tag->checkforfree = false;
+  libmp4tag->parsedone = false;
+  libmp4tag->isstream = false;
+  libmp4tag->canwrite = true;
+
+  return libmp4tag;
+}
+
 
 static void
 mp4tag_free_tags (libmp4tag_t *libmp4tag)

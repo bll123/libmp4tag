@@ -25,4 +25,5 @@ int mp4tag_write_tags (libmp4tag_t *libmp4tag)
 
 __libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
-Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
+Returns: MP4TAG_OK or MP4TAG_ERR_CANNOT_WRITE for read-only files and
+streams, or other [error&nbsp;code](ErrorCodes).

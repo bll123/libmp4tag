@@ -22,6 +22,69 @@ __filename__ : The file to open.
 __mp4error__ : A pointer to an integer.  Returns the
 [error&nbsp;code](ErrorCodes).
 
+If the file does not have permissions to be written, the file will be
+opened for reading.
+
+Returns: A pointer to an allocated libmp4tag_t structure.  This
+pointer must be freed in a call to __mp4tag_free__.
+
+-------------
+##### mp4tag_openstream
+
+Initializes libmp4tag to process a stream.  It is assumed that
+the open file is already known to be a valid MP4 file.
+A libmp4tag_t structure is allocated and returned for use in the other
+libmp4tag functions.
+
+Note that if the MP4 tags are located after the audio/video, the
+stream will be completely read in.
+
+~~~
+#include "libmp4tag.h"
+
+libmp4tag_t *mp4tag_openstream (FILE *fh, size_t offset, long timeout, int *mp4error)
+~~~
+
+__fh__ : The file handle of an open stream.
+
+__offset__ : The current offset in the stream.  Use 0 if the stream
+has not been processed.
+
+__timeout__ : Timeout in milliseconds when processing the data.
+
+__mp4error__ : A pointer to an integer.  Returns the
+[error&nbsp;code](ErrorCodes).
+
+Returns: A pointer to an allocated libmp4tag_t structure.  This
+pointer must be freed in a call to __mp4tag_free__.
+
+-------------
+##### mp4tag_openstreamfd
+
+Initializes libmp4tag to process a stream.  It is assumed that
+the open file is already known to be a valid MP4 file.
+A libmp4tag_t structure is allocated and returned for use in the other
+libmp4tag functions.
+
+Note that if the MP4 tags are located after the audio/video, the
+stream will be completely read in.
+
+~~~
+#include "libmp4tag.h"
+
+libmp4tag_t *mp4tag_openstreamfd (int fd, int *mp4error, uint32_t timeout)
+~~~
+
+__fd__ : The file descriptor of an open stream.
+
+__offset__ : The current offset in the stream.  Use 0 if the stream
+has not been processed.
+
+__timeout__ : Timeout in milliseconds when processing the data.
+
+__mp4error__ : A pointer to an integer.  Returns the
+[error&nbsp;code](ErrorCodes).
+
 Returns: A pointer to an allocated libmp4tag_t structure.  This
 pointer must be freed in a call to __mp4tag_free__.
 

@@ -10,6 +10,9 @@ Contents:
 
 Release Notes
 
+  1.3.0
+    Added support for streams.  This functionality is in beta status.
+
   1.2.9
     The build/install process has been brought into line with cmake's
     methods.  See the Building section.

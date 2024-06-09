@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Brad Lanam Pleasant Hill CA
+ * Copyright 2023-2024 Brad Lanam Pleasant Hill CA
  */
 
 #ifndef INC_MP4TAGINT_H
@@ -70,6 +70,10 @@ enum {
   MP4TAG_BASE_OFF_MAX = 15,
   MP4TAG_COPY_SIZE = 5 * 1024 * 1024,
   MP4TAG_FREE_SPACE_SZ = 512,
+  MP4TAG_NO_FILESZ = -3,
+  MP4TAG_READ_OK = 1,
+  MP4TAG_READ_NONE = 0,
+  MP4TAG_SLEEP_TIME = 2,
 };
 
 enum {
@@ -106,11 +110,13 @@ typedef struct libmp4tag {
   char      *fn;
   size_t    filesz;
   FILE      *fh;
+  size_t    offset;
   mp4tag_t  *tags;
   int64_t   creationdate;
   int64_t   modifieddate;
   int64_t   duration;
   int32_t   samplerate;
+  uint32_t  timeout;
   /* used by the parser and writer */
   uint32_t  base_lengths [MP4TAG_BASE_OFF_MAX];
   ssize_t   base_offsets [MP4TAG_BASE_OFF_MAX];
@@ -148,6 +154,9 @@ typedef struct libmp4tag {
   bool      processdata : 1;
   bool      checkforfree : 1;
   bool      parsedone : 1;
+  /* streams */
+  bool      isstream : 1;
+  bool      canwrite : 1;
 } libmp4tag_t;
 
 /* mp4const.c */
@@ -193,5 +202,6 @@ void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag (mp4tag_t *mp4tag);
 void mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source);
+void mp4tag_sleep (uint32_t ms);
 
 #endif /* INC_MP4TAGINT_H */

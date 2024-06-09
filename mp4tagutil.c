@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Brad Lanam Pleasant Hill CA
+ * Copyright 2023-2024 Brad Lanam Pleasant Hill CA
  */
 
 #include "config.h"
@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
@@ -604,6 +605,35 @@ mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source)
   target->internallen = source->internallen;
   target->priority = source->priority;
   target->binary = source->binary;
+}
+
+void
+mp4tag_sleep (uint32_t ms)
+{
+/* windows seems to have a very large amount of overhead when calling */
+/* nanosleep() or Sleep(). */
+/* macos seems to have a minor amount of overhead when calling nanosleep() */
+
+/* on windows, nanosleep is within the libwinpthread msys2 library which */
+/* is not wanted for bdj4se &etc. So use the Windows API Sleep() function */
+#if _lib_Sleep
+  Sleep ((DWORD) ms);
+#endif
+#if ! _lib_Sleep && _lib_nanosleep
+  struct timespec   ts;
+  struct timespec   rem;
+
+  ts.tv_sec = ms / 1000;
+  ts.tv_nsec = (ms - (ts.tv_sec * 1000)) * 1000 * 1000;
+  while (ts.tv_sec > 0 || ts.tv_nsec > 0) {
+    /* rc = */ nanosleep (&ts, &rem);
+    ts.tv_sec = 0;
+    ts.tv_nsec = 0;
+    /* remainder is only valid when EINTR is returned */
+    /* most of the time, an interrupt is caused by a control-c while testing */
+    /* just let an interrupt stop the sleep */
+  }
+#endif
 }
 
 /* internal routines */

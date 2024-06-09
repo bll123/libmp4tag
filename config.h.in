@@ -9,6 +9,8 @@
 #cmakedefine01 _hdr_windows
 #cmakedefine01 _hdr_winsock2
 
+#cmakedefine01 _lib_nanosleep
+#cmakedefine01 _lib_Sleep
 #cmakedefine01 _lib__wrename
 #cmakedefine01 _lib__wstat64
 #cmakedefine01 _lib__wunlink

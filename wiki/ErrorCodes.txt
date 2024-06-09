@@ -17,6 +17,11 @@ to process.
 
 The *libmp4tag* structure is invalid.
 
+##### MP4TAG_ERR_CANNOT_WRITE
+
+The file is a stream, or the file does not have permissions to be
+written.
+
 ##### MP4TAG_ERR_FILE_NOT_FOUND
 
 The file to be processed was not found or could not be opened.
@@ -80,3 +85,4 @@ The specified tag was not found or is not valid.
 
 Cannot write the file as neither the tag list, nor the hierarchy in
 which to place the tag list can be found.
+

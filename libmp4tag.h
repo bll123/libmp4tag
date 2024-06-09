@@ -1,16 +1,15 @@
 /*
- * Copyright 2023 Brad Lanam Pleasant Hill CA
+ * Copyright 2023-2024 Brad Lanam Pleasant Hill CA
  */
 
 #ifndef INC_LIBMP4TAG_H
 #define INC_LIBMP4TAG_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
+
+#include <stdbool.h>
 
 #define PREFIX_STR   "\xc2\xa9"
 
@@ -48,7 +47,7 @@ enum {
   /* other routines return MP4TAG_OK/MP4TAG_ERROR */
   MP4TAG_OK,
   MP4TAG_FINISH,
-  MP4TAG_ERR_BAD_STRUCT,    // null structure
+  MP4TAG_ERR_BAD_STRUCT,    // null structure or already freed
   MP4TAG_ERR_OUT_OF_MEMORY,
   MP4TAG_ERR_NOT_MP4,
   MP4TAG_ERR_NOT_OPEN,
@@ -64,6 +63,7 @@ enum {
   MP4TAG_ERR_FILE_READ_ERROR,
   MP4TAG_ERR_FILE_WRITE_ERROR,
   MP4TAG_ERR_UNABLE_TO_PROCESS,
+  MP4TAG_ERR_CANNOT_WRITE,  // stream or read-only file
 };
 
 enum {
@@ -77,6 +77,8 @@ enum {
 };
 
 libmp4tag_t * mp4tag_open (const char *fn, int *mp4error);
+libmp4tag_t * mp4tag_openstream (FILE *fh, size_t offset, long timeout, int *mp4error);
+libmp4tag_t * mp4tag_openstreamfd (int fd, size_t offset, long timeout, int *mp4error);
 int       mp4tag_parse (libmp4tag_t *libmp4tag);
 void      mp4tag_free (libmp4tag_t *libmp4tag);
 
@@ -126,8 +128,8 @@ char * mp4tag_fromwide (const wchar_t *buff);
 /* The revision value will change for bug fixes/cleanup/documentation. */
 
 #define LIBMP4TAG_VERS_MAJOR 1
-#define LIBMP4TAG_VERS_MINOR 2
-#define LIBMP4TAG_VERS_REVISION 13
+#define LIBMP4TAG_VERS_MINOR 3
+#define LIBMP4TAG_VERS_REVISION 0
 #define LIBMP4TAG_RELEASE_STATE "production"
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \
