@@ -12,6 +12,11 @@
 #include <ctype.h>
 #include <time.h>
 
+#if _hdr_windows
+# define WIN32_LEAN_AND_MEAN 1
+# include <windows.h>
+#endif
+
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 

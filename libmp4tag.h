@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define PREFIX_STR   "\xc2\xa9"
 
