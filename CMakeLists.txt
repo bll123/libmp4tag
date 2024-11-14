@@ -136,6 +136,7 @@ if (NOT WIN32)
     # 10.12 = Sierra, 10.13 = High Sierra
     # 10.14 = Mojave, 10.15 = Catalina
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
+    # 15 = Sequoia
     add_compile_options (-mmacosx-version-min=10.12)
     add_link_options (-mmacosx-version-min=10.12)
     # universal binary
@@ -156,13 +157,11 @@ check_include_file (endian.h _hdr_endian)
 check_include_file (windows.h _hdr_windows)
 check_include_file (winsock2.h _hdr_winsock2)
 
-set (CMAKE_REQUIRED_INCLUDES windows.h)
 check_function_exists (Sleep _lib_Sleep)
 check_function_exists (CommandLineToArgvW _lib_CommandLinetoArgvW)
 check_function_exists (_wrename _lib__wrename)
 check_function_exists (_wstat64 _lib__wstat64)
 check_function_exists (_wunlink _lib__wunlink)
-set (CMAKE_REQUIRED_INCLUDES "")
 
 check_function_exists (nanosleep _lib_nanosleep)
 
