@@ -1,0 +1,17 @@
+syntax: regexp
+^Archive/
+^build/
+^dev/rs\.sh$
+^dev/wikibearer\.txt$
+^libmp4tag\.pc$
+^samples/
+^tmp/
+\.m4a$
+\.mpr$
+~$
+^w$
+^ww$
+^www$
+^TODO$
+^libmp4tag-src-[0-9.]*\.tar\.gz$
+^libmp4tag-src-[0-9.]*\.zip$
