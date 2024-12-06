@@ -369,10 +369,10 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
 
   if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
     int     offset;
-    int     coveridx;
+    int     idx;
 
     binary = true;
-    offset = mp4tag_parse_cover_tag (tag, &coveridx);
+    offset = mp4tag_parse_tagname (tag, &idx);
     if (offset > 0) {
       binary = false;
     }
@@ -444,10 +444,10 @@ mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag,
 
   if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
     int     offset;
-    int     coveridx;
+    int     idx;
 
     binary = true;
-    offset = mp4tag_parse_cover_tag (tag, &coveridx);
+    offset = mp4tag_parse_tagname (tag, &idx);
     if (offset > 0) {
       binary = false;
     }
@@ -491,9 +491,9 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
   idx = mp4tag_find_tag (libmp4tag, tag);
   if (idx >= 0 && idx < libmp4tag->tagcount) {
     if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
-      int   coveridx;
+      int   idx;
 
-      if (mp4tag_parse_cover_tag (tag, &coveridx) > 0) {
+      if (mp4tag_parse_tagname (tag, &idx) > 0) {
         mp4tag_t    *mp4tag;
 
         mp4tag = &libmp4tag->tags [idx];
@@ -816,7 +816,7 @@ mp4tag_copy_to_pub (mp4tagpub_t *mp4tagpub, mp4tag_t *mp4tag)
   mp4tagpub->data = mp4tag->data;
   mp4tagpub->datalen = mp4tag->datalen;
   mp4tagpub->covername = mp4tag->covername;
-  mp4tagpub->coveridx = mp4tag->coveridx;
+  mp4tagpub->dataidx = mp4tag->dataidx;
   mp4tagpub->covertype = mp4tag->identtype;
   mp4tagpub->binary = mp4tag->binary;
 }

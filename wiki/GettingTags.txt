@@ -12,7 +12,7 @@ typedef struct {
   const char  *data;
   const char  *covername;
   size_t      datalen;
-  int         coveridx;
+  int         dataidx;
   int         covertype;
   bool        binary;
 

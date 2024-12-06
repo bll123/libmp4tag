@@ -316,7 +316,12 @@ displayTag (mp4tagpub_t *mp4tagpub)
   if (! mp4tagpub->binary &&
       mp4tagpub->tag != NULL &&
       mp4tagpub->data != NULL) {
-    fprintf (stdout, "%s=%s\n", mp4tagpub->tag, mp4tagpub->data);
+    if (mp4tagpub->dataidx > 0) {
+      fprintf (stdout, "%s:%d=%s\n",
+          mp4tagpub->tag, mp4tagpub->dataidx, mp4tagpub->data);
+    } else {
+      fprintf (stdout, "%s=%s\n", mp4tagpub->tag, mp4tagpub->data);
+    }
   }
   if (mp4tagpub->binary &&
       mp4tagpub->tag != NULL) {
@@ -328,9 +333,9 @@ displayTag (mp4tagpub_t *mp4tagpub)
         covertypedisp = "png ";
       }
     }
-    if (mp4tagpub->coveridx > 0) {
+    if (mp4tagpub->dataidx > 0) {
       fprintf (stdout, "%s:%d=(data: %s%" PRId64 " bytes)\n",
-          mp4tagpub->tag, mp4tagpub->coveridx, covertypedisp, (uint64_t) mp4tagpub->datalen);
+          mp4tagpub->tag, mp4tagpub->dataidx, covertypedisp, (uint64_t) mp4tagpub->datalen);
     } else {
       fprintf (stdout, "%s=(data: %s%" PRId64 " bytes)\n",
           mp4tagpub->tag, covertypedisp, (uint64_t) mp4tagpub->datalen);
@@ -339,7 +344,7 @@ displayTag (mp4tagpub_t *mp4tagpub)
         *mp4tagpub->covername) {
       /* cover name */
       fprintf (stdout, "%s:%d:name=%s\n",
-          mp4tagpub->tag, mp4tagpub->coveridx, mp4tagpub->covername);
+          mp4tagpub->tag, mp4tagpub->dataidx, mp4tagpub->covername);
     }
   }
 }

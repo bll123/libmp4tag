@@ -41,10 +41,10 @@ mp4tag_sort_tags (libmp4tag_t *libmp4tag)
 }
 
 int
-mp4tag_parse_cover_tag (const char *tag, int *pcoveridx)
+mp4tag_parse_tagname (const char *tag, int *pdataidx)
 {
   size_t    len;
-  int       coveridx = -1;
+  int       dataidx = -1;
   int       offset = -1;
 
   len = strlen (tag);
@@ -61,7 +61,7 @@ mp4tag_parse_cover_tag (const char *tag, int *pcoveridx)
     if (p != NULL) {
       p = strtok_r (NULL, MP4TAG_COVER_DELIM, &tokstr);
       if (p != NULL) {
-        coveridx = atoi (p);
+        dataidx = atoi (p);
 
         p = strtok_r (NULL, MP4TAG_COVER_DELIM, &tokstr);
         if (p != NULL && strcmp (p, MP4TAG_NAME) == 0) {
@@ -72,7 +72,7 @@ mp4tag_parse_cover_tag (const char *tag, int *pcoveridx)
     free (tmp);
   }
 
-  *pcoveridx = coveridx;
+  *pdataidx = dataidx;
   return offset;
 }
 
@@ -82,7 +82,7 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag)
   mp4tag_t    key;
   mp4tag_t    *result;
   int         idx = MP4TAG_NOTFOUND;
-  int         coveridx = 0;
+  int         dataidx = 0;
 
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return -1;
@@ -97,15 +97,12 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag)
     return -1;
   }
 
-  key.tag = (char *) tag;
-  if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
-    mp4tag_parse_cover_tag (tag, &coveridx);
-    if (coveridx < 0) {
-      coveridx = 0;
-    }
-    key.tag = (char *) MP4TAG_COVR;
+  mp4tag_parse_tagname (tag, &dataidx);
+  if (dataidx < 0) {
+    dataidx = 0;
   }
-  key.coveridx = coveridx;
+  key.tag = (char *) tag;
+  key.dataidx = dataidx;
   result = bsearch (&key, libmp4tag->tags, libmp4tag->tagcount,
       sizeof (mp4tag_t), mp4tag_compare);
 
@@ -163,11 +160,11 @@ mp4tag_compare (const void *a, const void *b)
   rc = strcmp (ta->tag, tb->tag);
   if (rc == 0) {
     /* sort by both the name and the cover index */
-    if (ta->coveridx == tb->coveridx) {
+    if (ta->dataidx == tb->dataidx) {
       rc = 0;
-    } else if (ta->coveridx < tb->coveridx) {
+    } else if (ta->dataidx < tb->dataidx) {
       rc = -1;
-    } else if (ta->coveridx > tb->coveridx) {
+    } else if (ta->dataidx > tb->dataidx) {
       rc = 1;
     }
   }
@@ -199,7 +196,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     const char *covername)
 {
   int   tagidx;
-  int   coveridx = -1;
+  int   dataidx = -1;
 
   tagidx = libmp4tag->tagcount;
   if (tagidx >= libmp4tag->tagalloccount) {
@@ -215,11 +212,17 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
   libmp4tag->tags [tagidx].tag = NULL;
   libmp4tag->tags [tagidx].data = NULL;
   libmp4tag->tags [tagidx].covername = NULL;
-  libmp4tag->tags [tagidx].coveridx = 0;
+  libmp4tag->tags [tagidx].dataidx = 0;
   libmp4tag->tags [tagidx].binary = false;
   /* save these off so that writing the tags back out is easier */
   libmp4tag->tags [tagidx].identtype = origflag;
   libmp4tag->tags [tagidx].internallen = origlen;
+
+  if (tagidx > 0 &&
+      strcmp (libmp4tag->tags [tagidx - 1].tag, tag) == 0) {
+    libmp4tag->tags [tagidx].dataidx = libmp4tag->tags [tagidx - 1].dataidx;
+    ++libmp4tag->tags [tagidx].dataidx;
+  }
 
   libmp4tag->tags [tagidx].tag = strdup (tag);
   if (libmp4tag->tags [tagidx].tag == NULL) {
@@ -230,7 +233,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
   if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
 // fprintf (stdout, "tag: %s\n", tag);
 
-    mp4tag_parse_cover_tag (tag, &coveridx);
+    mp4tag_parse_tagname (tag, &dataidx);
     /* make sure the base tag is set properly */
     if (libmp4tag->tags [tagidx].tag != NULL) {
       free (libmp4tag->tags [tagidx].tag);
@@ -249,11 +252,11 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
       }
     }
 
-    if (coveridx == -1) {
-      libmp4tag->tags [tagidx].coveridx = libmp4tag->covercount;
+    if (dataidx == -1) {
+      libmp4tag->tags [tagidx].dataidx = libmp4tag->covercount;
       libmp4tag->covercount += 1;
     } else {
-      libmp4tag->tags [tagidx].coveridx = coveridx;
+      libmp4tag->tags [tagidx].dataidx = dataidx;
     }
   }
 
@@ -318,12 +321,12 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
 
     if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
       int     offset;
-      int     coveridx;
+      int     dataidx;
 
       /* handle cover tags separately */
       /* only cover filenames are allowed for set-tag-str */
 
-      offset = mp4tag_parse_cover_tag (tag, &coveridx);
+      offset = mp4tag_parse_tagname (tag, &dataidx);
       if (offset > 0) {
         if (mp4tag->covername != NULL) {
           free (mp4tag->covername);
@@ -370,10 +373,10 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     if ((tagdef = mp4tag_check_tag (tag)) != NULL) {
       ok = true;
       if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
-        int     coveridx;
+        int     dataidx;
 
         /* trying to set the cover name, but no associated cover tag was found */
-        if (mp4tag_parse_cover_tag (tag, &coveridx) > 0) {
+        if (mp4tag_parse_tagname (tag, &dataidx) > 0) {
           ok = false;
         }
       }
@@ -604,7 +607,7 @@ mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source)
     }
   }
 
-  target->coveridx = source->coveridx;
+  target->dataidx = source->dataidx;
   target->idx = source->idx;
   target->identtype = source->identtype;
   target->internallen = source->internallen;
@@ -620,7 +623,7 @@ mp4tag_sleep (uint32_t ms)
 /* macos seems to have a minor amount of overhead when calling nanosleep() */
 
 /* on windows, nanosleep is within the libwinpthread msys2 library which */
-/* is not wanted for bdj4se &etc. So use the Windows API Sleep() function */
+/* is not wanted. So use the Windows API Sleep() function */
 #if _lib_Sleep
   Sleep ((DWORD) ms);
 #endif

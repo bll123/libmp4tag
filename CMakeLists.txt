@@ -209,13 +209,12 @@ configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
 
 # compressed manual pages
 
-# these do not work
+# these do not work (probably need to be added to target)
 #add_custom_command (
 #  OUTPUT mp4tagcli.1.gz
 #  DEPENDS ${PROJECT_SOURCE_DIR}/man/mp4tagcli.1
 #  COMMAND cat ${PROJECT_SOURCE_DIR}/man/mp4tagcli.1 |
 #      gzip -9 > ${CMAKE_BINARY_DIR}/mp4tagcli.1.gz
-#  VERBATIM
 #)
 #
 #add_custom_command (
@@ -223,7 +222,6 @@ configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
 #  DEPENDS ${PROJECT_SOURCE_DIR}/man/libmp4tag.3
 #  COMMAND cat ${PROJECT_SOURCE_DIR}/man/libmp4tag.3 |
 #      gzip -9 > ${CMAKE_BINARY_DIR}/libmp4tag.3.gz
-#  VERBATIM
 #)
 
 #### install

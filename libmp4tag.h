@@ -5,14 +5,14 @@
 #ifndef INC_LIBMP4TAG_H
 #define INC_LIBMP4TAG_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#define PREFIX_STR   "\xc2\xa9"
+#define PREFIX_STR   "\xc2\xa9"   /* copyright symbol */
 
 typedef struct libmp4tag libmp4tag_t;
 typedef struct libmp4tagpreserve libmp4tagpreserve_t;
@@ -22,9 +22,10 @@ typedef struct libmp4tagpreserve libmp4tagpreserve_t;
 typedef struct {
   const char  *tag;
   const char  *data;
+  const char  *language;
   const char  *covername;
   size_t      datalen;
-  int         coveridx;
+  int         dataidx;
   int         covertype;
   bool        binary;
 } mp4tagpub_t;
@@ -128,8 +129,8 @@ char * mp4tag_fromwide (const wchar_t *buff);
 /* or there are additions to the api. */
 /* The revision value will change for bug fixes/cleanup/documentation. */
 
-#define LIBMP4TAG_VERS_MAJOR 1
-#define LIBMP4TAG_VERS_MINOR 3
+#define LIBMP4TAG_VERS_MAJOR 2
+#define LIBMP4TAG_VERS_MINOR 0
 #define LIBMP4TAG_VERS_REVISION 0
 #define LIBMP4TAG_RELEASE_STATE "production"
 #define CPP_STR(x) #x

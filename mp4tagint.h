@@ -11,6 +11,10 @@
 
 #include "libmp4tag.h"
 
+#if defined (__cplusplus) || defined (c_plusplus)
+extern "C" {
+#endif
+
 /* idents that libmp4tag needs to descend into or use */
 #define MP4TAG_CO64   "co64"
 #define MP4TAG_FREE   "free"
@@ -77,11 +81,12 @@ enum {
 };
 
 enum {
-  MP4TAG_DBG_NONE                   = 0x0000,
+  MP4TAG_DBG_NONE                   = 0,
   /* only prints file structure that is relevant to libmp4tag */
-  MP4TAG_DBG_PRINT_FILE_STRUCTURE   = 0x0001,
-  MP4TAG_DBG_WRITE                  = 0x0002,
-  MP4TAG_DBG_DUMP_CO                = 0x0004,
+  MP4TAG_DBG_PRINT_FILE_STRUCTURE   = (1 << 0),
+  MP4TAG_DBG_WRITE                  = (1 << 1),
+  MP4TAG_DBG_DUMP_CO                = (1 << 2),
+  MP4TAG_DBG_OTHER                  = (1 << 3),
 };
 
 enum {
@@ -94,7 +99,7 @@ typedef struct mp4tag {
   char      *data;
   char      *covername;
   uint32_t  datalen;
-  int       coveridx;
+  int       dataidx;
   int       idx;
   /* identtype is the flag value from the original data */
   int       identtype;
@@ -191,7 +196,7 @@ void mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t de
 
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
 int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag);
-int  mp4tag_parse_cover_tag (const char *tag, int *coveridx);
+int  mp4tag_parse_tagname (const char *tag, int *dataidx);
 mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
@@ -203,5 +208,9 @@ void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag (mp4tag_t *mp4tag);
 void mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source);
 void mp4tag_sleep (uint32_t ms);
+
+#if defined (__cplusplus) || defined (c_plusplus)
+} /* extern C */
+#endif
 
 #endif /* INC_MP4TAGINT_H */

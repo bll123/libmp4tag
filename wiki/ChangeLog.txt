@@ -4,14 +4,21 @@
 
 <!--
 
-**1.3.0 2024-6-9**
+**2.0.0 2024-12---**
+
+* Bug Fixes:
+    * Fix handling of arrays of strings.
+    * Fix track name atom when shortened.
+    * Fix duration when hint tracks are present.
+* Changes:
+    * mp4tagpub_t: 'coveridx' has been renamed to 'dataidx'
 
 -->
 
 **1.3.0 2024-6-9**
 
 * New Features:
-    * Stream processing
+    * Stream processing (beta)
 
 **1.2.13 2024-2-4**
 
