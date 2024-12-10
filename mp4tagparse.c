@@ -231,11 +231,24 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     }
 
     if (libmp4tag->checkforfree) {
+      if (libmp4tag->taglist_orig_data_len == 0) {
+        libmp4tag->taglist_orig_data_len = libmp4tag->taglist_len;
+      }
+      /* note that this will also locate free boxes */
+      /* trailing the 'moov' box */
+      /* all free space is consolidated */
       if (strcmp (bd.nm, MP4TAG_FREE) == 0) {
+fprintf (stdout, "-- level-%d free\n", level);
+        if (level == 0) {
+          libmp4tag->exterior_free_len += bd.boxlen;
+        } else {
+          libmp4tag->interior_free_len += bd.boxlen;
+        }
         libmp4tag->taglist_len += bd.boxlen;
         libmp4tag->after_ilst_offset += bd.boxlen;
         /* continue on and see if there are more 'free' boxes to add */
       } else {
+fprintf (stdout, "-- level-%d not-free\n", level);
         /* if this spot was reached, there is some other */
         /* box after the 'ilst' or 'free' boxes */
         /* unlimited will be false */
@@ -348,14 +361,25 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     rrc = mp4tag_file_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
   }
 
+  if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
+    fprintf (stdout, "taglist-data-len: %d\n", libmp4tag->taglist_orig_data_len);
+    fprintf (stdout, "taglist-len: %d\n", libmp4tag->taglist_len);
+  }
+
   if (level == 0) {
     if (libmp4tag->checkforfree) {
+fprintf (stdout, "-- level-0 check-for-free\n");
       /* if checkforfree is still true, check and see if the end of file */
       /* was reached */
       mp4tag_parse_check_end (libmp4tag);
     }
 
     mp4tag_sort_tags (libmp4tag);
+  }
+
+  if (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE) {
+    fprintf (stdout, "interior-free: %d\n", libmp4tag->interior_free_len);
+    fprintf (stdout, "exterior-free: %d\n", libmp4tag->exterior_free_len);
   }
 
   /* at this time, do not look for more free boxes after the 'udta' */
@@ -610,7 +634,8 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
         memcpy (&t32, p, sizeof (uint32_t));
         t32 = be32toh (t32);
 
-        /* apparently there exist track number atoms that are not the full size */
+        /* apparently there exist track number boxes */
+        /* that are not the full size */
         if (strcmp (tnm, MP4TAG_TRKN) == 0 &&
             tlen >= sizeof (uint32_t) + sizeof (uint32_t)) {
           p += sizeof (uint32_t);

@@ -20,6 +20,7 @@ for f in samples/stco.m4a samples/v-mdhd64-co64.mp4; do
     continue
   fi
   cp $f ${TFN}
+  chmod u+w ${TFN}
   ${MP4TAGCLI} ${TFN} --debug 4 > ${OUTA}
   ${MP4TAGCLI} ${TFN} covr:0=samples/bdj4-y.png covr:0:name=xyzzy
   ${MP4TAGCLI} ${TFN} covr:1=samples/bdj4-y.jpg covr:1:name=plugh

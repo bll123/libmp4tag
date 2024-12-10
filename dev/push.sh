@@ -1,5 +1,18 @@
 #!/bin/bash
 
+grep '^#define LIBMP4TAG_DEBUG_STREAM 0' mp4tagint.h > /dev/null 2>&1
+rc=$?
+if [[ $rc -ne 0 ]]; then
+  echo "stream debugging is on"
+  exit 1
+fi
+grep '^#define LIBMP4TAG_DEBUG 0' mp4tagint.h > /dev/null 2>&1
+rc=$?
+if [[ $rc -ne 0 ]]; then
+  echo "debugging is on"
+  exit 1
+fi
+
 SFUSER=bll123
 
 echo -n "sourceforge Password: "

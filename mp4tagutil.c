@@ -41,35 +41,47 @@ mp4tag_sort_tags (libmp4tag_t *libmp4tag)
 }
 
 int
-mp4tag_parse_tagname (const char *tag, int *pdataidx)
+mp4tag_parse_tagname (char *tag, int *pdataidx)
 {
   size_t    len;
   int       dataidx = -1;
   int       offset = -1;
+  char      *p;
+  char      *tokstr;
+
+
+  *pdataidx = dataidx;
 
   len = strlen (tag);
-  if (len > MP4TAG_ID_LEN) {
-    char    *tmp;
-    char    *p;
-    char    *tokstr;
+  if (len <= MP4TAG_ID_LEN) {
+    return offset;
+  }
 
-    tmp = strdup (tag);
-    if (tmp == NULL) {
+  p = tag;
+  if (memcmp (tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+    /* a custom tag is formatted as ----:app-name:tag-name */
+    p = strstr (tag, MP4TAG_INPUT_DELIM);
+    if (p == NULL) {
       return offset;
     }
-    p = strtok_r (tmp, MP4TAG_COVER_DELIM, &tokstr);
-    if (p != NULL) {
-      p = strtok_r (NULL, MP4TAG_COVER_DELIM, &tokstr);
-      if (p != NULL) {
-        dataidx = atoi (p);
+    p = strstr (p + 1, MP4TAG_INPUT_DELIM);
+    if (p == NULL) {
+      return offset;
+    }
+    p += 1;
+  }
 
-        p = strtok_r (NULL, MP4TAG_COVER_DELIM, &tokstr);
-        if (p != NULL && strcmp (p, MP4TAG_NAME) == 0) {
-          offset = (int) (p - tmp);
-        }
+  p = strtok_r (p, MP4TAG_INPUT_DELIM, &tokstr);
+  if (p != NULL) {
+    p = strtok_r (NULL, MP4TAG_INPUT_DELIM, &tokstr);
+    if (p != NULL) {
+      dataidx = atoi (p);
+
+      p = strtok_r (NULL, MP4TAG_INPUT_DELIM, &tokstr);
+      if (p != NULL && strcmp (p, MP4TAG_NAME) == 0) {
+        offset = (int) (p - tag);
       }
     }
-    free (tmp);
   }
 
   *pdataidx = dataidx;
@@ -77,12 +89,11 @@ mp4tag_parse_tagname (const char *tag, int *pdataidx)
 }
 
 int
-mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag)
+mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx)
 {
   mp4tag_t    key;
   mp4tag_t    *result;
   int         idx = MP4TAG_NOTFOUND;
-  int         dataidx = 0;
 
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return -1;
@@ -97,7 +108,6 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag)
     return -1;
   }
 
-  mp4tag_parse_tagname (tag, &dataidx);
   if (dataidx < 0) {
     dataidx = 0;
   }
@@ -129,7 +139,7 @@ mp4tag_check_tag (const char *tag)
   /* be careful with copying here */
 
   snprintf (tmp, sizeof (tmp), "%s", tag);
-  if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+  if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
     memcpy (tmp, tag, MP4TAG_ID_LEN);
     tmp [MP4TAG_ID_LEN] = '\0';
   }
@@ -196,6 +206,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     const char *covername)
 {
   int   tagidx;
+  char  *ttag;
   int   dataidx = -1;
 
   tagidx = libmp4tag->tagcount;
@@ -224,16 +235,24 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     ++libmp4tag->tags [tagidx].dataidx;
   }
 
-  libmp4tag->tags [tagidx].tag = strdup (tag);
-  if (libmp4tag->tags [tagidx].tag == NULL) {
+  ttag = strdup (tag);
+  if (ttag == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
     return;
   }
 
-  if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
-// fprintf (stdout, "tag: %s\n", tag);
+  mp4tag_parse_tagname (ttag, &dataidx);
+  libmp4tag->tags [tagidx].tag = strdup (ttag);
+  free (ttag);
 
-    mp4tag_parse_tagname (tag, &dataidx);
+  if (libmp4tag->tags [tagidx].tag == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    return;
+  }
+  // fprintf (stdout, "add-tag: %s\n", tag);
+
+  if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+
     /* make sure the base tag is set properly */
     if (libmp4tag->tags [tagidx].tag != NULL) {
       free (libmp4tag->tags [tagidx].tag);
@@ -299,6 +318,11 @@ int
 mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     int idx, const char *data)
 {
+  char    *ttag;
+  int     offset;
+  int     dataidx;
+
+
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return MP4TAG_ERR_BAD_STRUCT;
   }
@@ -311,6 +335,19 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     return libmp4tag->mp4error;
   }
 
+  offset = 0;
+  dataidx = 0;
+  ttag = strdup (tag);
+  if (ttag == NULL) {
+    libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+    return libmp4tag->mp4error;
+  }
+
+  if (idx < 0 ||
+      memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+    offset = mp4tag_parse_tagname (ttag, &dataidx);
+  }
+
   if (idx >= 0 && idx < libmp4tag->tagcount) {
     mp4tag_t  *mp4tag;
 
@@ -319,14 +356,10 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
 
     mp4tag = &libmp4tag->tags [idx];
 
-    if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
-      int     offset;
-      int     dataidx;
-
+    if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
       /* handle cover tags separately */
       /* only cover filenames are allowed for set-tag-str */
 
-      offset = mp4tag_parse_tagname (tag, &dataidx);
       if (offset > 0) {
         if (mp4tag->covername != NULL) {
           free (mp4tag->covername);
@@ -337,14 +370,15 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
         }
       } else {
         libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
+        free (ttag);
         return libmp4tag->mp4error;
       }
     } else {
-
       /* existing: not a cover image tag */
 
       if (mp4tag->binary) {
         libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
+        free (ttag);
         return libmp4tag->mp4error;
       }
 
@@ -354,6 +388,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
       mp4tag->data = strdup (data);
       if (mp4tag->data == NULL) {
         libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
+        free (ttag);
         return libmp4tag->mp4error;
       } else {
         mp4tag->datalen = strlen (data);
@@ -372,11 +407,9 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     }
     if ((tagdef = mp4tag_check_tag (tag)) != NULL) {
       ok = true;
-      if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
-        int     dataidx;
-
+      if (memcmp (ttag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
         /* trying to set the cover name, but no associated cover tag was found */
-        if (mp4tag_parse_tagname (tag, &dataidx) > 0) {
+        if (offset > 0) {
           ok = false;
         }
       }
@@ -400,6 +433,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
             (strcmp (tag, MP4TAG_TRKN) == 0 || strcmp (tag, MP4TAG_DISK) == 0));
         if (! rc) {
           libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
+          free (ttag);
           return libmp4tag->mp4error;
         }
       }
@@ -414,6 +448,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     }
   }
 
+  free (ttag);
   return libmp4tag->mp4error;
 }
 
@@ -654,7 +689,7 @@ mp4tag_check_covr (const char *tag, const char *fn)
   char    *p;
   char    ext [10];
 
-  if (strncmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) != 0) {
+  if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) != 0) {
     return identtype;
   }
 

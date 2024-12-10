@@ -15,6 +15,9 @@
 extern "C" {
 #endif
 
+#define LIBMP4TAG_DEBUG_STREAM 0
+#define LIBMP4TAG_DEBUG 1
+
 /* idents that libmp4tag needs to descend into or use */
 #define MP4TAG_CO64   "co64"
 #define MP4TAG_FREE   "free"
@@ -43,7 +46,7 @@ extern "C" {
 #define MP4TAG_NAME   "name"
 
 #define MP4TAG_CUSTOM_DELIM ":"
-#define MP4TAG_COVER_DELIM ":"
+#define MP4TAG_INPUT_DELIM ":"
 #define MP4TAG_BACKUP_SUFFIX "-mp4tag.bak"
 #define MP4TAG_TEMP_SUFFIX "-mp4tag.tmp"
 
@@ -127,11 +130,14 @@ typedef struct libmp4tag {
   ssize_t   base_offsets [MP4TAG_BASE_OFF_MAX];
   /* for debugging, otherwise not needed */
   char      base_name [MP4TAG_BASE_OFF_MAX][MP4TAG_ID_DISP_LEN + 1];
+  uint32_t  taglist_orig_data_len;    /* for debugging */
   int       base_offset_count;
   ssize_t   taglist_base_offset;
   ssize_t   taglist_offset;
   uint32_t  taglist_orig_len;
   uint32_t  taglist_len;
+  uint32_t  interior_free_len;
+  uint32_t  exterior_free_len;
   int       parentidx;
   ssize_t   noilst_offset;
   ssize_t   after_ilst_offset;
@@ -195,8 +201,8 @@ void mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t de
 /* mp4tagutil.c */
 
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
-int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag);
-int  mp4tag_parse_tagname (const char *tag, int *dataidx);
+int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx);
+int  mp4tag_parse_tagname (char *tag, int *dataidx);
 mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);

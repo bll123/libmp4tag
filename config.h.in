@@ -6,13 +6,16 @@
 
 #cmakedefine01 _hdr_arpa_inet
 #cmakedefine01 _hdr_endian
+#cmakedefine01 _sys_resource
 #cmakedefine01 _hdr_windows
 #cmakedefine01 _hdr_winsock2
 
-#cmakedefine01 _lib_nanosleep
 #cmakedefine01 _lib_Sleep
 #cmakedefine01 _lib__wrename
 #cmakedefine01 _lib__wstat64
 #cmakedefine01 _lib__wunlink
+
+#cmakedefine01 _lib_nanosleep
+#cmakedefine01 _lib_setrlimit
 
 #endif /* INC_CONFIG_H */

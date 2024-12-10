@@ -40,6 +40,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   fi
 
   cp $f ${TFN}
+  chmod u+w ${TFN}
 
   # cover images
 

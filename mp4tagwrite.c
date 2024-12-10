@@ -17,7 +17,7 @@
 
 static int  mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen);
 static int  mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen);
-static int  mp4tag_write_freebox (FILE *ofh, uint32_t freelen);
+static int  mp4tag_write_freebox (libmp4tag_t *libmp4tag, FILE *ofh, uint32_t freelen);
 static void mp4tag_update_offsets (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta, size_t foffset);
 static void mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta, size_t foffset, uint32_t boffset, uint32_t blen, int offsetsz);
 static char * mp4tag_build_append (libmp4tag_t *libmp4tag, int idx, char *data, uint32_t *dlen);
@@ -114,8 +114,9 @@ static int
 mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     uint32_t datalen)
 {
-  int32_t   delta;
+  int32_t   delta;      /* change in 'ilst' size */
   int32_t   freelen;
+  int32_t   totdelta;   /* change in delta + freelen */
 
   if (libmp4tag->fh == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_NOT_OPEN;
@@ -135,20 +136,41 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
   }
 
   freelen = 0;
-  delta = (int32_t) datalen - (int32_t) libmp4tag->taglist_len;
-  if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
-    fprintf (stdout, "  taglist-len: %d\n", libmp4tag->taglist_len);
-    fprintf (stdout, "      datalen: %d\n", datalen);
-    fprintf (stdout, "        delta: %d\n", delta);
+  freelen += libmp4tag->interior_free_len;
+  freelen += libmp4tag->exterior_free_len;
+
+  /* calculate change in 'ilst' length */
+  delta = (int32_t) datalen - (int32_t) libmp4tag->taglist_orig_data_len;
+  freelen -= delta;
+  totdelta = delta;
+fprintf (stdout, "-- chg in ilst len: %d\n", delta);
+  if (libmp4tag->exterior_free_len != 0) {
+fprintf (stdout, "-- int-ext\n");
+    /* if the interior free box and the exterior free box are */
+    /* contiguous, the delta excludes the interior free box length */
+    /* the free box will be written at hierarchy level 0 */
+    delta -= libmp4tag->interior_free_len;
+    freelen += libmp4tag->interior_free_len;
+    totdelta = delta;
   }
 
-  if (delta < 0) {
-    /* note that this free-box is at the same hierarchy level as 'ilst' */
+  if (libmp4tag->exterior_free_len == 0) {
+fprintf (stdout, "-- no-exterior\n");
+    totdelta = libmp4tag->taglist_len - (datalen + freelen);
+  }
 
-    freelen = libmp4tag->taglist_len - datalen;
-    if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
-      fprintf (stdout, "      freelen: %d\n", freelen);
-    }
+  if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
+    fprintf (stdout, "      taglist-len: %d\n", libmp4tag->taglist_len);
+    fprintf (stdout, "          datalen: %d\n", datalen);
+    fprintf (stdout, "            delta: %d\n", delta);
+    fprintf (stdout, "          freelen: %d\n", freelen);
+    fprintf (stdout, "         totdelta: %d\n", totdelta);
+    fprintf (stdout, "interior-free-len: %d\n", libmp4tag->interior_free_len);
+    fprintf (stdout, "exterior-free-len: %d\n", libmp4tag->exterior_free_len);
+  }
+
+  if (freelen != 0 && ! libmp4tag->unlimited) {
+    /* the free-box is placed at hierarchy level 0 if possible */
 
     if (libmp4tag->unlimited && freelen < MP4TAG_FREE_SPACE_SZ) {
       /* this will also handle the situation where the 'ilst' shrinks */
@@ -158,7 +180,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     if (freelen > 8) {
       int     rc;
 
-      rc = mp4tag_write_freebox (libmp4tag->fh, freelen);
+      rc = mp4tag_write_freebox (libmp4tag, libmp4tag->fh, freelen);
       if (rc != MP4TAG_OK) {
         libmp4tag->mp4error = rc;
         return libmp4tag->mp4error;
@@ -166,6 +188,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     }
   } /* if a free box needs to be written */
 
+  /* re-write the taglist length */
   if (delta != 0) {
     uint32_t    t32;
     int         rc;
@@ -177,21 +200,25 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     }
 
     t32 = datalen + MP4TAG_BOXHEAD_SZ;
+    if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
+      fprintf (stdout, "update taglist len: %d\n", t32);
+    }
     t32 = htobe32 (t32);
     if (fwrite (&t32, sizeof (uint32_t), 1, libmp4tag->fh) != 1) {
       libmp4tag->mp4error = MP4TAG_ERR_FILE_WRITE_ERROR;
     }
   }
 
-  /* if the 'ilst' box + 'free' box has changed in size, */
+  /* if the 'ilst' box has changed in size, */
   /* the parent offsets must be updated */
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
-    fprintf (stdout, "taglist-orig-len: %d\n", libmp4tag->taglist_orig_len);
-    fprintf (stdout, "     taglist-len: %d\n", libmp4tag->taglist_len);
-    fprintf (stdout, "         datalen: %d\n", datalen);
-    fprintf (stdout, "           delta: %d\n", delta);
+    fprintf (stdout, " taglist-orig-len: %d\n", libmp4tag->taglist_orig_len);
+    fprintf (stdout, "      taglist-len: %d\n", libmp4tag->taglist_len);
+    fprintf (stdout, "          datalen: %d\n", datalen);
+    fprintf (stdout, "            delta: %d\n", delta);
   }
-  if (delta + freelen > 0) {
+
+  if (totdelta != 0) {
     mp4tag_update_parent_lengths (libmp4tag, libmp4tag->fh, delta);
   }
 
@@ -347,7 +374,8 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
     fprintf (stdout, "  free-box: %ld\n", (long) (MP4TAG_BOXHEAD_SZ + MP4TAG_FREE_SPACE_SZ));
   }
-  rc = mp4tag_write_freebox (ofh, MP4TAG_BOXHEAD_SZ + MP4TAG_FREE_SPACE_SZ);
+
+  rc = mp4tag_write_freebox (libmp4tag, ofh, MP4TAG_BOXHEAD_SZ + MP4TAG_FREE_SPACE_SZ);
 
   offset = libmp4tag->after_ilst_offset;
   wlen = libmp4tag->filesz - offset;
@@ -411,7 +439,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
 }
 
 static int
-mp4tag_write_freebox (FILE *ofh, uint32_t freelen)
+mp4tag_write_freebox (libmp4tag_t *libmp4tag, FILE *ofh, uint32_t freelen)
 {
   char        *buff;
   uint32_t    t32;
@@ -629,8 +657,9 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     tlen += customnamelen;
   }
 
-  if (libmp4tag->covercount > 0) {
-    /* if processing a second cover, do not allocate extra space for the */
+  if (mp4tag->dataidx > 0) {
+    /* if processing a second cover, or array item, */
+    /* do not allocate extra space for the */
     /* ident-len and ident */
     tlen -= MP4TAG_BOXHEAD_SZ;
   }
@@ -663,8 +692,9 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     libmp4tag->coverstart_offset = (int32_t) (dptr - data);
   }
 
-  /* if this is a second cover, the identifier has already been processed */
-  if (libmp4tag->covercount == 0) {
+  /* if this is a second cover, or an array, */
+  /* the identifier has already been processed */
+  if (mp4tag->dataidx == 0) {
     /* box length */
     dptr = mp4tag_append_len_32 (dptr, tlen);
 

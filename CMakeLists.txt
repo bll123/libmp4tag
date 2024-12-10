@@ -154,6 +154,7 @@ include (CheckFunctionExists)
 
 check_include_file (arpa/inet.h _hdr_arpa_inet)
 check_include_file (endian.h _hdr_endian)
+check_include_file (sys/resource.h _sys_resource)
 check_include_file (windows.h _hdr_windows)
 check_include_file (winsock2.h _hdr_winsock2)
 
@@ -164,6 +165,7 @@ check_function_exists (_wstat64 _lib__wstat64)
 check_function_exists (_wunlink _lib__wunlink)
 
 check_function_exists (nanosleep _lib_nanosleep)
+check_function_exists (setrlimit _lib_setrlimit)
 
 configure_file (config.h.in config.h)
 

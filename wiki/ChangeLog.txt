@@ -7,9 +7,11 @@
 **2.0.0 2024-12---**
 
 * Bug Fixes:
-    * Fix handling of arrays of strings.
-    * Fix track name atom when shortened.
+    * Fix track name box when track data shortened.
     * Fix duration when hint tracks are present.
+    * PENDING Fix issue with multiple free blocks present at different levels.
+    * PENDING Fix disk not being written correctly.
+    * PENDING Fix handling of arrays of strings.
 * Changes:
     * mp4tagpub_t: 'coveridx' has been renamed to 'dataidx'
 
