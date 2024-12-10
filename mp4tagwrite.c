@@ -169,7 +169,7 @@ fprintf (stdout, "-- no-exterior\n");
     fprintf (stdout, "exterior-free-len: %d\n", libmp4tag->exterior_free_len);
   }
 
-  if (freelen != 0 && ! libmp4tag->unlimited) {
+  if (freelen != 0) {
     /* the free-box is placed at hierarchy level 0 if possible */
 
     if (libmp4tag->unlimited && freelen < MP4TAG_FREE_SPACE_SZ) {
@@ -604,10 +604,10 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     return data;
   }
 
-fprintf (stdout, "name: %s type: %02x\n", mp4tag->tag, mp4tag->identtype);
-fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
-fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
-fflush (stdout);
+  // fprintf (stdout, "name: %s type: %02x\n", mp4tag->tag, mp4tag->identtype);
+  // fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
+  // fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
+  // fflush (stdout);
   savelen = mp4tag->internallen;
   if (mp4tag->identtype == MP4TAG_ID_STRING) {
     savelen = mp4tag->datalen;
@@ -779,8 +779,6 @@ fflush (stdout);
 
     if (strcmp (mp4tag->tag, MP4TAG_TRKN) == 0) {
       mp4tag_parse_pair (mp4tag->data, &ta, &tb);
-fprintf (stdout, "ta: %d tb: %d\n", ta, tb);
-fflush (stdout);
       dptr = mp4tag_append_len_32 (dptr, ta);
       dptr = mp4tag_append_len_16 (dptr, tb);
       /* trkn has an extra two bytes */

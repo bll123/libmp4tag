@@ -637,7 +637,6 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
 
         /* apparently there exist track number boxes */
         /* that are not the full size */
-fprintf (stderr, "-- %s: tlen: %d >= %ld\n", tnm, tlen, sizeof (uint32_t) + sizeof (uint16_t));
         if (strcmp (tnm, MP4TAG_TRKN) == 0 &&
             tlen >= sizeof (uint32_t) + sizeof (uint16_t)) {
           p += sizeof (uint32_t);
@@ -652,7 +651,6 @@ fprintf (stderr, "-- %s: tlen: %d >= %ld\n", tnm, tlen, sizeof (uint32_t) + size
         } else {
           snprintf (tmp, sizeof (tmp), "%" PRId32 "/%" PRId16, t32, t16);
         }
-fprintf (stderr, "-- trck: tlen: %d\n", tlen);
         mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING, type, tlen, NULL);
       } else if (tlen == sizeof (uint32_t)) {
         memcpy (&t32, p, sizeof (uint32_t));
