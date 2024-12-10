@@ -631,13 +631,15 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
         t16 = 0;
 
         /* pair of 32 bit and 16 bit numbers */
+        /* trkn has an extra 2 bytes of padding */
         memcpy (&t32, p, sizeof (uint32_t));
         t32 = be32toh (t32);
 
         /* apparently there exist track number boxes */
         /* that are not the full size */
+fprintf (stderr, "-- %s: tlen: %d >= %ld\n", tnm, tlen, sizeof (uint32_t) + sizeof (uint16_t));
         if (strcmp (tnm, MP4TAG_TRKN) == 0 &&
-            tlen >= sizeof (uint32_t) + sizeof (uint32_t)) {
+            tlen >= sizeof (uint32_t) + sizeof (uint16_t)) {
           p += sizeof (uint32_t);
           memcpy (&t16, p, sizeof (uint16_t));
           t16 = be16toh (t16);
@@ -650,13 +652,14 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
         } else {
           snprintf (tmp, sizeof (tmp), "%" PRId32 "/%" PRId16, t32, t16);
         }
+fprintf (stderr, "-- trck: tlen: %d\n", tlen);
         mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING, type, tlen, NULL);
-      } else if (tlen == 4) {
+      } else if (tlen == sizeof (uint32_t)) {
         memcpy (&t32, p, sizeof (uint32_t));
         t32 = be32toh (t32);
         snprintf (tmp, sizeof (tmp), "%" PRId32, t32);
         mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING, type, tlen, NULL);
-      } else if (tlen == 2) {
+      } else if (tlen == sizeof (uint16_t)) {
         memcpy (&t16, p, sizeof (uint16_t));
         t16 = be16toh (t16);
 
@@ -675,12 +678,12 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
           snprintf (tmp, sizeof (tmp), "%" PRId16, t16);
           mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING, type, tlen, NULL);
         }
-      } else if (tlen == 8) {
+      } else if (tlen == sizeof (uint64_t)) {
         memcpy (&t64, p, sizeof (uint64_t));
         t64 = be64toh (t64);
         snprintf (tmp, sizeof (tmp), "%" PRId64, t64);
         mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING, type, tlen, NULL);
-      } else if (tlen == 1) {
+      } else if (tlen == sizeof (uint8_t)) {
         memcpy (&t8, p, sizeof (uint8_t));
         snprintf (tmp, sizeof (tmp), "%" PRId8, t8);
         mp4tag_add_tag (libmp4tag, tnm, tmp, MP4TAG_STRING, type, tlen, NULL);

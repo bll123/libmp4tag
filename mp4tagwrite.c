@@ -604,12 +604,18 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     return data;
   }
 
-// fprintf (stdout, "name: %s type: %02x\n", mp4tag->tag, mp4tag->identtype);
-// fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
-// fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
+fprintf (stdout, "name: %s type: %02x\n", mp4tag->tag, mp4tag->identtype);
+fprintf (stdout, " int-len: %d\n", mp4tag->internallen);
+fprintf (stdout, " data-len: %d\n", mp4tag->datalen);
+fflush (stdout);
   savelen = mp4tag->internallen;
   if (mp4tag->identtype == MP4TAG_ID_STRING) {
     savelen = mp4tag->datalen;
+  }
+  if (strcmp (mp4tag->tag, MP4TAG_TRKN) == 0) {
+    /* track number may have been a short variant, and the */
+    /* internal length is incorrect in that case. */
+    savelen = sizeof (uint32_t) + sizeof (uint16_t) * 2;
   }
 
   /* boxhead: idlen + ident */
@@ -754,16 +760,16 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
     if (mp4tag->data != NULL) {
       t64 = atoll (mp4tag->data);
     }
-    if (mp4tag->internallen == 1) {
+    if (mp4tag->internallen == sizeof (uint8_t)) {
       dptr = mp4tag_append_len_8 (dptr, t64);
     }
-    if (mp4tag->internallen == 2) {
+    if (mp4tag->internallen == sizeof (uint16_t)) {
       dptr = mp4tag_append_len_16 (dptr, t64);
     }
-    if (mp4tag->internallen == 4) {
+    if (mp4tag->internallen == sizeof (uint32_t)) {
       dptr = mp4tag_append_len_32 (dptr, t64);
     }
-    if (mp4tag->internallen == 8) {
+    if (mp4tag->internallen == sizeof (uint64_t)) {
       dptr = mp4tag_append_len_64 (dptr, t64);
     }
   }
@@ -773,6 +779,8 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
     if (strcmp (mp4tag->tag, MP4TAG_TRKN) == 0) {
       mp4tag_parse_pair (mp4tag->data, &ta, &tb);
+fprintf (stdout, "ta: %d tb: %d\n", ta, tb);
+fflush (stdout);
       dptr = mp4tag_append_len_32 (dptr, ta);
       dptr = mp4tag_append_len_16 (dptr, tb);
       /* trkn has an extra two bytes */

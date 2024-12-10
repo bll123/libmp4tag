@@ -250,6 +250,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     return;
   }
   // fprintf (stdout, "add-tag: %s\n", tag);
+fprintf (stdout, "add-tag: %s id:%d %ld\n", tag, origflag, origlen);
 
   if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
 
