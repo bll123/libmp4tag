@@ -89,6 +89,23 @@ Returns: A pointer to an allocated libmp4tag_t structure.  This
 pointer must be freed in a call to __mp4tag_free__.
 
 -------------
+##### mp4tag_set_option
+
+~~~
+#include "libmp4tag.h"
+
+void mp4tag_set_option (libmp4tag_t *libmp4tag, int option)
+~~~
+
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+
+__option__ : The value is 'or'd together with existing options.
+
+Options:
+
+MP4TAG_OPTION_KEEP_BACKUP : Keep the original file on a rewrite.
+
+-------------
 ##### mp4tag_parse
 
 ~~~

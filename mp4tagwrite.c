@@ -150,7 +150,6 @@ fprintf (stdout, "-- int-ext\n");
     /* contiguous, the delta excludes the interior free box length */
     /* the free box will be written at hierarchy level 0 */
     delta -= libmp4tag->interior_free_len;
-    freelen += libmp4tag->interior_free_len;
     totdelta = delta;
   }
 
@@ -423,7 +422,9 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
 
     mp4tag_file_move (libmp4tag->fn, tfn);
     mp4tag_file_move (ofn, libmp4tag->fn);
-    mp4tag_file_delete (tfn);
+    if ((libmp4tag->options & MP4TAG_OPTION_KEEP_BACKUP) != MP4TAG_OPTION_KEEP_BACKUP) {
+      mp4tag_file_delete (tfn);
+    }
 
     /* and re-open the file */
     libmp4tag->fh = mp4tag_fopen (libmp4tag->fn, "rb+");

@@ -770,7 +770,7 @@ mp4tag_set_option (libmp4tag_t *libmp4tag, int option)
     return;
   }
 
-  libmp4tag->options = option;
+  libmp4tag->options |= option;
 }
 
 

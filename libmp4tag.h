@@ -69,7 +69,8 @@ enum {
 };
 
 enum {
-  MP4TAG_OPTION_NONE      = 0x0000,
+  MP4TAG_OPTION_NONE          = 0,
+  MP4TAG_OPTION_KEEP_BACKUP   = (1 << 0),
 };
 
 enum {
