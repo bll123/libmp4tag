@@ -123,6 +123,27 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     return libmp4tag->mp4error;
   }
 
+  if ((libmp4tag->options & MP4TAG_OPTION_KEEP_BACKUP) == MP4TAG_OPTION_KEEP_BACKUP) {
+    char    ofn [2048];
+    FILE    *ofh = NULL;
+    int     rc;
+
+    snprintf (ofn, sizeof (ofn), "%s%s", libmp4tag->fn, MP4TAG_BACKUP_SUFFIX);
+    ofh = mp4tag_fopen (ofn, "wb+");
+    if (ofh == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_NOT_OPEN;
+      return libmp4tag->mp4error;
+    }
+
+    rc = mp4tag_copy_file_data (libmp4tag->fh, ofh, 0, libmp4tag->filesz);
+    if (rc != MP4TAG_OK) {
+      libmp4tag->mp4error = rc;
+      return libmp4tag->mp4error;
+    }
+
+    fclose (ofh);
+  }
+
   if (fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) != 0) {
     libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
     return libmp4tag->mp4error;

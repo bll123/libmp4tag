@@ -63,6 +63,7 @@ main (int argc, char *argv [])
     { "binary",         no_argument,        NULL,   'b' },
     { "clean",          no_argument,        NULL,   'c' },
     { "copyfrom",       required_argument,  NULL,   'f' },
+    { "backup",         no_argument,        NULL,   'k' },
     { "copyto",         required_argument,  NULL,   't' },
     { "debug",          required_argument,  NULL,   'x' },
     { "display",        required_argument,  NULL,   'd' },
@@ -94,7 +95,7 @@ main (int argc, char *argv [])
   *tagname = '\0';
 
   /* do not specify the 'c' clean short argument */
-  while ((c = getopt_long_only (argc, argcopy.utf8argv, "d:D:f:Ft:ux:",
+  while ((c = getopt_long_only (argc, argcopy.utf8argv, "d:D:f:kFt:ux:",
       mp4tagcli_options, &option_index)) != -1) {
     switch (c) {
       case 'b': {
@@ -129,6 +130,10 @@ main (int argc, char *argv [])
           targ = argcopy.utf8argv [optind - 1];
           infname = targ;
         }
+        break;
+      }
+      case 'k': {
+        options |= MP4TAG_OPTION_KEEP_BACKUP;
         break;
       }
       case 't': {

@@ -103,7 +103,10 @@ __option__ : The value is 'or'd together with existing options.
 
 Options:
 
-MP4TAG_OPTION_KEEP_BACKUP : Keep the original file on a rewrite.
+MP4TAG_OPTION_KEEP_BACKUP :
+
+Make a copy of the original file.  The backup has '-mp4tag.bak'
+appended.
 
 -------------
 ##### mp4tag_parse
