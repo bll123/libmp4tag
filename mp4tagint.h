@@ -75,8 +75,9 @@ enum {
   MP4TAG_PRI_NOWRITE = -1,
   MP4TAG_PRI_MAX = 20,
   MP4TAG_BASE_OFF_MAX = 15,
-  MP4TAG_COPY_SIZE = 5 * 1024 * 1024,
-  MP4TAG_FREE_SPACE_SZ = 512,
+  /* the copy size seems to make little difference in speed */
+  MP4TAG_COPY_SIZE = 5 * 1024 * 1024,       // 5 mibibytes
+  MP4TAG_FREE_SPACE_SZ = 2048,
   MP4TAG_NO_FILESZ = -3,
   MP4TAG_READ_OK = 1,
   MP4TAG_READ_NONE = 0,

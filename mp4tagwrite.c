@@ -161,35 +161,54 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
   freelen += libmp4tag->exterior_free_len;
 
   /* calculate change in 'ilst' length */
+  /* want a signed value */
   delta = (int32_t) datalen - (int32_t) libmp4tag->taglist_orig_data_len;
-  freelen -= delta;
-  totdelta = delta;
+fprintf (stdout, "-- datalen: %d orig-data-len %d\n", datalen, libmp4tag->taglist_orig_data_len);
 fprintf (stdout, "-- chg in ilst len: %d\n", delta);
+  if (freelen > 0) {
+    /* only if there is free space available */
+    freelen -= delta;
+  }
+  totdelta = delta;
   if (libmp4tag->exterior_free_len != 0) {
 fprintf (stdout, "-- int-ext\n");
     /* if the interior free box and the exterior free box are */
     /* contiguous, the delta excludes the interior free box length */
     /* the free box will be written at hierarchy level 0 */
     delta -= libmp4tag->interior_free_len;
+fprintf (stdout, "-- new delta (have ext): %d\n", delta);
     totdelta = delta;
   }
 
+  /* if there is only an interior free box */
+  /* the total delta change for the parent boxes */
+  /* must include the free box */
   if (libmp4tag->exterior_free_len == 0) {
 fprintf (stdout, "-- no-exterior\n");
     totdelta = libmp4tag->taglist_len - (datalen + freelen);
   }
 
   if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
+    fprintf (stdout, " taglist-orig-len: %d\n", libmp4tag->taglist_orig_len);
     fprintf (stdout, "      taglist-len: %d\n", libmp4tag->taglist_len);
     fprintf (stdout, "          datalen: %d\n", datalen);
     fprintf (stdout, "            delta: %d\n", delta);
-    fprintf (stdout, "          freelen: %d\n", freelen);
     fprintf (stdout, "         totdelta: %d\n", totdelta);
     fprintf (stdout, "interior-free-len: %d\n", libmp4tag->interior_free_len);
     fprintf (stdout, "exterior-free-len: %d\n", libmp4tag->exterior_free_len);
+    fprintf (stdout, "          freelen: %d\n", freelen);
   }
 
-  if (freelen != 0) {
+  /* there are various cases possible */
+  /* in these three cases, the interior and exterior free spaces */
+  /* will be merged if there is no intervening data */
+  /*   int > 0, ext > 0, unlimited = 0 */
+  /*   int > 0, ext = 0, unlimited = 0 */
+  /*   int = 0, ext > 0, unlimited = 0 */
+  /* unlimited is true */
+  /*   there may be interior/exterior space that can be used */
+
+  if (freelen != 0 || libmp4tag->unlimited) {
     /* the free-box is placed at hierarchy level 0 if possible */
 
     if (libmp4tag->unlimited && freelen < MP4TAG_FREE_SPACE_SZ) {
@@ -231,13 +250,7 @@ fprintf (stdout, "-- no-exterior\n");
 
   /* if the 'ilst' box has changed in size, */
   /* the parent offsets must be updated */
-  if (libmp4tag->dbgflags & MP4TAG_DBG_WRITE) {
-    fprintf (stdout, " taglist-orig-len: %d\n", libmp4tag->taglist_orig_len);
-    fprintf (stdout, "      taglist-len: %d\n", libmp4tag->taglist_len);
-    fprintf (stdout, "          datalen: %d\n", datalen);
-    fprintf (stdout, "            delta: %d\n", delta);
-  }
-
+  /* totdelta includes any free box */
   if (totdelta != 0) {
     mp4tag_update_parent_lengths (libmp4tag, libmp4tag->fh, delta);
   }
@@ -941,34 +954,38 @@ mp4tag_copy_file_data (FILE *ifh, FILE *ofh, size_t offset, size_t len)
   size_t  totwrite = 0;
   int     rc = MP4TAG_OK;
 
-  if (fseek (ifh, offset, SEEK_SET) == 0) {
-    data = malloc (MP4TAG_COPY_SIZE);
-    if (data == NULL) {
-      rc = MP4TAG_ERR_OUT_OF_MEMORY;
+  if (fseek (ifh, offset, SEEK_SET) != 0) {
+    return MP4TAG_ERR_FILE_SEEK_ERROR;
+  }
+
+  data = malloc (MP4TAG_COPY_SIZE);
+  if (data == NULL) {
+    rc = MP4TAG_ERR_OUT_OF_MEMORY;
+    return rc;
+  }
+
+  while (totwrite < len) {
+    rlen = MP4TAG_COPY_SIZE;
+    if (bremain < rlen) {
+      rlen = bremain;
+    }
+    bread = fread (data, 1, rlen, ifh);
+    if (bread <= 0) {
+      break;
+    }
+    bwrite = fwrite (data, 1, bread, ofh);
+    if (bwrite != bread) {
+      rc = MP4TAG_ERR_FILE_WRITE_ERROR;
       return rc;
     }
-    while (totwrite < len) {
-      rlen = MP4TAG_COPY_SIZE;
-      if (bremain < rlen) {
-        rlen = bremain;
-      }
-      bread = fread (data, 1, rlen, ifh);
-      if (bread <= 0) {
-        break;
-      }
-      bwrite = fwrite (data, 1, bread, ofh);
-      if (bwrite != bread) {
-        rc = MP4TAG_ERR_FILE_WRITE_ERROR;
-        return rc;
-      }
-      totwrite += bwrite;
-      bremain -= bwrite;
-    }
-    if (totwrite != len) {
-      rc = MP4TAG_ERR_FILE_WRITE_ERROR;
-    }
-    free (data);
+    totwrite += bwrite;
+    bremain -= bwrite;
   }
+  if (totwrite != len) {
+    rc = MP4TAG_ERR_FILE_WRITE_ERROR;
+  }
+
+  free (data);
 
   return rc;
 }

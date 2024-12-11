@@ -251,7 +251,8 @@ fprintf (stdout, "-- level-%d free\n", level);
 fprintf (stdout, "-- level-%d not-free\n", level);
         /* if this spot was reached, there is some other */
         /* box after the 'ilst' or 'free' boxes */
-        /* unlimited will be false */
+        /* set check-for-free to false so that the unlimited flag */
+        /* will not be set */
         libmp4tag->checkforfree = false;
         if (! (libmp4tag->dbgflags & MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
           libmp4tag->parsedone = true;
@@ -284,6 +285,10 @@ fprintf (stdout, "-- level-%d not-free\n", level);
       mp4tag_parse_file (libmp4tag, bd.boxlen - skiplen, level + 1);
       /* when descending, the box's data has already been skipped or read */
       skiplen = 0;
+    }
+
+    if (libmp4tag->taglist_orig_data_len == 0) {
+      libmp4tag->taglist_orig_data_len = libmp4tag->taglist_len;
     }
 
     /* if descended into the hierarchy, now done */
