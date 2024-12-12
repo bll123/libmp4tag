@@ -71,6 +71,21 @@ __filename__ : The old filename.
 __nfn__ : The new filename.
 
 Returns: 0 on success.
+-------------
+##### mp4tag_copy_file_times
+
+Copies the file times (modification time, et. al) from one open file
+to another.
+
+~~~
+void mp4tag_copy_file_times (FILE *ifh, FILE *ofh)
+~~~
+
+__ifh__ : FILE pointer to open source file.
+
+__ofh__ : FILE pointer to open target file.
+
+-------------
 ##### mp4tag_towide
 
 Converts a utf8 string to Windows unicode.
@@ -84,6 +99,7 @@ __buff__ : utf8 string
 Returns: pointer to wchar_t
 
 The caller takes ownership of the returned string and must free it.
+-------------
 ##### mp4tag_fromwide
 
 Converts a Windows unicode string to utf8.

@@ -148,6 +148,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
       return libmp4tag->mp4error;
     }
 
+    mp4tag_copy_file_times (libmp4tag->fh, ofh);
     fclose (ofh);
   }
 
@@ -170,26 +171,25 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
   /* calculate change in 'ilst' length */
   /* want a signed value */
   delta = (int32_t) datalen - (int32_t) libmp4tag->taglist_orig_data_len;
-fprintf (stdout, "-- datalen: %d orig-data-len %d\n", datalen, libmp4tag->taglist_orig_data_len);
-fprintf (stdout, "-- chg in ilst len: %d\n", delta);
+  if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
+    fprintf (stdout, "-- datalen: %d orig-data-len %d\n", datalen, libmp4tag->taglist_orig_data_len);
+    fprintf (stdout, "-- chg in ilst len: %d\n", delta);
+  }
   if (freelen > 0) {
     /* only if there is free space available */
     freelen -= delta;
   }
   totdelta = delta;
   if (libmp4tag->exterior_free_len != 0 || libmp4tag->unlimited) {
-fprintf (stdout, "-- int-ext\n");
     /* if the interior free box and the exterior free box are */
     /* contiguous, the delta excludes the interior free box length */
     /* the free box will be written at hierarchy level 0 */
     /* also do this if the unlimited flag is set */
     delta -= libmp4tag->interior_free_len;
-fprintf (stdout, "-- new delta (%d/%d): %d\n", libmp4tag->exterior_free_len, libmp4tag->unlimited, delta);
     totdelta = delta;
   }
 
   if (libmp4tag->exterior_free_len == 0 && ! libmp4tag->unlimited) {
-fprintf (stdout, "-- no-exterior\n");
     /* if there is only an interior free box */
     /* the total delta change for the parent boxes */
     /* must include the free box */
@@ -720,7 +720,7 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
   /* ident */
   if (memcmp (mp4tag->tag, PREFIX_STR, strlen (PREFIX_STR)) == 0) {
-    tnm [0] = MP4TAG_PREFIX_CHAR;
+    tnm [0] = (char) MP4TAG_PREFIX_CHAR;
     memcpy (tnm + 1, mp4tag->tag + strlen (PREFIX_STR), 3);
     tnm [MP4TAG_ID_LEN] = '\0';
   } else {
@@ -742,7 +742,6 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   /* save off the last name processed so that the datacount */
   /* can be reset when the name changes */
   if (strcmp (tempnm, libmp4tag->lastbox_nm) != 0) {
-fprintf (stdout, "-- reset datacount\n");
     libmp4tag->datacount = 0;
     libmp4tag->lastbox_offset = -1;
     strcpy (libmp4tag->lastbox_nm, tempnm);
@@ -773,7 +772,6 @@ fprintf (stdout, "-- reset datacount\n");
     tlen += MP4TAG_BOXHEAD_SZ + strlen (mp4tag->covername);
   }
 
-fprintf (stdout, "add-tot-datalen: %d\n", tlen);
   data = realloc (data, *dlen + tlen);
   if (data == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
@@ -781,7 +779,6 @@ fprintf (stdout, "add-tot-datalen: %d\n", tlen);
   }
   dptr = data + *dlen;
   *dlen += tlen;
-fprintf (stdout, "tot-datalen: %d\n", *dlen);
 
   if (mp4tag->covername != NULL) {
     /* back out the cover name size change */
@@ -795,7 +792,6 @@ fprintf (stdout, "tot-datalen: %d\n", *dlen);
     /* it is needed for multiple covers/cover names and */
     /* for arrays of strings */
     libmp4tag->lastbox_offset = (int32_t) (dptr - data);
-fprintf (stdout, "  -- save lastbox offset %d\n", libmp4tag->lastbox_offset);
   }
 
   /* if this is a second cover, or an array, */
@@ -833,7 +829,6 @@ fprintf (stdout, "  -- save lastbox offset %d\n", libmp4tag->lastbox_offset);
     /* data length does not include ident len and ident */
     tlen -= MP4TAG_BOXHEAD_SZ;
   }
-fprintf (stdout, "datalen: %d\n", tlen);
 
   dptr = mp4tag_append_len_32 (dptr, tlen);
   dptr = mp4tag_append_data (dptr, boxids [MP4TAG_DATA], MP4TAG_ID_LEN);

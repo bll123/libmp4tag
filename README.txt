@@ -133,6 +133,11 @@ Using the mp4tagcli executable:
     # image at that index. e.g. setting covr:1 in a file with no cover
     # images will place the cover at index 0.
 
+  Arrays:
+    mp4tagcli filename.m4a wrt=Composer-1
+    mp4tagcli filename.m4a wrt:1=Composer-2
+    mp4tagcli filename.m4a wrt:2=Composer-3
+
   Deleting a tag:
     mp4tagcli filename.m4a nam=
 

@@ -177,6 +177,52 @@ mp4tag_file_move (const char *fname, const char *nfn)
   return rc;
 }
 
+void
+mp4tag_copy_file_times (FILE *ifh, FILE *ofh)
+{
+  if (ifh == NULL || ofh == NULL) {
+    return;
+  }
+
+#if _lib_GetFileTime
+  {
+    HANDLE      ih;
+    HANDLE      oh;
+    FILETIME    ctime;
+    FILETIME    atime;
+    FILETIME    wtime;
+
+    ih = (HANDLE) _get_osfhandle (_fileno (ifh));
+    oh = (HANDLE) _get_osfhandle (_fileno (ofh));
+    /* the windows api documentation states that a non-zero return value */
+    /* indicates success */
+    if (GetFileTime (ih, &ctime, &atime, &wtime) != 0) {
+      SetFileTime (oh, &ctime, &atime, &wtime);
+    }
+  }
+#else
+  {
+    int rc;
+    struct stat statbuf;
+    struct timespec ts [2];
+
+    rc = fstat (fileno (ifh), &statbuf);
+    if (rc == 0) {
+      memset (ts, 0, sizeof (ts));
+#if _mem_struct_stat_st_atim
+      memcpy (&ts [0], &statbuf.st_atim, sizeof (struct timespec));
+      memcpy (&ts [1], &statbuf.st_mtim, sizeof (struct timespec));
+#endif
+#if _mem_struct_stat_st_atimespec
+      memcpy (&ts [0], &statbuf.st_atimespec, sizeof (struct timespec));
+      memcpy (&ts [1], &statbuf.st_mtimespec, sizeof (struct timespec));
+#endif
+      futimens (fileno (ofh), ts);
+    }
+  }
+#endif
+}
+
 #ifdef _WIN32
 
 wchar_t *

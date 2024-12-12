@@ -137,8 +137,8 @@ if (NOT WIN32)
     # 10.14 = Mojave, 10.15 = Catalina
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
     # 15 = Sequoia
-    add_compile_options (-mmacosx-version-min=10.12)
-    add_link_options (-mmacosx-version-min=10.12)
+    add_compile_options (-mmacosx-version-min=10.13)
+    add_link_options (-mmacosx-version-min=10.13)
     # universal binary
     set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
   endif()
@@ -151,6 +151,7 @@ endif()
 
 include (CheckIncludeFile)
 include (CheckFunctionExists)
+include (CheckStructHasMember)
 
 check_include_file (arpa/inet.h _hdr_arpa_inet)
 check_include_file (endian.h _hdr_endian)
@@ -158,6 +159,7 @@ check_include_file (sys/resource.h _sys_resource)
 check_include_file (windows.h _hdr_windows)
 check_include_file (winsock2.h _hdr_winsock2)
 
+check_function_exists (GetFileTime _lib_GetFileTime)
 check_function_exists (Sleep _lib_Sleep)
 check_function_exists (CommandLineToArgvW _lib_CommandLinetoArgvW)
 check_function_exists (_wrename _lib__wrename)
@@ -166,6 +168,11 @@ check_function_exists (_wunlink _lib__wunlink)
 
 check_function_exists (nanosleep _lib_nanosleep)
 check_function_exists (setrlimit _lib_setrlimit)
+
+check_struct_has_member ("struct stat"
+    st_atim sys/stat.h _mem_struct_stat_st_atim)
+check_struct_has_member ("struct stat"
+    st_atimespec sys/stat.h _mem_struct_stat_st_atimespec)
 
 configure_file (config.h.in config.h)
 

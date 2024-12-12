@@ -10,6 +10,7 @@
 #cmakedefine01 _hdr_windows
 #cmakedefine01 _hdr_winsock2
 
+#cmakedefine01 _lib_GetFileTime
 #cmakedefine01 _lib_Sleep
 #cmakedefine01 _lib__wrename
 #cmakedefine01 _lib__wstat64
@@ -17,5 +18,8 @@
 
 #cmakedefine01 _lib_nanosleep
 #cmakedefine01 _lib_setrlimit
+
+#cmakedefine01 _mem_struct_stat_st_atim
+#cmakedefine01 _mem_struct_stat_st_atimespec
 
 #endif /* INC_CONFIG_H */

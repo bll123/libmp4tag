@@ -117,9 +117,10 @@ ssize_t mp4tag_file_size (const char *fn);
 char    * mp4tag_read_file (const char *fn, size_t *sz, int *mp4error);
 int     mp4tag_file_delete (const char *fname);
 int     mp4tag_file_move (const char *fname, const char *nfn);
+void    mp4tag_copy_file_times (FILE *ifh, FILE *ofh);
 #ifdef _WIN32
 wchar_t * mp4tag_towide (const char *buff);
-char * mp4tag_fromwide (const wchar_t *buff);
+char    * mp4tag_fromwide (const wchar_t *buff);
 #endif
 
 /* versioning */
