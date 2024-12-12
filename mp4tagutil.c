@@ -20,6 +20,8 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 
+const char *MP4TAG_INPUT_DELIM = ":";
+
 static int  mp4tag_check_covr (const char *tag, const char *fn);
 
 void
@@ -58,7 +60,7 @@ mp4tag_parse_tagname (char *tag, int *pdataidx)
   }
 
   p = tag;
-  if (memcmp (tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+  if (memcmp (tag, boxids [MP4TAG_CUSTOM], MP4TAG_ID_LEN) == 0) {
     /* a custom tag is formatted as ----:app-name:tag-name */
     p = strstr (tag, MP4TAG_INPUT_DELIM);
     if (p == NULL) {
@@ -78,7 +80,7 @@ mp4tag_parse_tagname (char *tag, int *pdataidx)
       dataidx = atoi (p);
 
       p = strtok_r (NULL, MP4TAG_INPUT_DELIM, &tokstr);
-      if (p != NULL && strcmp (p, MP4TAG_NAME) == 0) {
+      if (p != NULL && strcmp (p, boxids [MP4TAG_NAME]) == 0) {
         offset = (int) (p - tag);
       }
     }
@@ -139,7 +141,7 @@ mp4tag_check_tag (const char *tag)
   /* be careful with copying here */
 
   snprintf (tmp, sizeof (tmp), "%s", tag);
-  if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+  if (memcmp (tag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
     memcpy (tmp, tag, MP4TAG_ID_LEN);
     tmp [MP4TAG_ID_LEN] = '\0';
   }
@@ -251,13 +253,13 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
   }
   // fprintf (stdout, "add-tag: %s\n", tag);
 
-  if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+  if (memcmp (tag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
 
     /* make sure the base tag is set properly */
     if (libmp4tag->tags [tagidx].tag != NULL) {
       free (libmp4tag->tags [tagidx].tag);
     }
-    libmp4tag->tags [tagidx].tag = strdup (MP4TAG_COVR);
+    libmp4tag->tags [tagidx].tag = strdup (boxids [MP4TAG_COVR]);
     if (libmp4tag->tags [tagidx].tag == NULL) {
       libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
       return;
@@ -272,8 +274,8 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     }
 
     if (dataidx == -1) {
-      libmp4tag->tags [tagidx].dataidx = libmp4tag->covercount;
-      libmp4tag->covercount += 1;
+      libmp4tag->tags [tagidx].dataidx = libmp4tag->datacount;
+      libmp4tag->datacount += 1;
     } else {
       libmp4tag->tags [tagidx].dataidx = dataidx;
     }
@@ -344,7 +346,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
   }
 
   if (idx < 0 ||
-      memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+      memcmp (tag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
     offset = mp4tag_parse_tagname (ttag, &dataidx);
   }
 
@@ -356,7 +358,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
 
     mp4tag = &libmp4tag->tags [idx];
 
-    if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+    if (memcmp (tag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
       /* handle cover tags separately */
       /* only cover filenames are allowed for set-tag-str */
 
@@ -402,12 +404,12 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     /* in this case, check to make sure it is in the valid list. */
 
     /* custom tags are always valid */
-    if (memcmp (tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+    if (memcmp (tag, boxids [MP4TAG_CUSTOM], MP4TAG_ID_LEN) == 0) {
       ok = true;
     }
     if ((tagdef = mp4tag_check_tag (tag)) != NULL) {
       ok = true;
-      if (memcmp (ttag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+      if (memcmp (ttag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
         /* trying to set the cover name, but no associated cover tag was found */
         if (offset > 0) {
           ok = false;
@@ -430,7 +432,8 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
         rc = tflag == MP4TAG_ID_STRING ||
             tflag == MP4TAG_ID_NUM ||
             (tflag == MP4TAG_ID_DATA &&
-            (strcmp (tag, MP4TAG_TRKN) == 0 || strcmp (tag, MP4TAG_DISK) == 0));
+            (strcmp (tag, boxids [MP4TAG_TRKN]) == 0 ||
+            strcmp (tag, boxids [MP4TAG_DISK]) == 0));
         if (! rc) {
           libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
           free (ttag);
@@ -502,7 +505,7 @@ mp4tag_set_tag_binary (libmp4tag_t *libmp4tag,
     /* check to make sure this tag exists in the valid list */
 
     /* custom tags are always valid */
-    if (memcmp (tag, MP4TAG_CUSTOM, MP4TAG_ID_LEN) == 0) {
+    if (memcmp (tag, boxids [MP4TAG_CUSTOM], MP4TAG_ID_LEN) == 0) {
       ok = true;
     } else {
       tagdef = mp4tag_check_tag (tag);
@@ -520,8 +523,8 @@ mp4tag_set_tag_binary (libmp4tag_t *libmp4tag,
       }
     }
 
-    if (strcmp (tag, MP4TAG_TRKN) == 0 ||
-        strcmp (tag, MP4TAG_DISK) == 0) {
+    if (strcmp (tag, boxids [MP4TAG_TRKN]) == 0 ||
+        strcmp (tag, boxids [MP4TAG_DISK]) == 0) {
       libmp4tag->mp4error = MP4TAG_ERR_MISMATCH;
       ok = false;
     }
@@ -679,6 +682,15 @@ mp4tag_sleep (uint32_t ms)
 #endif
 }
 
+bool
+mp4tag_chk_dbg (libmp4tag_t *libmp4tag, int dbg)
+{
+  bool    rc;
+
+  rc = (libmp4tag->dbgflags & dbg) == dbg;
+  return rc;
+}
+
 /* internal routines */
 
 /* returns MP4TAG_ID_DATA if not a 'covr' tag */
@@ -689,7 +701,7 @@ mp4tag_check_covr (const char *tag, const char *fn)
   char    *p;
   char    ext [10];
 
-  if (memcmp (tag, MP4TAG_COVR, MP4TAG_ID_LEN) != 0) {
+  if (memcmp (tag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) != 0) {
     return identtype;
   }
 

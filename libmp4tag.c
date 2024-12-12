@@ -24,6 +24,8 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 
+const char *PREFIX_STR = "\xc2\xa9";   /* copyright symbol */
+
 static const char *mp4tagerrmsgs [] = {
   [MP4TAG_OK] = "ok",
   [MP4TAG_FINISH] = "finish",
@@ -398,7 +400,7 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
     binary = mp4tag->binary;
   }
 
-  if (memcmp (ttag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+  if (memcmp (ttag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
     binary = true;
     if (offset > 0) {
       /* cover name */
@@ -481,7 +483,7 @@ mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag,
     binary = true;
   }
 
-  if (memcmp (ttag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+  if (memcmp (ttag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
     binary = true;
     if (offset > 0) {
       binary = false;
@@ -537,7 +539,7 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 // fprintf (stderr, "del-tag %s %s %d %d\n", tag, ttag, dataidx, offset);
   idx = mp4tag_find_tag (libmp4tag, ttag, dataidx);
   if (idx >= 0 && idx < libmp4tag->tagcount) {
-    if (memcmp (ttag, MP4TAG_COVR, MP4TAG_ID_LEN) == 0) {
+    if (memcmp (ttag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
       if (offset > 0) {
         mp4tag_t    *mp4tag;
 
@@ -819,8 +821,8 @@ mp4tag_alloc (int *mp4error)
   libmp4tag->stco_len = 0;
   libmp4tag->co64_offset = 0;
   libmp4tag->co64_len = 0;
-  libmp4tag->covercount = 0;
-  libmp4tag->coverstart_offset = -1;
+  libmp4tag->datacount = 0;
+  libmp4tag->lastbox_offset = -1;
   libmp4tag->tagcount = 0;
   libmp4tag->tagalloccount = 0;
   libmp4tag->iterator = 0;
@@ -829,7 +831,7 @@ mp4tag_alloc (int *mp4error)
   libmp4tag->options = MP4TAG_OPTION_NONE;
   libmp4tag->mp7meta = false;
   libmp4tag->unlimited = false;
-  libmp4tag->covercount = 0;
+  libmp4tag->datacount = 0;
   libmp4tag->parsed = false;
   libmp4tag->processdata = false;
   libmp4tag->checkforfree = false;

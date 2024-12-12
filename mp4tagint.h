@@ -18,46 +18,43 @@ extern "C" {
 #define LIBMP4TAG_DEBUG_STREAM 0
 #define LIBMP4TAG_DEBUG 1
 
-/* idents that libmp4tag needs to descend into or use */
-#define MP4TAG_CO64   "co64"
-#define MP4TAG_FREE   "free"
-#define MP4TAG_FTYP   "ftyp"
-#define MP4TAG_HDLR   "hdlr"
-#define MP4TAG_ILST   "ilst"
-#define MP4TAG_MDHD   "mdhd"
-#define MP4TAG_MDIA   "mdia"
-#define MP4TAG_META   "meta"
-#define MP4TAG_MINF   "minf"
-#define MP4TAG_MOOV   "moov"
-#define MP4TAG_STBL   "stbl"
-#define MP4TAG_STCO   "stco"
-#define MP4TAG_TRAK   "trak"
-#define MP4TAG_UDTA   "udta"
-/* tags */
-#define MP4TAG_COVR   "covr"
-#define MP4TAG_CUSTOM "----"
-#define MP4TAG_DISK   "disk"
-#define MP4TAG_GEN    "gen"
-#define MP4TAG_GNRE   "gnre"
-#define MP4TAG_TRKN   "trkn"
-/* used by tag idents */
-#define MP4TAG_DATA   "data"
-#define MP4TAG_MEAN   "mean"
-#define MP4TAG_NAME   "name"
-
-#define MP4TAG_CUSTOM_DELIM ":"
-#define MP4TAG_INPUT_DELIM ":"
-#define MP4TAG_BACKUP_SUFFIX "-mp4tag.bak"
-#define MP4TAG_TEMP_SUFFIX "-mp4tag.tmp"
+enum {
+  MP4TAG_CO64,
+  MP4TAG_FREE,
+  MP4TAG_FTYP,
+  MP4TAG_HDLR,
+  MP4TAG_ILST,
+  MP4TAG_MDHD,
+  MP4TAG_MDIA,
+  MP4TAG_META,
+  MP4TAG_MINF,
+  MP4TAG_MOOV,
+  MP4TAG_STBL,
+  MP4TAG_STCO,
+  MP4TAG_TRAK,
+  MP4TAG_UDTA,
+  /* tags */
+  MP4TAG_COVR,
+  MP4TAG_CUSTOM,
+  MP4TAG_DISK,
+  MP4TAG_GEN,
+  MP4TAG_GNRE,
+  MP4TAG_TRKN,
+  /* used by tag idents */
+  MP4TAG_DATA,
+  MP4TAG_MEAN,
+  MP4TAG_NAME,
+};
 
 enum {
   MP4TAG_NOTFOUND = -1,     // returned by find-tag
   MP4TAG_ID_LEN = 4,
+  MP4TAG_PREFIX_CHAR = 0xa9,
   /* this length has to be at least 2 + 3 + 1 bytes */
   /* room enough to hold the copyright symbol, three more chars and eol */
   MP4TAG_ID_DISP_LEN = 6,
   MP4TAG_STRING = 0,
-  /* internal MP4 values */
+  /* internal MP4 ID values */
   MP4TAG_ID_BOOL = 0x15,
   MP4TAG_ID_STRING = 0x01,
   MP4TAG_ID_DATA = 0x00,
@@ -82,6 +79,7 @@ enum {
   MP4TAG_READ_OK = 1,
   MP4TAG_READ_NONE = 0,
   MP4TAG_SLEEP_TIME = 2,
+  TEMP_NM_SZ = 300,
 };
 
 enum {
@@ -147,11 +145,12 @@ typedef struct libmp4tag {
   uint32_t  stco_len;
   ssize_t   co64_offset;
   uint32_t  co64_len;
-  /* covercount is a temporary variable used by both add-tag */
+  /* datacount is a temporary variable used by both add-tag */
   /* and the write process */
-  int       covercount;
+  int       datacount;
   /* temporary variable used by the write process */
-  int32_t   coverstart_offset;
+  char      lastbox_nm [TEMP_NM_SZ];
+  int32_t   lastbox_offset;
   /* tag list */
   int       tagcount;
   int       tagalloccount;
@@ -180,6 +179,7 @@ typedef struct {
   int         len;
 } mp4tagdef_t;
 
+extern const char *boxids [];
 extern const mp4tagdef_t mp4taglist [];
 extern const int mp4taglistlen;
 extern const char *mp4tagoldgenrelist [];
@@ -201,6 +201,7 @@ void mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t de
 
 /* mp4tagutil.c */
 
+extern const char *MP4TAG_INPUT_DELIM;
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
 int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx);
 int  mp4tag_parse_tagname (char *tag, int *dataidx);
@@ -215,6 +216,7 @@ void mp4tag_free_tag_by_idx (libmp4tag_t *libmp4tag, int idx);
 void mp4tag_free_tag (mp4tag_t *mp4tag);
 void mp4tag_clone_tag (libmp4tag_t *libmp4tag, mp4tag_t *target, mp4tag_t *source);
 void mp4tag_sleep (uint32_t ms);
+bool mp4tag_chk_dbg (libmp4tag_t *libmp4tag, int dbg);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 } /* extern C */
