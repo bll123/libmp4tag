@@ -83,6 +83,8 @@ The specified tag was not found or is not valid.
 
 ##### MP4TAG_ERR_UNABLE_TO_PROCESS
 
-Cannot write the file as neither the tag list, nor the hierarchy in
+a) Cannot write the file as neither the tag list, nor the hierarchy in
 which to place the tag list can be found.
 
+b) Unable to parse the file correctly.  The structure is nested too
+deeply, or the file has been corrupted.

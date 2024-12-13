@@ -27,20 +27,20 @@ const char *boxids [] = {
   [MP4TAG_STCO] = "stco",
   [MP4TAG_TRAK] = "trak",
   [MP4TAG_UDTA] = "udta",
-  /* tags */
+  /* tags that have special handling */
   [MP4TAG_COVR] = "covr",
   [MP4TAG_CUSTOM] = "----",
   [MP4TAG_DISK] = "disk",
   [MP4TAG_GEN] = "gen",
   [MP4TAG_GNRE] = "gnre",
   [MP4TAG_TRKN] = "trkn",
-  /* used by tag idents */
+  /* internal mp4 values used by tag idents */
   [MP4TAG_DATA] = "data",
   [MP4TAG_MEAN] = "mean",
   [MP4TAG_NAME] = "name",
 };
 
-/* Must be sorted in ascii order. */
+/* Must be sorted in ASCII order. */
 /* This list is used to verify that a tag is valid if it is not found */
 /* in the current tag list. */
 /* The identifier type and length for a tag are stored here. */
@@ -89,6 +89,7 @@ const mp4tagdef_t mp4taglist [] = {
   {  7, "tvnn", MP4TAG_ID_STRING, 0 },    // string (tv network name)
   {  7, "tvsh", MP4TAG_ID_STRING, 0 },    // string (tv show name)
   {  6, "tvsn", MP4TAG_ID_NUM, sizeof (uint32_t) }, // 4 byte (tv season)
+  {  7, "xid ", MP4TAG_ID_STRING, 0, },   // no idea what this is (old)
   {  1, "©ART", MP4TAG_ID_STRING, 0 },    // string (artist)
   {  2, "©alb", MP4TAG_ID_STRING, 0 },    // string (album)
   {  7, "©cmt", MP4TAG_ID_STRING, 0 },    // string (comment)
@@ -113,7 +114,7 @@ const int mp4taglistlen = sizeof (mp4taglist) / sizeof (mp4tagdef_t);
 /* an idiotic way to do things, */
 /* but we must convert any old gnre data to ©gen. */
 /* itunes still puts data into the 'gnre' field, yick. */
-/* this is the ID3 genre list, it may not be correct */
+/* this is the ID3 genre list */
 const char *mp4tagoldgenrelist [] = {
   "Blues",              "Classic Rock",           "Country",
   "Dance",              "Disco",                  "Funk",

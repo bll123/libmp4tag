@@ -19,6 +19,7 @@ extern "C" {
 #define LIBMP4TAG_DEBUG 1
 
 enum {
+  /* various idents that libmp4tag needs to descend into or use */
   MP4TAG_CO64,
   MP4TAG_FREE,
   MP4TAG_FTYP,
@@ -33,14 +34,14 @@ enum {
   MP4TAG_STCO,
   MP4TAG_TRAK,
   MP4TAG_UDTA,
-  /* tags */
+  /* tags that have special handling */
   MP4TAG_COVR,
   MP4TAG_CUSTOM,
   MP4TAG_DISK,
   MP4TAG_GEN,
   MP4TAG_GNRE,
   MP4TAG_TRKN,
-  /* used by tag idents */
+  /* internal mp4 values used by tag idents */
   MP4TAG_DATA,
   MP4TAG_MEAN,
   MP4TAG_NAME,
@@ -71,7 +72,7 @@ enum {
   MP4TAG_PRI_CUSTOM = 8,
   MP4TAG_PRI_NOWRITE = -1,
   MP4TAG_PRI_MAX = 20,
-  MP4TAG_BASE_OFF_MAX = 15,
+  MP4TAG_LEVEL_MAX = 15,
   /* the copy size seems to make little difference in speed */
   MP4TAG_COPY_SIZE = 5 * 1024 * 1024,       // 5 mibibytes
   MP4TAG_FREE_SPACE_SZ = 2048,
@@ -125,10 +126,12 @@ typedef struct libmp4tag {
   int32_t   samplerate;
   uint32_t  timeout;
   /* used by the parser and writer */
-  uint32_t  base_lengths [MP4TAG_BASE_OFF_MAX];
-  ssize_t   base_offsets [MP4TAG_BASE_OFF_MAX];
+  uint32_t  base_lengths [MP4TAG_LEVEL_MAX];
+  ssize_t   base_offsets [MP4TAG_LEVEL_MAX];
+  uint64_t  calc_length [MP4TAG_LEVEL_MAX];
+  uint64_t  rem_length [MP4TAG_LEVEL_MAX];
   /* for debugging, otherwise not needed */
-  char      base_name [MP4TAG_BASE_OFF_MAX][MP4TAG_ID_DISP_LEN + 1];
+  char      base_name [MP4TAG_LEVEL_MAX][MP4TAG_ID_DISP_LEN + 1];
   uint32_t  taglist_orig_data_len;    /* for debugging */
   int       base_offset_count;
   ssize_t   taglist_base_offset;
@@ -137,6 +140,7 @@ typedef struct libmp4tag {
   uint32_t  taglist_len;
   uint32_t  interior_free_len;
   uint32_t  exterior_free_len;
+  uint32_t  ilst_remaining;
   int       parentidx;
   ssize_t   noilst_offset;
   ssize_t   after_ilst_offset;

@@ -26,6 +26,8 @@
 
 const char *PREFIX_STR = "\xc2\xa9";   /* copyright symbol */
 
+/* these error strings are only for debugging purposes, and */
+/* do not need to be translated */
 static const char *mp4tagerrmsgs [] = {
   [MP4TAG_OK] = "ok",
   [MP4TAG_FINISH] = "finish",
@@ -56,6 +58,7 @@ typedef struct libmp4tagpreserve {
 static libmp4tag_t *mp4tag_alloc (int *mp4error);
 static void mp4tag_free_tags (libmp4tag_t *libmp4tag);
 static void mp4tag_copy_to_pub (mp4tagpub_t *mp4tagpub, mp4tag_t *mp4tag);
+static void mp4tag_init_tags (libmp4tag_t *libmp4tag);
 #if LIBMP4TAG_DEBUG
 static void enable_core_dump (void);
 #endif
@@ -195,6 +198,8 @@ mp4tag_openstreamfd (int fd, size_t offset, long timeout, int *mp4error)
 int
 mp4tag_parse (libmp4tag_t *libmp4tag)
 {
+  size_t    offset;
+
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return MP4TAG_ERR_BAD_STRUCT;
   }
@@ -207,8 +212,20 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
     return libmp4tag->mp4error;
   }
 
+  offset = ftell (libmp4tag->fh);
   mp4tag_parse_file (libmp4tag, 0, 0);
+
   if (libmp4tag->mp4error == MP4TAG_OK) {
+    if (libmp4tag->canwrite && libmp4tag->ilst_remaining != 0) {
+      /* version 1.3.x would not calculate the correct lengths */
+      /* for the containers if two free boxes got combined */
+      mp4tag_update_parent_lengths (libmp4tag, libmp4tag->fh, - libmp4tag->ilst_remaining);
+      if (fseek (libmp4tag->fh, offset, SEEK_SET) == 0) {
+        mp4tag_free_tags (libmp4tag);
+        mp4tag_init_tags (libmp4tag);
+        mp4tag_parse_file (libmp4tag, 0, 0);
+      }
+    }
     libmp4tag->parsed = true;
   }
   return libmp4tag->mp4error;
@@ -793,49 +810,9 @@ mp4tag_alloc (int *mp4error)
   libmp4tag->fn = NULL;
   libmp4tag->filesz = MP4TAG_NO_FILESZ;
   libmp4tag->fh = NULL;
-  libmp4tag->offset = 0;
-  libmp4tag->tags = NULL;
-  libmp4tag->creationdate = 0;
-  libmp4tag->modifieddate = 0;
-  libmp4tag->duration = 0;
-  libmp4tag->samplerate = 0;
-  libmp4tag->timeout = 0;
-  for (int i = 0; i < MP4TAG_BASE_OFF_MAX; ++i) {
-    libmp4tag->base_lengths [i] = 0;
-    libmp4tag->base_offsets [i] = 0;
-    libmp4tag->base_name [i][0] = '\0';
-  }
-  libmp4tag->base_offset_count = 0;
-  libmp4tag->taglist_base_offset = 0;
-  libmp4tag->taglist_offset = 0;
-  libmp4tag->taglist_orig_len = 0;
-  libmp4tag->taglist_len = 0;
-  libmp4tag->interior_free_len = 0;
-  libmp4tag->exterior_free_len = 0;
-  libmp4tag->taglist_orig_data_len = 0;     // debugging
-  libmp4tag->parentidx = -1;
-  libmp4tag->noilst_offset = 0;
-  libmp4tag->after_ilst_offset = 0;
-  libmp4tag->insert_delta = 0;
-  libmp4tag->stco_offset = 0;
-  libmp4tag->stco_len = 0;
-  libmp4tag->co64_offset = 0;
-  libmp4tag->co64_len = 0;
-  libmp4tag->datacount = 0;
-  libmp4tag->lastbox_offset = -1;
-  libmp4tag->tagcount = 0;
-  libmp4tag->tagalloccount = 0;
-  libmp4tag->iterator = 0;
-  libmp4tag->mp4error = MP4TAG_OK;
-  libmp4tag->dbgflags = 0;
-  libmp4tag->options = MP4TAG_OPTION_NONE;
-  libmp4tag->mp7meta = false;
-  libmp4tag->unlimited = false;
-  libmp4tag->datacount = 0;
-  libmp4tag->parsed = false;
-  libmp4tag->processdata = false;
-  libmp4tag->checkforfree = false;
-  libmp4tag->parsedone = false;
+
+  mp4tag_init_tags (libmp4tag);
+
   libmp4tag->isstream = false;
   libmp4tag->canwrite = true;
 
@@ -872,6 +849,56 @@ mp4tag_copy_to_pub (mp4tagpub_t *mp4tagpub, mp4tag_t *mp4tag)
   mp4tagpub->dataidx = mp4tag->dataidx;
   mp4tagpub->covertype = mp4tag->identtype;
   mp4tagpub->binary = mp4tag->binary;
+}
+
+static void
+mp4tag_init_tags (libmp4tag_t *libmp4tag)
+{
+  libmp4tag->tags = NULL;
+  libmp4tag->offset = 0;
+  libmp4tag->creationdate = 0;
+  libmp4tag->modifieddate = 0;
+  libmp4tag->duration = 0;
+  libmp4tag->samplerate = 0;
+  libmp4tag->timeout = 0;
+  for (int i = 0; i < MP4TAG_LEVEL_MAX; ++i) {
+    libmp4tag->base_lengths [i] = 0;
+    libmp4tag->base_offsets [i] = 0;
+    libmp4tag->base_name [i][0] = '\0';
+    libmp4tag->calc_length [i] = 0;
+    libmp4tag->rem_length [i] = 0;
+  }
+  libmp4tag->base_offset_count = 0;
+  libmp4tag->taglist_base_offset = 0;
+  libmp4tag->taglist_offset = 0;
+  libmp4tag->taglist_orig_len = 0;
+  libmp4tag->taglist_len = 0;
+  libmp4tag->interior_free_len = 0;
+  libmp4tag->exterior_free_len = 0;
+  libmp4tag->taglist_orig_data_len = 0;     // debugging
+  libmp4tag->parentidx = -1;
+  libmp4tag->noilst_offset = 0;
+  libmp4tag->after_ilst_offset = 0;
+  libmp4tag->insert_delta = 0;
+  libmp4tag->stco_offset = 0;
+  libmp4tag->stco_len = 0;
+  libmp4tag->co64_offset = 0;
+  libmp4tag->co64_len = 0;
+  libmp4tag->datacount = 0;
+  libmp4tag->lastbox_offset = -1;
+  libmp4tag->tagcount = 0;
+  libmp4tag->tagalloccount = 0;
+  libmp4tag->iterator = 0;
+  libmp4tag->mp4error = MP4TAG_OK;
+  libmp4tag->dbgflags = 0;
+  libmp4tag->options = MP4TAG_OPTION_NONE;
+  libmp4tag->mp7meta = false;
+  libmp4tag->unlimited = false;
+  libmp4tag->datacount = 0;
+  libmp4tag->parsed = false;
+  libmp4tag->processdata = false;
+  libmp4tag->checkforfree = false;
+  libmp4tag->parsedone = false;
 }
 
 #if LIBMP4TAG_DEBUG
