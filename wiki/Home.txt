@@ -8,6 +8,7 @@
 
 [Initializing](Initializing)
 <br>[Getting Tag Information](GettingTags)
+<br>[Constants](Constants)
 <br>[Modifying Tags](ModifyingTags)
 <br>[Writing Tags](WritingTags)
 <br>[Preserve &amp; Restore](PreserveRestore)

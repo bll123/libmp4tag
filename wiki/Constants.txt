@@ -1,0 +1,18 @@
+[Wiki Home](Home)
+
+[TOC]
+
+### Constants
+
+_PREFIX_LEN_ : The copyright symbol as text.  This value should be
+pre-pended to any three-character tag names.
+
+##### Options
+
+MP4TAG_OPTION_KEEP_BACKUP : A backup of the original audio file is made.
+
+##### Cover Image Types
+
+MP4TAG_COVER_JPG, MP4TAG_COVER_PNG
+
+

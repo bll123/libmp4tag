@@ -450,6 +450,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
 
       tagidx = mp4tag_add_tag (libmp4tag, tag, data, MP4TAG_STRING, tflag, tlen, NULL);
       if (tagidx >= 0) {
+        /* preserve the tag ordering */
         libmp4tag->tags [tagidx].dataidx = dataidx;
       }
       mp4tag_sort_tags (libmp4tag);

@@ -46,8 +46,7 @@ if [[ ! -f ${MP4TAGCLI} ]]; then
   exit 1
 fi
 
-#flist="samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a"
-flist="samples/alac.m4a"
+flist="samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a"
 rm -f ${TEXPA} ${TEXPS} ${TACT} ${TFN}
 # no-tags.m4a has no udta box, tag space is unlimited
 # alac.m4a tags are not at the end
@@ -266,8 +265,9 @@ diff ${TEXPS} ${TACT}
     ${MP4TAGCLI} ${TFN} ${tag}=
   done
 
-  # delete in reverse order, as the dataidx is relative
-  for idx in 3 2 1; do
+  # 'wrt' w/no dataidx specified was already deleted,
+  # so only 0, 1, 2 are existing
+  for idx in 2 1 0; do
     ${MP4TAGCLI} ${TFN} wrt:${idx}=
   done
 
