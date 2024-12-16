@@ -46,10 +46,13 @@ if [[ ! -f ${MP4TAGCLI} ]]; then
   exit 1
 fi
 
+#flist="samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a"
+flist="samples/alac.m4a"
 rm -f ${TEXPA} ${TEXPS} ${TACT} ${TFN}
 # no-tags.m4a has no udta box, tag space is unlimited
 # alac.m4a tags are not at the end
-for f in samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a; do
+# array-keys.m4a has multiple free boxes.
+for f in $flist; do
   grc=0
   echo -n "chk: $f "
   if [[ ! -f $f ]]; then
@@ -73,6 +76,7 @@ for f in samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a; do
       exit 1
     fi
     # don't save these in the final output file
+    # as they are over-written later
   done
 
   for idx in 1 2 3; do
@@ -82,6 +86,7 @@ for f in samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a; do
       echo "fail a2"
       exit 1
     fi
+    echo wrt:${idx}=wrt-${idx} >> ${TEXPA}
   done
 
   # custom tags
@@ -257,9 +262,13 @@ diff ${TEXPS} ${TACT}
   done
 
   # disk/trkn tags
-  for tag in disk trkn \
-      ; do
+  for tag in disk trkn; do
     ${MP4TAGCLI} ${TFN} ${tag}=
+  done
+
+  # delete in reverse order, as the dataidx is relative
+  for idx in 3 2 1; do
+    ${MP4TAGCLI} ${TFN} wrt:${idx}=
   done
 
   ${MP4TAGCLI} ${TFN} covr:2=

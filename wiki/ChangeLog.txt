@@ -10,10 +10,10 @@
     * Fix track name box when track data shortened.
     * Fix duration when hint tracks are present.
     * Fix issue with free block handling.
-    * PENDING Fix disk not being written correctly.
     * Fix handling of arrays of strings.
 * Changes:
-    * mp4tagpub_t: 'coveridx' has been renamed to 'dataidx'
+    * mp4tagpub_t: 'coveridx' has been renamed to 'dataidx'.
+    * Handles arrays of strings properly.
 
 -->
 

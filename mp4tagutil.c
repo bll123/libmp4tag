@@ -171,7 +171,7 @@ mp4tag_compare (const void *a, const void *b)
 
   rc = strcmp (ta->tag, tb->tag);
   if (rc == 0) {
-    /* sort by both the name and the cover index */
+    /* sort by both the name and the data index */
     if (ta->dataidx == tb->dataidx) {
       rc = 0;
     } else if (ta->dataidx < tb->dataidx) {
@@ -202,7 +202,7 @@ mp4tag_compare_list (const void *a, const void *b)
   return strcmp (ta->tag, tb->tag);
 }
 
-void
+int
 mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     const char *data, ssize_t sz, uint32_t origflag, size_t origlen,
     const char *covername)
@@ -218,7 +218,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
         sizeof (mp4tag_t) * libmp4tag->tagalloccount);
     if (libmp4tag->tags == NULL) {
       libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-      return;
+      return -1;
     }
   }
 
@@ -227,6 +227,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
   libmp4tag->tags [tagidx].covername = NULL;
   libmp4tag->tags [tagidx].dataidx = 0;
   libmp4tag->tags [tagidx].binary = false;
+  libmp4tag->tags [tagidx].priority = MP4TAG_PRI_MAX,
   /* save these off so that writing the tags back out is easier */
   libmp4tag->tags [tagidx].identtype = origflag;
   libmp4tag->tags [tagidx].internallen = origlen;
@@ -240,7 +241,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
   ttag = strdup (tag);
   if (ttag == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-    return;
+    return -1;
   }
 
   mp4tag_parse_tagname (ttag, &dataidx);
@@ -249,7 +250,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
 
   if (libmp4tag->tags [tagidx].tag == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-    return;
+    return -1;
   }
   // fprintf (stdout, "add-tag: %s\n", tag);
 
@@ -262,14 +263,14 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     libmp4tag->tags [tagidx].tag = strdup (boxids [MP4TAG_COVR]);
     if (libmp4tag->tags [tagidx].tag == NULL) {
       libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-      return;
+      return -1;
     }
 
     if (covername != NULL) {
       libmp4tag->tags [tagidx].covername = strdup (covername);
       if (libmp4tag->tags [tagidx].covername == NULL) {
         libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-        return;
+        return -1;
       }
     }
 
@@ -286,7 +287,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     libmp4tag->tags [tagidx].data = strdup (data);
     if (libmp4tag->tags [tagidx].data == NULL) {
       libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-      return;
+      return -1;
     }
     libmp4tag->tags [tagidx].datalen = strlen (data);
   } else if (sz < 0) {
@@ -295,7 +296,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     libmp4tag->tags [tagidx].data = malloc (sz + 1);
     if (libmp4tag->tags [tagidx].data == NULL) {
       libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-      return;
+      return -1;
     }
     memcpy (libmp4tag->tags [tagidx].data, data, sz);
     libmp4tag->tags [tagidx].data [sz] = '\0';
@@ -306,7 +307,7 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
       libmp4tag->tags [tagidx].data = malloc (sz);
       if (libmp4tag->tags [tagidx].data == NULL) {
         libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
-        return;
+        return -1;
       }
       memcpy (libmp4tag->tags [tagidx].data, data, sz);
     }
@@ -314,6 +315,8 @@ mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag,
     libmp4tag->tags [tagidx].datalen = sz;
   }
   libmp4tag->tagcount += 1;
+
+  return tagidx;
 }
 
 int
@@ -420,6 +423,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     if (ok) {
       uint32_t    tflag;
       uint32_t    tlen;
+      int         tagidx;
 
       tflag = MP4TAG_ID_STRING;
       if (tagdef != NULL) {
@@ -444,7 +448,10 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
         tlen = strlen (data);
       }
 
-      mp4tag_add_tag (libmp4tag, tag, data, MP4TAG_STRING, tflag, tlen, NULL);
+      tagidx = mp4tag_add_tag (libmp4tag, tag, data, MP4TAG_STRING, tflag, tlen, NULL);
+      if (tagidx >= 0) {
+        libmp4tag->tags [tagidx].dataidx = dataidx;
+      }
       mp4tag_sort_tags (libmp4tag);
     } else {
       libmp4tag->mp4error = MP4TAG_ERR_TAG_NOT_FOUND;

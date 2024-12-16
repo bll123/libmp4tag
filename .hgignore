@@ -5,6 +5,7 @@ syntax: regexp
 ^dev/wikibearer\.txt$
 ^libmp4tag\.pc$
 ^samples/
+^test-bad/
 ^test-files/
 ^tmp/
 \.m4a$

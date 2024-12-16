@@ -839,12 +839,18 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
   dptr = mp4tag_append_len_32 (dptr, 0);
 
   if (mp4tag->identtype == MP4TAG_ID_STRING) {
+    if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
+      fprintf (stdout, "  string %.*s\n", (int) mp4tag->datalen, mp4tag->data);
+    }
     dptr = mp4tag_append_data (dptr, mp4tag->data, mp4tag->datalen);
     if (libmp4tag->datacount > 0 && libmp4tag->lastbox_offset != -1) {
       mp4tag_update_data_len (libmp4tag, data, MP4TAG_DATA_SZ + mp4tag->datalen);
     }
   }
   if (mp4tag->identtype == MP4TAG_ID_NUM) {
+    if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
+      fprintf (stdout, "  numeric %s\n", mp4tag->data);
+    }
     t64 = 0;
     if (mp4tag->data != NULL) {
       t64 = atoll (mp4tag->data);
@@ -868,13 +874,18 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
     if (strcmp (mp4tag->tag, boxids [MP4TAG_TRKN]) == 0) {
       mp4tag_parse_pair (mp4tag->data, &ta, &tb);
+      if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
+        fprintf (stdout, "  trkn %s %d %d\n", mp4tag->data, ta, tb);
+      }
       dptr = mp4tag_append_len_32 (dptr, ta);
       dptr = mp4tag_append_len_16 (dptr, tb);
       /* trkn has an extra two bytes padding */
       dptr = mp4tag_append_len_16 (dptr, 0);
     } else if (strcmp (mp4tag->tag, boxids [MP4TAG_DISK]) == 0) {
       mp4tag_parse_pair (mp4tag->data, &ta, &tb);
-
+      if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
+        fprintf (stdout, "  disk %s %d %d\n", mp4tag->data, ta, tb);
+      }
       dptr = mp4tag_append_len_32 (dptr, ta);
       dptr = mp4tag_append_len_16 (dptr, tb);
     } else {

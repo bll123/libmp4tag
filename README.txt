@@ -11,7 +11,7 @@ Contents:
 Release Notes
 
   2.0.0
-    mp4tagpub_t has changed.
+    mp4tagpub_t : coveridx renamed to dataidx.
 
   1.3.0
     Added support for streams.  This functionality is in beta status.

@@ -212,7 +212,7 @@ int  mp4tag_parse_tagname (char *tag, int *dataidx);
 mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
-void mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, ssize_t sz, uint32_t origflag, size_t origlen, const char *covername);
+int  mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, ssize_t sz, uint32_t origflag, size_t origlen, const char *covername);
 int  mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data);
 int  mp4tag_set_tag_binary (libmp4tag_t *libmp4tag, const char *name, int idx, const char *data, size_t sz, const char *fn);
 void mp4tag_del_tag (libmp4tag_t *libmp4tag, int idx);

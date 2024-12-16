@@ -249,7 +249,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       /* trailing the 'moov' box */
       /* all free space is consolidated */
       if (strcmp (bd.nm, boxids [MP4TAG_FREE]) == 0) {
-fprintf (stdout, "-- level-%d free\n", level);
         if (level == 0) {
           libmp4tag->exterior_free_len += bd.boxlen;
         } else {
@@ -259,7 +258,10 @@ fprintf (stdout, "-- level-%d free\n", level);
         libmp4tag->after_ilst_offset += bd.boxlen;
         /* continue on and see if there are more 'free' boxes to add */
       } else {
-fprintf (stdout, "-- level-%d not-free\n", level);
+        if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
+          fprintf (stdout, "%*s %2d have boxes after ilst/free\n",
+             level*2, " ", level);
+        }
         /* if this spot was reached, there is some other */
         /* box after the 'ilst' or 'free' boxes */
         /* set check-for-free to false so that the unlimited flag */
@@ -343,7 +345,6 @@ fprintf (stdout, "-- level-%d not-free\n", level);
       }
     }
     if (! needdata && skiplen > 0) {
-fprintf (stdout, "%*s %2d skip: %d\n", level*2, " ", level, skiplen);
       rrc = mp4tag_file_seek (libmp4tag, skiplen);
       if (rrc != MP4TAG_READ_OK) {
         free (bd.data);
@@ -394,26 +395,25 @@ fprintf (stdout, "%*s %2d skip: %d\n", level*2, " ", level, skiplen);
     rrc = mp4tag_file_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
   }
 
-  if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
-    fprintf (stdout, "taglist-data-len: %d\n", libmp4tag->taglist_orig_data_len);
-    fprintf (stdout, "taglist-len: %d\n", libmp4tag->taglist_len);
-  }
-
   if (level == 0) {
+    if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
+      fprintf (stdout, "taglist-data-len: %d\n", libmp4tag->taglist_orig_data_len);
+      fprintf (stdout, "taglist-len: %d\n", libmp4tag->taglist_len);
+    }
+
     if (libmp4tag->checkforfree) {
-fprintf (stdout, "-- level-0 check-for-free\n");
       /* if checkforfree is still true, check and see if the end of file */
       /* was reached */
       mp4tag_parse_check_end (libmp4tag);
     }
 
     mp4tag_sort_tags (libmp4tag);
-  }
 
-  if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
-    fprintf (stdout, "interior-free: %d\n", libmp4tag->interior_free_len);
-    fprintf (stdout, "exterior-free: %d\n", libmp4tag->exterior_free_len);
-    fprintf (stdout, "ilst-remaining: %d\n", libmp4tag->ilst_remaining);
+    if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
+      fprintf (stdout, "interior-free: %d\n", libmp4tag->interior_free_len);
+      fprintf (stdout, "exterior-free: %d\n", libmp4tag->exterior_free_len);
+      fprintf (stdout, "ilst-remaining: %d\n", libmp4tag->ilst_remaining);
+    }
   }
 
   /* at this time, do not look for more free boxes after the 'udta' */
@@ -423,7 +423,6 @@ fprintf (stdout, "-- level-0 check-for-free\n");
     libmp4tag->parsedone = true;
   }
 
-fprintf (stdout, "%*s %2d reset-calc c\n", level * 2, " ", level);
   libmp4tag->calc_length [level] = 0;
 
   return libmp4tag->mp4error;
@@ -651,7 +650,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
   plen = 0;
 
   if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_OTHER)) {
-    fprintf (stdout, "%s %03x %" PRId32 " (%" PRId32 ")\n", tnm, type, tlen, blen);
+    fprintf (stdout, "%s %03x tlen:%" PRId32 " blen:%" PRId32 "\n", tnm, type, tlen, blen);
   }
 
   do {
@@ -674,7 +673,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
 
         /* apparently there exist track number boxes */
         /* that are not the full size */
-        if (strcmp (tnm, boxids [MP4TAG_TRKN]) == 0 &&
+        if (strcmp (tnm, boxids [MP4TAG_TRKN]) != 0 ||
             tlen >= sizeof (uint32_t) + sizeof (uint16_t)) {
           p += sizeof (uint32_t);
           memcpy (&t16, p, sizeof (uint16_t));
@@ -708,7 +707,8 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
             strcpy (tnm, PREFIX_STR);
             strcat (tnm, boxids [MP4TAG_GEN]);
             mp4tag_add_tag (libmp4tag, tnm, mp4tagoldgenrelist [t16],
-                MP4TAG_STRING, MP4TAG_ID_STRING, strlen (mp4tagoldgenrelist [t16]), NULL);
+                MP4TAG_STRING, MP4TAG_ID_STRING,
+                strlen (mp4tagoldgenrelist [t16]), NULL);
           }
         } else {
           snprintf (tmp, sizeof (tmp), "%" PRId16, t16);

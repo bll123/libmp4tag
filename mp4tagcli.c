@@ -259,7 +259,6 @@ main (int argc, char *argv [])
   if (rc == MP4TAG_OK && display && ! clean && ! copy) {
     int     rc;
 
-fprintf (stderr, "get-by-name: %s\n", tagname);
     rc = mp4tag_get_tag_by_name (libmp4tag, tagname, &mp4tagpub);
     if (rc != MP4TAG_OK) {
       fprintf (stdout, "%s not found\n", tagname);
@@ -309,7 +308,7 @@ setTagName (const char *tag, char *buff, size_t sz)
   if (strcmp (tag, "aart") == 0) {
     tag = "aART";
   }
-  if (strlen (tag) == 3) {
+  if (strlen (tag) == 3 || (strlen (tag) >= 4 && tag [3] == ':')) {
     snprintf (buff, sz, "%s%s", PREFIX_STR, tag);
   } else {
     snprintf (buff, sz, "%s", tag);

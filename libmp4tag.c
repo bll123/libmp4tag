@@ -216,6 +216,7 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
   mp4tag_parse_file (libmp4tag, 0, 0);
 
   if (libmp4tag->mp4error == MP4TAG_OK) {
+#if 0
     if (libmp4tag->canwrite && libmp4tag->ilst_remaining != 0) {
       /* version 1.3.x would not calculate the correct lengths */
       /* for the containers if two free boxes got combined */
@@ -226,6 +227,7 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
         mp4tag_parse_file (libmp4tag, 0, 0);
       }
     }
+#endif
     libmp4tag->parsed = true;
   }
   return libmp4tag->mp4error;
@@ -810,6 +812,8 @@ mp4tag_alloc (int *mp4error)
   libmp4tag->fn = NULL;
   libmp4tag->filesz = MP4TAG_NO_FILESZ;
   libmp4tag->fh = NULL;
+  libmp4tag->dbgflags = 0;
+  libmp4tag->options = MP4TAG_OPTION_NONE;
 
   mp4tag_init_tags (libmp4tag);
 
@@ -890,8 +894,6 @@ mp4tag_init_tags (libmp4tag_t *libmp4tag)
   libmp4tag->tagalloccount = 0;
   libmp4tag->iterator = 0;
   libmp4tag->mp4error = MP4TAG_OK;
-  libmp4tag->dbgflags = 0;
-  libmp4tag->options = MP4TAG_OPTION_NONE;
   libmp4tag->mp7meta = false;
   libmp4tag->unlimited = false;
   libmp4tag->datacount = 0;
