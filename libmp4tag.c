@@ -24,8 +24,6 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 
-const char *PREFIX_STR = "\xc2\xa9";   /* copyright symbol */
-
 /* these error strings are only for debugging purposes, and */
 /* do not need to be translated */
 static const char *mp4tagerrmsgs [] = {

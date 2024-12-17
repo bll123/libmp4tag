@@ -12,8 +12,6 @@
 extern "C" {
 #endif
 
-extern const char *PREFIX_STR;
-
 typedef struct libmp4tag libmp4tag_t;
 typedef struct libmp4tagpreserve libmp4tagpreserve_t;
 typedef size_t (*mp4tag_readcb_t)(char *buff, size_t sz, size_t nmemb, void *udata);
@@ -112,10 +110,13 @@ const char  * mp4tag_error_str (libmp4tag_t *libmp4tag);
 void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
 void      mp4tag_set_option (libmp4tag_t *libmp4tag, int option);
 
-/* these routines are useful for the application */
+/* mp4const.c */
+
+extern const char *PREFIX_STR;
 
 /* mp4tagfileop.c */
 /* public file interface helper routines */
+/* these routines are useful for the application */
 
 FILE    * mp4tag_fopen (const char *fn, const char *mode);
 ssize_t mp4tag_file_size (const char *fn);
