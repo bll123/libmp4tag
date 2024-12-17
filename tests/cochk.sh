@@ -12,8 +12,10 @@ if [[ ! -f ${MP4TAGCLI} ]]; then
   exit 1
 fi
 
+flist="samples/stco.m4a samples/v-mdhd64-co64.mp4"
+
 rm -f ${OUTA} ${OUTB} ${RESA} ${RESB} ${TFN}
-for f in samples/stco.m4a samples/v-mdhd64-co64.mp4; do
+for f in $flist; do
   echo -n "chk: $f "
   if [[ ! -f $f ]]; then
     echo "not found"
@@ -22,8 +24,9 @@ for f in samples/stco.m4a samples/v-mdhd64-co64.mp4; do
   cp $f ${TFN}
   chmod u+w ${TFN}
   ${MP4TAGCLI} ${TFN} --debug 4 > ${OUTA}
-  ${MP4TAGCLI} ${TFN} covr:0=samples/bdj4-y.png covr:0:name=xyzzy
-  ${MP4TAGCLI} ${TFN} covr:1=samples/bdj4-y.jpg covr:1:name=plugh
+  ${MP4TAGCLI} ${TFN} --debug 27 covr:0=samples/bdj4-y.png covr:0:name=xyzzy
+exit 1
+  ${MP4TAGCLI} ${TFN} --debug 27 covr:1=samples/bdj4-y.jpg covr:1:name=plugh
   ${MP4TAGCLI} ${TFN} covr:2=samples/bdj4-b.jpg covr:2:name=three
   ${MP4TAGCLI} ${TFN} --debug 4 > ${OUTB}
   sed -e '/^duration/,$ d' -e 's/[ 0-9]*: [0-9a-z]* //' ${OUTA} > ${RESA}
