@@ -40,7 +40,7 @@ fprintf (stdout, "upl: seek-set-ff %ld\n", libmp4tag->base_offsets [idx]);
 
     t32 = libmp4tag->base_lengths [idx] + delta;
     if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
-      fprintf (stdout, "    update-parent: idx: %d %s len: %d / %d\n", idx, libmp4tag->base_name [idx], libmp4tag->base_lengths [idx], t32);
+      fprintf (stdout, "    update-parent: idx: %d %s offset: %" PRId64 " len: %d / %d\n", idx, libmp4tag->base_name [idx], libmp4tag->base_offsets [idx], libmp4tag->base_lengths [idx], t32);
     }
     t32 = htobe32 (t32);
 fprintf (stdout, "upl: jj-tell %ld %ld\n", ftell (ofh), sizeof (uint32_t));

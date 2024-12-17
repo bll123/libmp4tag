@@ -159,7 +159,7 @@ mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t seekcb,
 int
 mp4tag_parse (libmp4tag_t *libmp4tag)
 {
-  size_t    offset;
+  size_t    offset = -1;
 
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return MP4TAG_ERR_BAD_STRUCT;
@@ -190,13 +190,16 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
         fprintf (stdout, "== FIX\n");
       }
     }
-    if (libmp4tag->canwrite && libmp4tag->dofix) {
+    if (libmp4tag->canwrite &&
+        libmp4tag->dofix &&
+        offset != -1) {
       /* version 1.3.x would not calculate the correct lengths */
       /* for the containers if two free boxes got combined */
       mp4tag_update_parent_lengths (libmp4tag, libmp4tag->fh, - libmp4tag->ilst_remaining);
       if (fseek (libmp4tag->fh, offset, SEEK_SET) == 0) {
         mp4tag_free_tags (libmp4tag);
         mp4tag_init_tags (libmp4tag);
+        libmp4tag->offset = offset;
         mp4tag_parse_file (libmp4tag, 0, 0);
       }
     }
