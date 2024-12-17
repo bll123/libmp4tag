@@ -12,6 +12,7 @@ Release Notes
 
   2.0.0
     mp4tagpub_t : coveridx renamed to dataidx.
+    openstream interface re-written.
 
   1.3.0
     Added support for streams.  This functionality is in beta status.
@@ -38,6 +39,9 @@ Current Status:
   The API is stable, and all functionality is working.
 
   To Do:
+    - re-write the data fetching interface using callbacks.
+      re-write the streaming interface.
+      this will be version 3.0.0.
     - Other languages ?
       I do not have any good samples of this.
 

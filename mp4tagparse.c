@@ -36,6 +36,7 @@ typedef struct {
   uint32_t    flags;
 } boxmdhd_t;
 
+/* note that boxmdhd4_t is already packed */
 typedef struct {
   uint32_t    flags;
   uint32_t    creationdate;
@@ -70,9 +71,9 @@ static void mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_
 static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void mp4tag_process_data (const char *p, uint32_t *tlen, uint32_t *flags);
 static void mp4tag_parse_check_end (libmp4tag_t *libmp4tag);
-static int mp4tag_file_seek (libmp4tag_t *libmp4tag, size_t skiplen);
-static int mp4tag_file_read (libmp4tag_t *libmp4tag, void *buff, size_t sz);
-time_t mp4tag_get_time (void);
+static int mp4tag_data_seek (libmp4tag_t *libmp4tag, size_t skiplen);
+static int mp4tag_data_read (libmp4tag_t *libmp4tag, void *buff, size_t sz);
+static time_t mp4tag_get_time (void);
 /* debugging */
 static void mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const char *data);
 static void mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset);
@@ -112,7 +113,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
   /* within the container's contents */
   libmp4tag->rem_length [level] -= MP4TAG_BOXHEAD_SZ;
 
-  rrc = mp4tag_file_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
+  rrc = mp4tag_data_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
 
   while (rrc == MP4TAG_READ_OK) {
     boxheadsz = MP4TAG_BOXHEAD_SZ;
@@ -130,7 +131,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     if (bd.boxlen == 1) {
       uint64_t    t64 = 0;
 
-      rrc = mp4tag_file_read (libmp4tag, &t64, sizeof (uint64_t));
+      rrc = mp4tag_data_read (libmp4tag, &t64, sizeof (uint64_t));
       if (rrc != MP4TAG_READ_OK) {
         break;
       }
@@ -293,7 +294,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       }
 
       if (skiplen > 0) {
-        mp4tag_file_seek (libmp4tag, skiplen);
+        mp4tag_data_seek (libmp4tag, skiplen);
       }
 
       mp4tag_parse_file (libmp4tag, bd.boxlen - skiplen, level + 1);
@@ -337,7 +338,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
         libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
         return libmp4tag->mp4error;
       }
-      rrc = mp4tag_file_read (libmp4tag, bd.data, bd.len);
+      rrc = mp4tag_data_read (libmp4tag, bd.data, bd.len);
       if (rrc != MP4TAG_READ_OK) {
         free (bd.data);
         bd.data = NULL;
@@ -345,7 +346,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       }
     }
     if (! needdata && skiplen > 0) {
-      rrc = mp4tag_file_seek (libmp4tag, skiplen);
+      rrc = mp4tag_data_seek (libmp4tag, skiplen);
       if (rrc != MP4TAG_READ_OK) {
         free (bd.data);
         bd.data = NULL;
@@ -392,7 +393,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       return libmp4tag->mp4error;
     }
 
-    rrc = mp4tag_file_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
+    rrc = mp4tag_data_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
   }
 
   if (level == 0) {
@@ -439,7 +440,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
   char        *buff;
   char        tmp [MP4TAG_ID_LEN + 1];
 
-  rrc = mp4tag_file_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
+  rrc = mp4tag_data_read (libmp4tag, &bh, MP4TAG_BOXHEAD_SZ);
   if (rrc != MP4TAG_READ_OK) {
     return libmp4tag->mp4error;
   }
@@ -457,7 +458,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
     libmp4tag->mp4error = MP4TAG_ERR_OUT_OF_MEMORY;
     return libmp4tag->mp4error;
   }
-  rrc = mp4tag_file_read (libmp4tag, buff, len);
+  rrc = mp4tag_data_read (libmp4tag, buff, len);
   if (rrc != MP4TAG_READ_OK) {
     return libmp4tag->mp4error;
   }
@@ -841,57 +842,34 @@ mp4tag_parse_check_end (libmp4tag_t *libmp4tag)
 }
 
 static int
-mp4tag_file_seek (libmp4tag_t *libmp4tag, size_t skiplen)
+mp4tag_data_seek (libmp4tag_t *libmp4tag, size_t skiplen)
 {
+  int     rc;
+
   if (! libmp4tag->isstream) {
-    if (fseek (libmp4tag->fh, skiplen, SEEK_CUR) != 0) {
-      libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
+    rc = fseek (libmp4tag->fh, skiplen, SEEK_CUR);
+  } else {
+    if (libmp4tag->seekcb == NULL) {
+fprintf (stdout, "data-seek: no-cb\n");
+      libmp4tag->mp4error = MP4TAG_ERR_NO_CALLBACK;
       return MP4TAG_READ_NONE;
     }
-    libmp4tag->offset += skiplen;
+
+    rc = libmp4tag->seekcb (skiplen, libmp4tag->userdata);
   }
-
-  if (libmp4tag->isstream) {
-    char      tbuff [20480];      // really want fread to take a null argument
-    size_t    bwant = skiplen;
-    size_t    br = 0;
-    size_t    rlen = 0;
-    time_t    tmval;
-    time_t    ttm;
-
-    /* 2024-6-9: working in its basic form with an open file */
-
-    tmval = mp4tag_get_time ();
-    tmval += libmp4tag->timeout;
-
-    while (bwant > 0) {
-      rlen = bwant > sizeof (tbuff) ? sizeof (tbuff) : bwant;
-      br = fread (tbuff, 1, rlen, libmp4tag->fh);
-      if (br > 0) {
-        bwant -= br;
-        libmp4tag->offset += br;
-      }
-      if (bwant == 0) {
-        break;
-      }
-
-      if (br < rlen) {
-        mp4tag_sleep (MP4TAG_SLEEP_TIME);
-
-        ttm = mp4tag_get_time ();
-        if (ttm > tmval) {
-          libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
-          return MP4TAG_READ_NONE;
-        }
-      }
-    }
+  if (rc != 0) {
+fprintf (stdout, "seek-stream: fail\n");
+fflush (stdout);
+    libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
+    return MP4TAG_READ_NONE;
   }
+  libmp4tag->offset += skiplen;
 
   return MP4TAG_READ_OK;
 }
 
 static int
-mp4tag_file_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
+mp4tag_data_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
 {
   size_t    bwant = sz;
   size_t    totbr = 0;
@@ -901,12 +879,21 @@ mp4tag_file_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
   int       rc = 0;
 
   if (libmp4tag->isstream) {
+    if (libmp4tag->readcb == NULL) {
+      libmp4tag->mp4error = MP4TAG_ERR_NO_CALLBACK;
+      return MP4TAG_READ_NONE;
+    }
+
     tmval = mp4tag_get_time ();
     tmval += libmp4tag->timeout;
   }
 
   while (bwant > 0) {
-    br = fread (buff + totbr, 1, bwant, libmp4tag->fh);
+    if (! libmp4tag->isstream) {
+      br = fread (buff + totbr, 1, bwant, libmp4tag->fh);
+    } else {
+      br = libmp4tag->readcb (buff + totbr, 1, bwant, libmp4tag->userdata);
+    }
     if (br > 0) {
       totbr += br;
       bwant -= br;
@@ -927,6 +914,8 @@ mp4tag_file_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
       ttm = mp4tag_get_time ();
       if (ttm > tmval) {
         /* no more data found within timeout period */
+fprintf (stdout, "read-stream: timeout\n");
+fflush (stdout);
         return MP4TAG_READ_NONE;
       }
     }
@@ -935,7 +924,7 @@ mp4tag_file_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
   return rc;
 }
 
-time_t
+static time_t
 mp4tag_get_time (void)
 {
   struct timeval    curr;
@@ -962,6 +951,10 @@ mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const cha
   uint32_t      t32;
   uint64_t      t64 = 0;
   uint64_t      origoffset;
+
+  if (libmp4tag->isstream) {
+    return;
+  }
 
   /* preserve the current position */
   origoffset = ftell (libmp4tag->fh);
@@ -1006,6 +999,10 @@ static void
 mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset)
 {
   unsigned char    buff [8];
+
+  if (libmp4tag->isstream) {
+    return;
+  }
 
   if (fseek (libmp4tag->fh, offset, SEEK_SET) == 0) {
     if (fread (buff, sizeof (buff), 1, libmp4tag->fh) == 1) {

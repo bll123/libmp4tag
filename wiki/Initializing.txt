@@ -40,15 +40,23 @@ Note that if the MP4 tags are located after the audio/video, the
 stream will be completely read in.
 
 ~~~
+#include <stdint.h>
 #include "libmp4tag.h"
 
-libmp4tag_t *mp4tag_openstream (FILE *fh, size_t offset, long timeout, int *mp4error)
+libmp4tag_t *mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t, void *userdata, uint32_t timeout, int *mp4error)
 ~~~
 
-__fh__ : The file handle of an open stream.
+__readcb__ : The read callback.
+~~~
+typedef size_t (*mp4tag_readcb_t)(char *buff, size_t sz, size_t nmemb, void *udata);
+~~~
 
-__offset__ : The current offset in the stream.  Use 0 if the stream
-has not been processed.
+__seekcb__ : The read callback.
+~~~
+typedef int (*mp4tag_seekcb_t)(size_t offset, void *udata);
+~~~
+
+__userdata__ : Pointer to user data.
 
 __timeout__ : Timeout in milliseconds when processing the data.
 

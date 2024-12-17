@@ -17,9 +17,7 @@
 .PP
 \fBlibmp4tag_t * mp4tag_open (const char *\fP\fIfilename\fP\fB, int *\fP\fImp4error\fP\fB)\fP
 .br
-\fBlibmp4tag_t * mp4tag_openstream (FILE *\fP\fIfh\fP\fB, size_t \fP\fIoffset\fP\fB, long \fP\fItimeout\fP\fB, int *\fP\fImp4error\fP\fB)\fP
-.br
-\fBlibmp4tag_t * mp4tag_openstreamfd (int \fP\fIfd\fP\fB, size_t \fP\fIoffset\fP\fB, long \fP\fItimeout\fP\fB, int *\fP\fImp4error\fP\fB)\fP
+\fBlibmp4tag_t * mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t seekcb, uint32_t \fP\fItimeout\fP\fB, int *\fP\fImp4error\fP\fB)\fP
 .br
 \fBint mp4tag_parse (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
 .br
@@ -82,20 +80,9 @@
 libmp4tag_t, with the error return in \fImp4error\fP.
 The returned pointer must be freed with \fBmp4tag_free\fP.
 .PP
-\fBmp4tag_openstream\fP uses an existing file handle \fIfh\fP,
-returning a pointer to a libmp4tag_t, with the error return in
-\fImp4error\fP.  The current \fIoffset\fP into the stream must be
-specified.  The \fItimeout\fP in milliseconds specifies how long to
-wait to receive data. The returned pointer must be freed with
-\fBmp4tag_free\fP.
-.PP
-Note that if the MP4 tags are located after the audio/video, the
-stream will be completely read in.
-.PP
-\fBmp4tag_openstreamfd\fP uses an existing file descriptor \fIfd\fP,
-returning a pointer to a libmp4tag_t, with the error return in
-\fImp4error\fP.  The current \fIoffset\fP into the stream must be
-specified.  The \fItimeout\fP in milliseconds specifies how long to
+\fBmp4tag_openstream\fP uses callbacks to process the data stream.
+it returns a pointer to a libmp4tag_t, with the error return in
+\fImp4error\fP. The \fItimeout\fP in milliseconds specifies how long to
 wait to receive data. The returned pointer must be freed with
 \fBmp4tag_free\fP.
 .PP
@@ -274,6 +261,9 @@ The specified tag was not found or is not valid.
 MP4TAG_ERR_UNABLE_TO_PROCESS
 Cannot write the file as neither the tag list, nor the hierarchy in
 which to place the tag list can be found.
+.TP
+MP4TAG_ERR_NO_CALLBACK
+Opened as a stream and no callback is set.
 .SH Tags
 Standard MP4 tag names
 .PP

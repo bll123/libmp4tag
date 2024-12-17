@@ -16,6 +16,8 @@ extern const char *PREFIX_STR;
 
 typedef struct libmp4tag libmp4tag_t;
 typedef struct libmp4tagpreserve libmp4tagpreserve_t;
+typedef size_t (*mp4tag_readcb_t)(char *buff, size_t sz, size_t nmemb, void *udata);
+typedef int (*mp4tag_seekcb_t)(size_t offset, void *udata);
 
 /* libmp4tag.c */
 
@@ -30,6 +32,7 @@ typedef struct {
   bool        binary;
 } mp4tagpub_t;
 
+/* iTunes 'stik' media types */
 enum {
   MP4TAG_MEDIA_TYPE_MOVIE_OLD = 0,
   MP4TAG_MEDIA_TYPE_MUSIC = 1,
@@ -44,9 +47,10 @@ enum {
   MP4TAG_MEDIA_TYPE_ITUNES_U = 23,
 };
 
+/* libmp4tag error codes */
 enum {
   /* the iterator returns the first three values */
-  /* other routines return MP4TAG_OK/MP4TAG_ERROR */
+  /* other routines return MP4TAG_OK/MP4TAG_ERR_... */
   MP4TAG_OK,
   MP4TAG_FINISH,
   MP4TAG_ERR_BAD_STRUCT,    // null structure or already freed
@@ -65,6 +69,7 @@ enum {
   MP4TAG_ERR_FILE_READ_ERROR,
   MP4TAG_ERR_FILE_WRITE_ERROR,
   MP4TAG_ERR_UNABLE_TO_PROCESS,
+  MP4TAG_ERR_NO_CALLBACK,
   MP4TAG_ERR_CANNOT_WRITE,  // stream or read-only file
 };
 
@@ -75,13 +80,13 @@ enum {
 
 enum {
   MP4TAG_ID_MAX = 255,
+  /* iTunes internal JPG and PNG codes */
   MP4TAG_COVER_JPG = 0x0d,
   MP4TAG_COVER_PNG = 0x0e,
 };
 
 libmp4tag_t * mp4tag_open (const char *fn, int *mp4error);
-libmp4tag_t * mp4tag_openstream (FILE *fh, size_t offset, long timeout, int *mp4error);
-libmp4tag_t * mp4tag_openstreamfd (int fd, size_t offset, long timeout, int *mp4error);
+libmp4tag_t * mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t seekcb, void *userdata, uint32_t timeout, int *mp4error);
 int       mp4tag_parse (libmp4tag_t *libmp4tag);
 void      mp4tag_free (libmp4tag_t *libmp4tag);
 
@@ -126,7 +131,7 @@ char    * mp4tag_fromwide (const wchar_t *buff);
 /* versioning */
 
 /* Being a library, the major number will reflect the api version. */
-/* The major value will (hopefully) stay at version 1. */
+/* The major value will change when the API or ABI changes */
 /* The minor value will be updated when major functionality is implemented */
 /* or there are additions to the api. */
 /* The revision value will change for bug fixes/cleanup/documentation. */

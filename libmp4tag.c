@@ -48,6 +48,7 @@ static const char *mp4tagerrmsgs [] = {
   [MP4TAG_ERR_UNABLE_TO_PROCESS] = "unable to process",
   [MP4TAG_ERR_NOT_PARSED] = "not parsed",
   [MP4TAG_ERR_CANNOT_WRITE] = "cannot write",
+  [MP4TAG_ERR_NO_CALLBACK] = "no callback",
 };
 
 typedef struct libmp4tagpreserve {
@@ -66,8 +67,8 @@ static void enable_core_dump (void);
 libmp4tag_t *
 mp4tag_open (const char *fn, int *mp4error)
 {
-  libmp4tag_t *libmp4tag = NULL;
-  int         rc;
+  libmp4tag_t   *libmp4tag = NULL;
+  int           rc;
 
 #if LIBMP4TAG_DEBUG
   enable_core_dump ();
@@ -130,9 +131,11 @@ mp4tag_open (const char *fn, int *mp4error)
 }
 
 libmp4tag_t *
-mp4tag_openstream (FILE *fh, size_t offset, long timeout, int *mp4error)
+mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t seekcb,
+    void *userdata, uint32_t timeout, int *mp4error)
 {
   libmp4tag_t *libmp4tag = NULL;
+  int         rc;
 
   *mp4error = MP4TAG_OK;
   libmp4tag = mp4tag_alloc (mp4error);
@@ -140,57 +143,25 @@ mp4tag_openstream (FILE *fh, size_t offset, long timeout, int *mp4error)
     return NULL;
   }
 
-  libmp4tag->fh = fh;
-  if (libmp4tag->fh == NULL) {
-    *mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
-    libmp4tag->libmp4tagident = 0;
-    free (libmp4tag);
-    return NULL;
-  }
+  libmp4tag->readcb = readcb;
+  libmp4tag->seekcb = seekcb;
+  libmp4tag->userdata = userdata;
 
   /* needed for parse, write */
   libmp4tag->filesz = MP4TAG_NO_FILESZ;
 
-  /* the assumption is made that the stream being passed in is known */
-  /* to be an mp4 */
-
   libmp4tag->isstream = true;
   libmp4tag->canwrite = false;
   libmp4tag->timeout = timeout;
-  libmp4tag->offset = offset;
+  libmp4tag->offset = 0;
 
-  return libmp4tag;
-}
-
-libmp4tag_t *
-mp4tag_openstreamfd (int fd, size_t offset, long timeout, int *mp4error)
-{
-  libmp4tag_t *libmp4tag = NULL;
-
-  *mp4error = MP4TAG_OK;
-  libmp4tag = mp4tag_alloc (mp4error);
-  if (*mp4error != MP4TAG_OK) {
-    return NULL;
-  }
-
-  libmp4tag->fh = fdopen (fd, "rb");
-  if (libmp4tag->fh == NULL) {
-    *mp4error = MP4TAG_ERR_FILE_NOT_FOUND;
+  rc = mp4tag_parse_ftyp (libmp4tag);
+  if (rc != MP4TAG_OK) {
+    *mp4error = rc;
     libmp4tag->libmp4tagident = 0;
     free (libmp4tag);
     return NULL;
   }
-
-  /* needed for parse, write */
-  libmp4tag->filesz = MP4TAG_NO_FILESZ;
-
-  /* the assumption is made that the stream being passed in is known */
-  /* to be an mp4 */
-
-  libmp4tag->isstream = true;
-  libmp4tag->canwrite = false;
-  libmp4tag->timeout = timeout;
-  libmp4tag->offset = offset;
 
   return libmp4tag;
 }
@@ -810,8 +781,11 @@ mp4tag_alloc (int *mp4error)
 
   libmp4tag->libmp4tagident = MP4TAG_IDENT;
   libmp4tag->fn = NULL;
-  libmp4tag->filesz = MP4TAG_NO_FILESZ;
   libmp4tag->fh = NULL;
+  libmp4tag->readcb = NULL;
+  libmp4tag->seekcb = NULL;
+  libmp4tag->userdata = NULL;
+  libmp4tag->filesz = MP4TAG_NO_FILESZ;
   libmp4tag->dbgflags = 0;
   libmp4tag->options = MP4TAG_OPTION_NONE;
 
@@ -822,7 +796,6 @@ mp4tag_alloc (int *mp4error)
 
   return libmp4tag;
 }
-
 
 static void
 mp4tag_free_tags (libmp4tag_t *libmp4tag)

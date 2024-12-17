@@ -25,9 +25,12 @@ typedef struct {
 } argcopy_t;
 
 static libmp4tag_t * openparse (const char *fname, int dbgflags, int options);
+static libmp4tag_t * openstream_parse (FILE *fh, int dbgflags, int options);
 static void setTagName (const char *tag, char *buff, size_t sz);
 static void displayTag (mp4tagpub_t *mp4tagpub);
 static void cleanargs (argcopy_t *argcopy);
+static size_t clireadcb (char *buff, size_t sz, size_t nmemb, void *udata);
+static int cliseekcb (size_t offset, void *udata);
 
 int
 main (int argc, char *argv [])
@@ -49,6 +52,7 @@ main (int argc, char *argv [])
   bool          write = false;
   bool          copy = false;
   bool          testbin = false;
+  bool          asstream = false;
   int           fnidx = -1;
   int           dbgflags = 0;
   int           options = 0;
@@ -58,8 +62,10 @@ main (int argc, char *argv [])
   wchar_t       **wargv;
   int           targc;
 #endif
+  FILE          *fh;          // for openstream test
 
   static struct option mp4tagcli_options [] = {
+    { "asstream",       no_argument,        NULL,   's' },
     { "binary",         no_argument,        NULL,   'b' },
     { "clean",          no_argument,        NULL,   'c' },
     { "copyfrom",       required_argument,  NULL,   'f' },
@@ -136,6 +142,10 @@ main (int argc, char *argv [])
         options |= MP4TAG_OPTION_KEEP_BACKUP;
         break;
       }
+      case 's': {
+        asstream = true;
+        break;
+      }
       case 't': {
         if (optarg != NULL) {
           targ = argcopy.utf8argv [optind - 1];
@@ -176,9 +186,14 @@ main (int argc, char *argv [])
     infname = argcopy.utf8argv [fnidx];
   }
 
-  libmp4tag = openparse (infname, dbgflags, options);
+  if (asstream) {
+    fh = fopen (infname, "rb");
+    libmp4tag = openstream_parse (fh, dbgflags, options);
+  } else {
+    libmp4tag = openparse (infname, dbgflags, options);
+  }
 
-  if (copy) {
+  if (! asstream && copy) {
     libmp4tagpreserve_t   *preserve;
 
     preserve = mp4tag_preserve_tags (libmp4tag);
@@ -188,7 +203,7 @@ main (int argc, char *argv [])
     write = true;
   }
 
-  if (clean && ! copy) {
+  if (! asstream && clean && ! copy) {
     if (mp4tag_clean_tags (libmp4tag) != MP4TAG_OK) {
       fprintf (stderr, "Unable to clean tags (%s)\n", mp4tag_error_str (libmp4tag));
       rc = mp4tag_error (libmp4tag);
@@ -196,7 +211,7 @@ main (int argc, char *argv [])
     write = true;
   }
 
-  if (rc == MP4TAG_OK && ! clean && ! copy) {
+  if (rc == MP4TAG_OK && ! asstream && ! clean && ! copy) {
     for (int i = fnidx + 1; i < argc; ++i) {
       char    *tstr;
       char    *tokstr;
@@ -250,7 +265,7 @@ main (int argc, char *argv [])
     } /* for each argument on the command line */
   } /* not clean */
 
-  if (rc == MP4TAG_OK && write) {
+  if (rc == MP4TAG_OK && ! asstream && write) {
     if (mp4tag_write_tags (libmp4tag) != MP4TAG_OK) {
       fprintf (stderr, "Unable to write tags (%s)\n", mp4tag_error_str (libmp4tag));
     }
@@ -294,8 +309,12 @@ main (int argc, char *argv [])
     }
   }
 
+  if (asstream && fh != NULL) {
+    fclose (fh);
+  }
   mp4tag_free (libmp4tag);
   cleanargs (&argcopy);
+
   return rc;
 }
 
@@ -373,6 +392,51 @@ openparse (const char *fname, int dbgflags, int options)
 
   mp4tag_parse (libmp4tag);
   return libmp4tag;
+}
+
+static libmp4tag_t *
+openstream_parse (FILE *fh, int dbgflags, int options)
+{
+  libmp4tag_t   *libmp4tag = NULL;
+  int           mp4error;
+
+  libmp4tag = mp4tag_openstream (clireadcb, cliseekcb, fh, 10, &mp4error);
+  if (libmp4tag == NULL) {
+    fprintf (stderr, "unable to open stream\n");
+    exit (1);
+  }
+
+  mp4tag_set_option (libmp4tag, options);
+  if (dbgflags != 0) {
+    mp4tag_set_debug_flags (libmp4tag, dbgflags);
+  }
+
+  mp4tag_parse (libmp4tag);
+  return libmp4tag;
+}
+
+static size_t
+clireadcb (char *buff, size_t sz, size_t nmemb, void *udata)
+{
+  FILE    *fh = udata;
+  size_t  br;
+
+  br = fread (buff, sz, nmemb, fh);
+fprintf (stdout, "br=%ld\n", (long) br);
+fflush (stdout);
+  return br;
+}
+
+static int
+cliseekcb (size_t offset, void *udata)
+{
+  FILE    *fh = udata;
+  int     rc;
+
+  rc = fseek (fh, offset, SEEK_CUR);
+fprintf (stdout, "seek %ld %d\n", (long) offset, rc);
+fflush (stdout);
+  return rc;
 }
 
 static void

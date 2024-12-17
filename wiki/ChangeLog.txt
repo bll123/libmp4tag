@@ -7,13 +7,13 @@
 **2.0.0 2024-12---**
 
 * Bug Fixes:
-    * Fix track name box when track data shortened.
     * Fix duration when hint tracks are present.
-    * Fix issue with free block handling.
     * Fix handling of arrays of strings.
+    * Fix issue with free block handling.
+    * Fix track name box when track data is shortened.
 * Changes:
     * mp4tagpub_t: 'coveridx' has been renamed to 'dataidx'.
-    * Handles arrays of strings properly.
+    * openstream interface re-written.
 
 -->
 

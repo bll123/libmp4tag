@@ -114,64 +114,67 @@ typedef struct mp4tag {
 } mp4tag_t;
 
 typedef struct libmp4tag {
-  int64_t   libmp4tagident;
-  char      *fn;
-  size_t    filesz;
-  FILE      *fh;
-  size_t    offset;
-  mp4tag_t  *tags;
-  int64_t   creationdate;
-  int64_t   modifieddate;
-  int64_t   duration;
-  int32_t   samplerate;
-  uint32_t  timeout;
+  int64_t         libmp4tagident;
+  FILE            *fh;
+  char            *fn;
+  mp4tag_readcb_t readcb;
+  mp4tag_seekcb_t seekcb;
+  void            *userdata;
+  mp4tag_t        *tags;
+  size_t          filesz;
+  size_t          offset;
+  int64_t         creationdate;
+  int64_t         modifieddate;
+  int64_t         duration;
+  int32_t         samplerate;
+  uint32_t        timeout;
   /* used by the parser and writer */
-  uint32_t  base_lengths [MP4TAG_LEVEL_MAX];
-  ssize_t   base_offsets [MP4TAG_LEVEL_MAX];
-  uint64_t  calc_length [MP4TAG_LEVEL_MAX];
-  uint64_t  rem_length [MP4TAG_LEVEL_MAX];
+  uint32_t        base_lengths [MP4TAG_LEVEL_MAX];
+  ssize_t         base_offsets [MP4TAG_LEVEL_MAX];
+  uint64_t        calc_length [MP4TAG_LEVEL_MAX];
+  uint64_t        rem_length [MP4TAG_LEVEL_MAX];
   /* for debugging, otherwise not needed */
-  char      base_name [MP4TAG_LEVEL_MAX][MP4TAG_ID_DISP_LEN + 1];
-  uint32_t  taglist_orig_data_len;    /* for debugging */
-  int       base_offset_count;
-  ssize_t   taglist_base_offset;
-  ssize_t   taglist_offset;
-  uint32_t  taglist_orig_len;
-  uint32_t  taglist_len;
-  uint32_t  interior_free_len;
-  uint32_t  exterior_free_len;
-  uint32_t  ilst_remaining;
-  int       parentidx;
-  ssize_t   noilst_offset;
-  ssize_t   after_ilst_offset;
-  uint32_t  insert_delta;
-  ssize_t   stco_offset;
-  uint32_t  stco_len;
-  ssize_t   co64_offset;
-  uint32_t  co64_len;
+  char            base_name [MP4TAG_LEVEL_MAX][MP4TAG_ID_DISP_LEN + 1];
+  uint32_t        taglist_orig_data_len;    /* for debugging */
+  int             base_offset_count;
+  ssize_t         taglist_base_offset;
+  ssize_t         taglist_offset;
+  uint32_t        taglist_orig_len;
+  uint32_t        taglist_len;
+  uint32_t        interior_free_len;
+  uint32_t        exterior_free_len;
+  uint32_t        ilst_remaining;
+  int             parentidx;
+  ssize_t         noilst_offset;
+  ssize_t         after_ilst_offset;
+  uint32_t        insert_delta;
+  ssize_t         stco_offset;
+  uint32_t        stco_len;
+  ssize_t         co64_offset;
+  uint32_t        co64_len;
   /* datacount is a temporary variable used by both add-tag */
   /* and the write process */
-  int       datacount;
+  int             datacount;
   /* temporary variable used by the write process */
-  char      lastbox_nm [TEMP_NM_SZ];
-  int32_t   lastbox_offset;
+  char            lastbox_nm [TEMP_NM_SZ];
+  int32_t         lastbox_offset;
   /* tag list */
-  int       tagcount;
-  int       tagalloccount;
-  int       iterator;
-  int       mp4error;
-  int       dbgflags;
-  int       options;
-  bool      mp7meta : 1;
-  bool      unlimited : 1;
-  bool      parsed : 1;
+  int             tagcount;
+  int             tagalloccount;
+  int             iterator;
+  int             mp4error;
+  int             dbgflags;
+  int             options;
+  bool            mp7meta;
+  bool            unlimited;
+  bool            parsed;
   /* used by the parser */
-  bool      processdata : 1;
-  bool      checkforfree : 1;
-  bool      parsedone : 1;
+  bool            processdata;
+  bool            checkforfree;
+  bool            parsedone;
   /* streams */
-  bool      isstream : 1;
-  bool      canwrite : 1;
+  bool            isstream;
+  bool            canwrite;
 } libmp4tag_t;
 
 /* mp4const.c */
