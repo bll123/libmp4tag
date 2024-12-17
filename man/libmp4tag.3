@@ -118,8 +118,8 @@ The \fBcovertype\fP field in the mp4tagpub_t structure will be
 set to MP4TAG_COVER_JPG or MP4TAG_COVER_PNG for cover tags.
 .SS Modifying Tags
 .PP
-Modifying a tag does not commit the changes to the MP4 file.
-See the Writing Tags section.
+Modifying a tag, adding a new tag or cleaning the tags does not commit
+the changes to the MP4 file. See the Writing Tags section.
 .PP
 \fBmp4tag_set_tag\fP will set \fItag\fP to \fIdata\fP when \fItag\fP is
 not set to binary data.
@@ -150,7 +150,7 @@ memory.  The value of \fItag\fP is set to \fIdata\fP with size \fIdatalen\fP.
 .PP
 \fBmp4tag_clean_tags\fP removes all tags from the MP4 file.
 .SS Writing Tags
-\fBmp4tag_write_tags\fP will write the tags to the MP4 file.
+\fBmp4tag_write_tags\fP will write the changed tags to the MP4 file.
 .PP
 The MP4 file is not modified until the \fBmp4tag_write_tags\fP function
 is called.
@@ -335,7 +335,7 @@ _
 (1) \fBlibmp4tag\fP accepts N, N/T or (N,T) formats to specify the
 disc or track numbers.
 .SH See Also
-\fBmp4tagcli\fP(1)
+\fBmp4tagcli\fP(1)  Example usage of libmp4tag.
 .SH Links
 \fBMain\fP: https://sourceforge.net/p/libmp4tag/
 .br

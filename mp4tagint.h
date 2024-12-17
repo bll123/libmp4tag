@@ -15,7 +15,6 @@
 extern "C" {
 #endif
 
-#define LIBMP4TAG_DEBUG_STREAM 0
 #define LIBMP4TAG_DEBUG 1
 
 enum {

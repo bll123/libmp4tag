@@ -48,7 +48,7 @@ mp4tagcli \- mp4 tag command line interface
 video file.  Existing tags and existing custom tags will not be lost
 when writing or replacing tags.
 .PP
-\fImp4tagcli\fP can be used as a CLI interface to read and write MP4
+\fImp4tagcli\fP can be used as a command line interface to read and write MP4
 audio tags, but it is also intended as an example on how to use the
 \fIlibmp4tag\fP library, and thus includes other less useful options and
 debugging modes.
@@ -65,6 +65,14 @@ is recommended to always use the \fBgen\fP tag.
 When specifying a particular tag, a "\fBnot found\fP" message will be
 displayed if the tag is not present (for display) or is not known
 (when setting a tag).
+.SS Arrays
+.PP
+Arrays can be specified by suffixing the tag name with a colon and the
+index number.  e.g. \fBwrt:1\fP.  Arrays are only implemented for
+string data.
+.PP
+Index values are relative, not absolute.  There will never be an array
+with a empty slot.
 .SS Cover Images
 .PP
 There may be more than one cover image present.  If there is more than

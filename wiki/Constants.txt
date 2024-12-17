@@ -4,7 +4,7 @@
 
 ### Constants
 
-_PREFIX_LEN_ : The copyright symbol as text.  This value should be
+__PREFIX\_STR__ : The copyright symbol as text.  This value should be
 pre-pended to any three-character tag names.
 
 ##### Options

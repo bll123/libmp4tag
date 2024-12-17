@@ -51,42 +51,17 @@ __readcb__ : The read callback.
 typedef size_t (*mp4tag_readcb_t)(char *buff, size_t sz, size_t nmemb, void *udata);
 ~~~
 
-__seekcb__ : The read callback.
+The read callback does not need to return all of the requested data
+immediately, it may return partial data.  It must be able to provide
+the requested data before the timeout occurs.
+
+__seekcb__ : The seek callback.
 ~~~
 typedef int (*mp4tag_seekcb_t)(size_t offset, void *udata);
 ~~~
 
-__userdata__ : Pointer to user data.
-
-__timeout__ : Timeout in milliseconds when processing the data.
-
-__mp4error__ : A pointer to an integer.  Returns the
-[error&nbsp;code](ErrorCodes).
-
-Returns: A pointer to an allocated libmp4tag_t structure.  This
-pointer must be freed in a call to __mp4tag_free__.
-
--------------
-##### mp4tag_openstreamfd
-
-Initializes libmp4tag to process a stream.  It is assumed that
-the open file is already known to be a valid MP4 file.
-A libmp4tag_t structure is allocated and returned for use in the other
-libmp4tag functions.
-
-Note that if the MP4 tags are located after the audio/video, the
-stream will be completely read in.
-
-~~~
-#include "libmp4tag.h"
-
-libmp4tag_t *mp4tag_openstreamfd (int fd, int *mp4error, uint32_t timeout)
-~~~
-
-__fd__ : The file descriptor of an open stream.
-
-__offset__ : The current offset in the stream.  Use 0 if the stream
-has not been processed.
+__userdata__ : Pointer to user data.  This pointer will be passed to
+the read and seek callback routines.
 
 __timeout__ : Timeout in milliseconds when processing the data.
 

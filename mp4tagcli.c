@@ -394,6 +394,9 @@ openparse (const char *fname, int dbgflags, int options)
   return libmp4tag;
 }
 
+/* this is a very simplistic example using a file handle */
+/* a streaming interface would need to provide read and seek callback */
+/* functions that work with the user's stream */
 static libmp4tag_t *
 openstream_parse (FILE *fh, int dbgflags, int options)
 {

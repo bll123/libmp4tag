@@ -119,14 +119,6 @@ mp4tag_open (const char *fn, int *mp4error)
     return NULL;
   }
 
-  /* for debugging only */
-#if LIBMP4TAG_DEBUG_STREAM
-  libmp4tag->isstream = true;
-  libmp4tag->canwrite = false;
-  libmp4tag->offset = ftell (libmp4tag->fh);
-  libmp4tag->timeout = 10;
-#endif
-
   return libmp4tag;
 }
 
