@@ -89,6 +89,7 @@ enum {
   MP4TAG_DBG_WRITE                  = (1 << 1),
   MP4TAG_DBG_DUMP_CO                = (1 << 2),
   MP4TAG_DBG_OTHER                  = (1 << 3),
+  MP4TAG_DBG_BUG                    = (1 << 4),
 };
 
 enum {

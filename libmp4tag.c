@@ -185,6 +185,11 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
   mp4tag_parse_file (libmp4tag, 0, 0);
 
   if (libmp4tag->mp4error == MP4TAG_OK) {
+    if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
+      if (libmp4tag->dofix) {
+        fprintf (stdout, "== FIX\n");
+      }
+    }
     if (libmp4tag->canwrite && libmp4tag->dofix) {
       /* version 1.3.x would not calculate the correct lengths */
       /* for the containers if two free boxes got combined */

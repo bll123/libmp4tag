@@ -390,6 +390,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       /* this is a probable indicator that the 1.3.0 bug is present */
       if (libmp4tag->ilst_remaining > 0) {
         libmp4tag->ilstremain = true;
+        if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
+          fprintf (stdout, "ilst-rem %ld\n", libmp4tag->ilst_remaining);
+        }
       }
     }
 
@@ -399,6 +402,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       /* checks for version 1.3.0 bug */
       if (strcmp (bd.nm, boxids [MP4TAG_ILST]) == 0) {
         libmp4tag->ilstdone = true;
+        if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
+          fprintf (stdout, "ilst-done\n");
+        }
       }
       if (strcmp (bd.nm, boxids [MP4TAG_FREE]) == 0) {
         /* only applies to first free box immediately after an 'ilst' */
@@ -407,11 +413,17 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
             ! libmp4tag->ilstdone &&
             libmp4tag->rem_length [level] < 0) {
           libmp4tag->freeneg = true;
+          if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
+            fprintf (stdout, "free-neg\n");
+          }
         }
       }
       if (strcmp (bd.nm, boxids [MP4TAG_UDTA]) == 0) {
         if (libmp4tag->rem_length [level] == 0) {
           libmp4tag->udtazero = true;
+          if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
+            fprintf (stdout, "udta-zero\n");
+          }
         }
 
         /* if ilstdone is true, then 'ilst' was properly processed */
@@ -420,6 +432,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
             libmp4tag->freeneg &&
             libmp4tag->udtazero) {
           libmp4tag->dofix = true;
+          if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
+            fprintf (stdout, "do-fix\n");
+          }
         }
       }
 
@@ -458,8 +473,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     libmp4tag->checkforfree = false;
     libmp4tag->parsedone = true;
   }
-
-fprintf (stdout, "done-b: %s %ld\n", bd.nm, (long) libmp4tag->rem_length [level]);
 
   return libmp4tag->mp4error;
 }
