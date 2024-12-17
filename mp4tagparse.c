@@ -104,7 +104,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
   }
 
   if (libmp4tag->parsedone) {
-    libmp4tag->calc_length [level] = 0;
     return libmp4tag->mp4error;
   }
 
@@ -120,7 +119,6 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
 
     /* the box-length includes the length and the identifier */
     bd.boxlen = be32toh (bh.len);
-    libmp4tag->calc_length [level] += bd.boxlen;
 
     if (bd.boxlen == 0) {
       /* indicates that the 'mdat' box continues to the end of the file */
@@ -162,10 +160,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     needdata = false;
 
     if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
-      fprintf (stdout, "%*s %2d %.5s: %" PRId64 " %" PRId64 " rem: %" PRId64 " calc: %" PRId64 "\n",
+      fprintf (stdout, "%*s %2d %.5s: %" PRId64 " %" PRId64 " rem: %" PRId64 "\n",
           level*2, " ", level, bd.nm, bd.boxlen, bd.len,
-          libmp4tag->rem_length [level],
-          libmp4tag->calc_length [level]);
+          libmp4tag->rem_length [level]);
     }
 
     descend = false;
@@ -378,18 +375,56 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
 
     libmp4tag->rem_length [level] -= bd.boxlen;
     if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
-      fprintf (stdout, "%*s    %.5s: end: rem: %" PRId64 " calc: %" PRId64 "\n",
-          level*2, " ", bd.nm, libmp4tag->rem_length [level],
-          libmp4tag->calc_length [level]);
+      fprintf (stdout, "%*s    %.5s: end: rem: %" PRId64 "\n",
+          level*2, " ", bd.nm, libmp4tag->rem_length [level]);
       fflush (stdout);
     }
+
+    /* check for version 1.3.0 bug */
     if (strcmp (bd.nm, boxids [MP4TAG_ILST]) == 0) {
       libmp4tag->ilst_remaining = libmp4tag->rem_length [level];
+      libmp4tag->ilstend = true;
+      /* reached the end of the 'ilst' box and there is data remaining */
+      /* to be processed. */
+      /* if the 'ilst' box is not processed in the normal exit below, */
+      /* this is a probable indicator that the 1.3.0 bug is present */
+      if (libmp4tag->ilst_remaining > 0) {
+        libmp4tag->ilstremain = true;
+      }
     }
 
     if (libmp4tag->rem_length [level] <= 0 && boxlen != 0) {
       /* this is the normal exit when done with a level */
-      libmp4tag->calc_length [level] = 0;
+
+      /* checks for version 1.3.0 bug */
+      if (strcmp (bd.nm, boxids [MP4TAG_ILST]) == 0) {
+        libmp4tag->ilstdone = true;
+      }
+      if (strcmp (bd.nm, boxids [MP4TAG_FREE]) == 0) {
+        /* only applies to first free box immediately after an 'ilst' */
+        /* if the 'ilst' box finishes properly, there is no bug */
+        if (libmp4tag->ilstend &&
+            ! libmp4tag->ilstdone &&
+            libmp4tag->rem_length [level] < 0) {
+          libmp4tag->freeneg = true;
+        }
+      }
+      if (strcmp (bd.nm, boxids [MP4TAG_UDTA]) == 0) {
+        if (libmp4tag->rem_length [level] == 0) {
+          libmp4tag->udtazero = true;
+        }
+
+        /* if ilstdone is true, then 'ilst' was properly processed */
+        if (libmp4tag->ilstremain &&
+            ! libmp4tag->ilstdone &&
+            libmp4tag->freeneg &&
+            libmp4tag->udtazero) {
+          libmp4tag->dofix = true;
+        }
+      }
+
+      libmp4tag->ilstend = false;
+
       return libmp4tag->mp4error;
     }
 
@@ -413,7 +448,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
       fprintf (stdout, "interior-free: %d\n", libmp4tag->interior_free_len);
       fprintf (stdout, "exterior-free: %d\n", libmp4tag->exterior_free_len);
-      fprintf (stdout, "ilst-remaining: %d\n", libmp4tag->ilst_remaining);
+      fprintf (stdout, "ilst-remaining: %ld\n", libmp4tag->ilst_remaining);
     }
   }
 
@@ -424,7 +459,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     libmp4tag->parsedone = true;
   }
 
-  libmp4tag->calc_length [level] = 0;
+fprintf (stdout, "done-b: %s %ld\n", bd.nm, (long) libmp4tag->rem_length [level]);
 
   return libmp4tag->mp4error;
 }

@@ -91,7 +91,6 @@ const mp4tagdef_t mp4taglist [] = {
   {  7, "tvnn", MP4TAG_ID_STRING, 0 },              // string (tv network name)
   {  7, "tvsh", MP4TAG_ID_STRING, 0 },              // string (tv show name)
   {  6, "tvsn", MP4TAG_ID_NUM, sizeof (uint32_t) }, // 4 byte (tv season)
-  {  7, "xid ", MP4TAG_ID_STRING, 0, },             // no idea what this is (old)
   {  1, "©ART", MP4TAG_ID_STRING, 0 },              // string (artist)
   {  2, "©alb", MP4TAG_ID_STRING, 0 },              // string (album)
   {  7, "©cmt", MP4TAG_ID_STRING, 0 },              // string (comment)

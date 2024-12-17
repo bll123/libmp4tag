@@ -130,8 +130,8 @@ typedef struct libmp4tag {
   /* used by the parser and writer */
   uint32_t        base_lengths [MP4TAG_LEVEL_MAX];
   ssize_t         base_offsets [MP4TAG_LEVEL_MAX];
-  uint64_t        calc_length [MP4TAG_LEVEL_MAX];
-  uint64_t        rem_length [MP4TAG_LEVEL_MAX];
+  int64_t         rem_length [MP4TAG_LEVEL_MAX];
+  uint64_t        ilst_remaining;     /* for 1.3.0 bug */
   /* for debugging, otherwise not needed */
   char            base_name [MP4TAG_LEVEL_MAX][MP4TAG_ID_DISP_LEN + 1];
   uint32_t        taglist_orig_data_len;    /* for debugging */
@@ -142,7 +142,6 @@ typedef struct libmp4tag {
   uint32_t        taglist_len;
   uint32_t        interior_free_len;
   uint32_t        exterior_free_len;
-  uint32_t        ilst_remaining;
   int             parentidx;
   ssize_t         noilst_offset;
   ssize_t         after_ilst_offset;
@@ -171,6 +170,13 @@ typedef struct libmp4tag {
   bool            processdata;
   bool            checkforfree;
   bool            parsedone;
+  /* used by the parser to track 1.3.0 bug */
+  bool            ilstremain;
+  bool            ilstend;
+  bool            ilstdone;
+  bool            freeneg;
+  bool            udtazero;
+  bool            dofix;
   /* streams */
   bool            isstream;
   bool            canwrite;
