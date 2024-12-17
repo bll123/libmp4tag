@@ -62,7 +62,7 @@ main (int argc, char *argv [])
   wchar_t       **wargv;
   int           targc;
 #endif
-  FILE          *fh;          // for openstream test
+  FILE          *fh = NULL;          // for openstream test
 
   static struct option mp4tagcli_options [] = {
     { "asstream",       no_argument,        NULL,   's' },
@@ -285,12 +285,12 @@ main (int argc, char *argv [])
       if (dump &&
           mp4tagpub.binary &&
           mp4tagpub.tag != NULL) {
-        FILE    *fh;
+        FILE    *tfh;
 
-        fh = fopen (dumpfn, "wb");
-        if (fh != NULL) {
-          fwrite (mp4tagpub.data, mp4tagpub.datalen, 1, fh);
-          fclose (fh);
+        tfh = fopen (dumpfn, "wb");
+        if (tfh != NULL) {
+          fwrite (mp4tagpub.data, mp4tagpub.datalen, 1, tfh);
+          fclose (tfh);
         }
       }
     }
@@ -422,8 +422,6 @@ clireadcb (char *buff, size_t sz, size_t nmemb, void *udata)
   size_t  br;
 
   br = fread (buff, sz, nmemb, fh);
-fprintf (stdout, "br=%ld\n", (long) br);
-fflush (stdout);
   return br;
 }
 
@@ -434,8 +432,6 @@ cliseekcb (size_t offset, void *udata)
   int     rc;
 
   rc = fseek (fh, offset, SEEK_CUR);
-fprintf (stdout, "seek %ld %d\n", (long) offset, rc);
-fflush (stdout);
   return rc;
 }
 

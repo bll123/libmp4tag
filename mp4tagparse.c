@@ -850,7 +850,6 @@ mp4tag_data_seek (libmp4tag_t *libmp4tag, size_t skiplen)
     rc = fseek (libmp4tag->fh, skiplen, SEEK_CUR);
   } else {
     if (libmp4tag->seekcb == NULL) {
-fprintf (stdout, "data-seek: no-cb\n");
       libmp4tag->mp4error = MP4TAG_ERR_NO_CALLBACK;
       return MP4TAG_READ_NONE;
     }
@@ -858,8 +857,6 @@ fprintf (stdout, "data-seek: no-cb\n");
     rc = libmp4tag->seekcb (skiplen, libmp4tag->userdata);
   }
   if (rc != 0) {
-fprintf (stdout, "seek-stream: fail\n");
-fflush (stdout);
     libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
     return MP4TAG_READ_NONE;
   }
@@ -914,8 +911,6 @@ mp4tag_data_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
       ttm = mp4tag_get_time ();
       if (ttm > tmval) {
         /* no more data found within timeout period */
-fprintf (stdout, "read-stream: timeout\n");
-fflush (stdout);
         return MP4TAG_READ_NONE;
       }
     }

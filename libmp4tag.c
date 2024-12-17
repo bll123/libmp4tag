@@ -177,13 +177,21 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
 
   libmp4tag->mp4error = MP4TAG_OK;
 
-  /* parsing requires an open file */
-  if (libmp4tag->fh == NULL) {
+  /* parsing either requires an open file or a stream interface */
+  if (! libmp4tag->isstream && libmp4tag->fh == NULL) {
     libmp4tag->mp4error = MP4TAG_ERR_NOT_OPEN;
     return libmp4tag->mp4error;
   }
+  if (libmp4tag->isstream &&
+      (libmp4tag->readcb == NULL ||
+      libmp4tag->seekcb == NULL)) {
+    libmp4tag->mp4error = MP4TAG_ERR_NO_CALLBACK;
+    return libmp4tag->mp4error;
+  }
 
-  offset = ftell (libmp4tag->fh);
+  if (! libmp4tag->isstream) {
+    offset = ftell (libmp4tag->fh);
+  }
   mp4tag_parse_file (libmp4tag, 0, 0);
 
   if (libmp4tag->mp4error == MP4TAG_OK) {
