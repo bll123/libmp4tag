@@ -1,7 +1,7 @@
 .\"
 .\" mp4tagcli.1
 .\"
-.\" Copyright 2023 Brad Lanam Pleasant Hill CA USA
+.\" Copyright 2023-2024 Brad Lanam Pleasant Hill CA USA
 .\"
 .\" brad.lanam.di_at_gmail.com
 .\"
@@ -13,6 +13,7 @@ mp4tagcli \- mp4 tag command line interface
 .\" mp4tagcli --copyfrom in-filename --copyto out-filename
 .\" mp4tagcli <filename> --clean
 .\" mp4tagcli <filename> --duration
+.\" mp4tagcli <filename> --asstream
 .\" mp4tagcli <filename>
 .\" [--binary] [<tag>={|<value>|<filename>}] ...]
 .\" [<tag>={|<value>|<filename>}] ...]
@@ -34,6 +35,10 @@ mp4tagcli \- mp4 tag command line interface
 .br
 .B mp4tagcli
 \fIfilename\fP
+\fB\-\-asstream\fP
+.br
+.B mp4tagcli
+\fIfilename\fP
 [\fB\-\-binary\fP]
 [\fItag\fP={|\fIvalue\fP|\fIfilename\fP}]
 [\fB\-\-display\fP \fItag\fP [\fB\-\-dump\fP \fIfilename\fP]]
@@ -42,14 +47,20 @@ mp4tagcli \- mp4 tag command line interface
 \fImp4tagcli\fP is used to read and write tags from an MP4 audio or
 video file.  Existing tags and existing custom tags will not be lost
 when writing or replacing tags.
+.PP
+\fImp4tagcli\fP can be used as a CLI interface to read and write MP4
+audio tags, but it is also intended as an example on how to use the
+\fIlibmp4tag\fP library, and thus includes other less useful options and
+debugging modes.
 .SH Overview
 .PP
-Tags may be specified without the preceding copyright symbol (©).  Any
-tag that is three characters in length will have the copyright symbol
-pre-pended.
+Tags may be specified without the preceding copyright symbol (\[co]).
+Any tag that is three characters in length will have the
+copyright symbol pre-pended.  This is a function of the
+\fImp4tagcli\fP program and not the \fIlibmp4tag\fP library.
 .PP
-The \fBgnre\fP tag is automatically converted to \fB©gen\fP.  Always
-use the \fBgen\fP tag.
+The \fBgnre\fP tag is automatically converted to \fB\[co]gen\fP.  It
+is recommended to always use the \fBgen\fP tag.
 .PP
 When specifying a particular tag, a "\fBnot found\fP" message will be
 displayed if the tag is not present (for display) or is not known
@@ -83,6 +94,10 @@ output as \fItag\fP\fB=\fP\fIvalue\fP on a separate line.
 .TP
 \fBmp4tagcli\fP \fIfilename\fP {\fB\-u\fP|\fB\-\-duration\fP}
 Prints the duration of the MP4 file without any label.
+.TP
+\fBmp4tagcli\fP \fIfilename\fP {\fB\-u\fP|\fB\-\-asstream\fP}
+Processes the filename as a stream. This is purely for debugging
+purposes.
 .TP
 \fBmp4tagcli\fP \fIfilename\fP \fB{\-d|\-\-display}\fP \fItag\fP
 Display \fItag\fP and its value.
@@ -123,5 +138,5 @@ tags in \fIoutfile\fP are completely removed.
 .br
 \fBBugs\fP: https://sourceforge.net/p/libmp4tag/tickets/
 .SH Copyright
-Copyright 2023 Brad Lanam Pleasant Hill
+Copyright 2023-2024 Brad Lanam Pleasant Hill
 CA USA

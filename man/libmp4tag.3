@@ -2,7 +2,7 @@
 .\"
 .\" libmp4tag.3
 .\"
-.\" Copyright 2023 Brad Lanam Pleasant Hill CA USA
+.\" Copyright 2023-2024 Brad Lanam Pleasant Hill CA USA
 .\"
 .\" brad.lanam.di_at_gmail.com
 .\"
@@ -29,7 +29,7 @@
 .BR "  const char  *data;" "      /* tag value or binary data */"
 .BR "  const char  *covername;" " /* name associated with the cover image */"
 .BR "  size_t      datalen;" "    /* length of the tag value or binary data */"
-.BR "  int         coveridx;" "   /* index value for the cover image */"
+.BR "  int         dataidx;" "    /* index value for the array (e.g. cover image) */"
 .BR "  int         covertype;" "  /* type of cover image */"
 .BR "  bool        binary;" "     /* true if binary data */"
 .BR "} mp4tagpub_t;"
@@ -52,6 +52,8 @@
 \fBint mp4tag_clean_tags (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
 .SS Writing Tags
 \fBint mp4tag_write_tags (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.SS Constants
+\fBPREFIX_STR\fP The copyright symbol as an UTF\-8 string.
 .SS Other Functions
 \fBint mp4tag_error (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
 .br
@@ -107,7 +109,7 @@ MP4TAG_FINISH when there are no more tags to process.
 On MP4TAG_OK, the mp4tagpub_t structure is filled in.
 .PP
 There may be more than one cover image present.
-The \ficoveridx\fP field specifies the index of the cover image.
+The \fidataidx\fP field specifies the index of the cover image.
 .PP
 If the cover image has an associated name, the \fIcovername\fP field
 will be set.
@@ -343,5 +345,5 @@ disc or track numbers.
 .br
 \fBBugs\fP: https://sourceforge.net/p/libmp4tag/tickets/
 .SH Copyright
-Copyright 2023 Brad Lanam Pleasant Hill
+Copyright 2023-2024 Brad Lanam Pleasant Hill
 CA USA

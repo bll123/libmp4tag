@@ -13,7 +13,8 @@
     * Fix track name box when track data is shortened.
 * Changes:
     * mp4tagpub_t: 'coveridx' has been renamed to 'dataidx'.
-    * openstream interface re-written.
+* New Features:
+    * Open stream interface re-written to use callbacks.
 
 -->
 
