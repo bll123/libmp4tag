@@ -283,7 +283,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
             "%s", bd.nm);
         libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
         if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_OTHER)) {
-          fprintf (stdout, "%*s %2d store base %s %d len:%ld offset:%08lx\n", level*2, " ", level, bd.nm, level, bd.len + MP4TAG_BOXHEAD_SZ, libmp4tag->base_offsets [level]);
+          fprintf (stdout, "%*s %2d store base %s %d len:%" PRIu64 " offset:%08lx\n", level*2, " ", level, bd.nm, level, bd.len + MP4TAG_BOXHEAD_SZ, libmp4tag->base_offsets [level]);
         }
         libmp4tag->base_offset_count = level + 1;
       }
@@ -389,7 +389,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
       if (libmp4tag->ilst_remaining > 0) {
         libmp4tag->ilstremain = true;
         if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
-          fprintf (stdout, "ilst-rem %ld\n", libmp4tag->ilst_remaining);
+          fprintf (stdout, "ilst-rem %" PRIu64 "\n", libmp4tag->ilst_remaining);
         }
       }
     }
@@ -461,7 +461,7 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_PRINT_FILE_STRUCTURE)) {
       fprintf (stdout, "interior-free: %d\n", libmp4tag->interior_free_len);
       fprintf (stdout, "exterior-free: %d\n", libmp4tag->exterior_free_len);
-      fprintf (stdout, "ilst-remaining: %ld\n", libmp4tag->ilst_remaining);
+      fprintf (stdout, "ilst-remaining: %" PRId64 "\n", libmp4tag->ilst_remaining);
     }
   }
 

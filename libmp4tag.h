@@ -140,7 +140,7 @@ char    * mp4tag_fromwide (const wchar_t *buff);
 
 #define LIBMP4TAG_VERS_MAJOR 2
 #define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 0
+#define LIBMP4TAG_VERS_REVISION 1
 #define LIBMP4TAG_RELEASE_STATE "production"
 #define CPP_STR(x) #x
 #define LIBMP4TAG_VERSION_STR(maj,min,rev) \

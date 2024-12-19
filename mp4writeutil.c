@@ -39,7 +39,7 @@ mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta)
 
     t32 = libmp4tag->base_lengths [idx] + delta;
     if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
-      fprintf (stdout, "    update-parent: idx: %d %s offset: %" PRId64 " len: %d / %d\n", idx, libmp4tag->base_name [idx], libmp4tag->base_offsets [idx], libmp4tag->base_lengths [idx], t32);
+      fprintf (stdout, "    update-parent: idx: %d %s offset: %ld len: %d / %d\n", idx, libmp4tag->base_name [idx], (long) libmp4tag->base_offsets [idx], libmp4tag->base_lengths [idx], t32);
     }
     t32 = htobe32 (t32);
     if (fwrite (&t32, sizeof (uint32_t), 1, ofh) != 1) {
