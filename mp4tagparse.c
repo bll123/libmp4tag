@@ -551,6 +551,7 @@ mp4tag_parse_ftyp (libmp4tag_t *libmp4tag)
       if (memcmp (buff + idx, "M4P ", 4) == 0) {
         /* aes encrypted audio */
         // fprintf (stdout, "== m4p \n");
+        ++ok;
       }
       if (memcmp (buff + idx, "mp71", 4) == 0 ||
           memcmp (buff + idx, "mp7b", 4) == 0) {
@@ -991,7 +992,7 @@ mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const cha
   int           offsetsz;
   uint32_t      t32;
   uint64_t      t64 = 0;
-  uint64_t      origoffset;
+  uint64_t      origoffset = 0;
 
   if (libmp4tag->isstream == false) {
     /* preserve the current position */

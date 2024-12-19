@@ -27,7 +27,7 @@ while test $# -gt 0; do
   esac
 done
 
-flist="samples/stco.m4a samples/v-mdhd64-co64.mp4"
+flist="samples/stco.m4a samples/v-mdhd64-co64.mp4 samples/has-tags.m4a"
 
 rm -f ${OUTA} ${OUTB} ${RESA} ${RESB} ${TFN}
 for f in $flist; do

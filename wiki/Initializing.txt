@@ -103,7 +103,7 @@ void mp4tag_set_option (libmp4tag_t *libmp4tag, int32_t freespacesz)
 
 __libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
 
-__freespacesz__ : When re-writing the audio file, the size of the new
+__freespacesz__ : When re-writing the MP4 file, the size of the new
 free space box.
 
 -------------

@@ -318,7 +318,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
       fprintf (stdout, "  no ilst, insert boxes\n");
     }
 
-    /* there is no 'ilst' block in the audio file */
+    /* there is no 'ilst' block in the mp4 file */
 
     /* only update the 'moov' box length */
     libmp4tag->parentidx = 0;

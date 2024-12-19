@@ -9,7 +9,7 @@ pre-pended to any three-character tag names.
 
 ##### Options
 
-MP4TAG_OPTION_KEEP_BACKUP : A backup of the original audio file is made.
+MP4TAG_OPTION_KEEP_BACKUP : A backup of the original MP4 file is made.
 
 ##### Cover Image Types
 

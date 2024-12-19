@@ -357,7 +357,7 @@ mp4tag_set_tag_string (libmp4tag_t *libmp4tag, const char *tag,
     mp4tag_t  *mp4tag;
 
     /* an existing tag is being updated. */
-    /* use the information read from the audio file. */
+    /* use the information read from the mp4 file. */
 
     mp4tag = &libmp4tag->tags [idx];
 

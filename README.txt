@@ -81,8 +81,10 @@ Using the mp4tagcli executable:
       mp4tagcli <filename> [--debug <value>] --duration
       mp4tagcli <filename> \
           [--debug <value>] \
-          [--binary] [<tag>={|<value>|<filename>}] ...] \
+          [--binary]
           [--display <tag> [--dump <filename>]]
+          [--freespace <size>]
+          [<tag>={|<value>|<filename>}] ...] \
 
       --dump is only relevant for binary data.
       --binary is only needed when adding an unknown binary data tag
@@ -152,3 +154,7 @@ Using the mp4tagcli executable:
     # this was implemented to test the preserve/restore functionality
     # of the library.
     mp4tagcli --copyfrom aaa.m4a --copyto bbb.m4a
+
+  Free Space Size:
+    # the free space size is only relevant if the mp4 file is re-written.
+    mp4tagcli -freespace 4096 filename.m4a covr=picA.png

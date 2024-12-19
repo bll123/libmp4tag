@@ -4,19 +4,22 @@
 
 <!--
 
-**2.0.0 2024-12---**
+**2.0.1 2025-1---**
+
+-->
+
+**2.0.0 2024-12-19**
 
 * Bug Fixes:
     * Fix duration when hint tracks are present.
     * Fix handling of arrays of strings.
     * Fix issue with free block handling.
-    * Fix track name box when track data is shortened.
+    * Fix processing track name box when track data is shortened.
 * Changes:
     * mp4tagpub_t: 'coveridx' has been renamed to 'dataidx'.
 * New Features:
     * Open stream interface re-written to use callbacks.
-
--->
+    * Support arrays of strings.
 
 **1.3.0 2024-6-9**
 
