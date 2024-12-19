@@ -283,7 +283,8 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
             "%s", bd.nm);
         libmp4tag->base_offsets [level] = offset - MP4TAG_BOXHEAD_SZ;
         if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_OTHER)) {
-          fprintf (stdout, "%*s %2d store base %s %d len:%" PRIu64 " offset:%08lx\n", level*2, " ", level, bd.nm, level, bd.len + MP4TAG_BOXHEAD_SZ, libmp4tag->base_offsets [level]);
+          fprintf (stdout, "%*s %2d store base %s len:%" PRIu64 " offset:%08" PRIx64 "\n",
+              level*2, " ", level, bd.nm, bd.len + MP4TAG_BOXHEAD_SZ, (int64_t) libmp4tag->base_offsets [level]);
         }
         libmp4tag->base_offset_count = level + 1;
       }
