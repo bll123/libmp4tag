@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-#define LIBMP4TAG_DEBUG 1
+#define LIBMP4TAG_DEBUG 0
 
 enum {
   /* various idents that libmp4tag needs to descend into or use */
