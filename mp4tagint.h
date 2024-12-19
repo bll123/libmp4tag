@@ -90,6 +90,7 @@ enum {
   MP4TAG_DBG_DUMP_CO                = (1 << 2),
   MP4TAG_DBG_OTHER                  = (1 << 3),
   MP4TAG_DBG_BUG                    = (1 << 4),
+  MP4TAG_DBG_FIX_OUTPUT             = (1 << 5),
 };
 
 enum {
@@ -128,12 +129,13 @@ typedef struct libmp4tag {
   int64_t         duration;
   int32_t         samplerate;
   uint32_t        timeout;
+  int32_t         freespacesz;
   /* used by the parser and writer */
   uint32_t        base_lengths [MP4TAG_LEVEL_MAX];
   ssize_t         base_offsets [MP4TAG_LEVEL_MAX];
   int64_t         rem_length [MP4TAG_LEVEL_MAX];
-  uint64_t        ilst_remaining;     /* for 1.3.0 bug */
-  /* for debugging, otherwise not needed */
+  uint64_t        ilst_remaining;           /* for 1.3.0 bug */
+  /* base_name is for debugging, otherwise not needed */
   char            base_name [MP4TAG_LEVEL_MAX][MP4TAG_ID_DISP_LEN + 1];
   uint32_t        taglist_orig_data_len;    /* for debugging */
   int             base_offset_count;
@@ -154,7 +156,7 @@ typedef struct libmp4tag {
   /* datacount is a temporary variable used by both add-tag */
   /* and the write process */
   int             datacount;
-  /* temporary variable used by the write process */
+  /* temporary variables used by the write process */
   char            lastbox_nm [TEMP_NM_SZ];
   int32_t         lastbox_offset;
   /* tag list */

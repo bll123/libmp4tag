@@ -24,8 +24,8 @@ typedef struct {
   char      **utf8argv;
 } argcopy_t;
 
-static libmp4tag_t * openparse (const char *fname, int dbgflags, int options);
-static libmp4tag_t * openstream_parse (FILE *fh, int dbgflags, int options);
+static libmp4tag_t * openparse (const char *fname, int dbgflags, int options, int32_t freespacesz);
+static libmp4tag_t * openstream_parse (FILE *fh, int dbgflags, int options, int32_t freespacesz);
 static void setTagName (const char *tag, char *buff, size_t sz);
 static void displayTag (mp4tagpub_t *mp4tagpub);
 static void cleanargs (argcopy_t *argcopy);
@@ -56,6 +56,7 @@ main (int argc, char *argv [])
   int           fnidx = -1;
   int           dbgflags = 0;
   int           options = 0;
+  int32_t       freespacesz = 0;
   int           rc = MP4TAG_OK;
   char          *targ;
 #if _lib_GetCommandLineW
@@ -75,6 +76,7 @@ main (int argc, char *argv [])
     { "display",        required_argument,  NULL,   'd' },
     { "dump",           required_argument,  NULL,   'D' },
     { "duration",       no_argument,        NULL,   'u' },
+    { "freespace",      required_argument,  NULL,   'F' },
     { "testbin",        no_argument,        NULL,   'B' },
     { "version",        no_argument,        NULL,   'v' },
     { NULL,             0,                  NULL,   0 }
@@ -138,6 +140,13 @@ main (int argc, char *argv [])
         }
         break;
       }
+      case 'F': {
+        if (optarg != NULL) {
+          targ = argcopy.utf8argv [optind - 1];
+          freespacesz = atol (targ);
+        }
+        break;
+      }
       case 'k': {
         options |= MP4TAG_OPTION_KEEP_BACKUP;
         break;
@@ -188,9 +197,9 @@ main (int argc, char *argv [])
 
   if (asstream) {
     fh = fopen (infname, "rb");
-    libmp4tag = openstream_parse (fh, dbgflags, options);
+    libmp4tag = openstream_parse (fh, dbgflags, options, freespacesz);
   } else {
-    libmp4tag = openparse (infname, dbgflags, options);
+    libmp4tag = openparse (infname, dbgflags, options, freespacesz);
   }
 
   if (! asstream && copy) {
@@ -198,7 +207,7 @@ main (int argc, char *argv [])
 
     preserve = mp4tag_preserve_tags (libmp4tag);
     mp4tag_free (libmp4tag);
-    libmp4tag = openparse (copyto, dbgflags, options);
+    libmp4tag = openparse (copyto, dbgflags, options, freespacesz);
     mp4tag_restore_tags (libmp4tag, preserve);
     write = true;
   }
@@ -328,7 +337,7 @@ setTagName (const char *tag, char *buff, size_t sz)
     tag = "aART";
   }
   if (strlen (tag) == 3 || (strlen (tag) >= 4 && tag [3] == ':')) {
-    snprintf (buff, sz, "%s%s", PREFIX_STR, tag);
+    snprintf (buff, sz, "%s%s", COPYRIGHT_STR, tag);
   } else {
     snprintf (buff, sz, "%s", tag);
   }
@@ -374,7 +383,7 @@ displayTag (mp4tagpub_t *mp4tagpub)
 }
 
 static libmp4tag_t *
-openparse (const char *fname, int dbgflags, int options)
+openparse (const char *fname, int dbgflags, int options, int32_t freespacesz)
 {
   libmp4tag_t   *libmp4tag = NULL;
   int           mp4error;
@@ -389,6 +398,9 @@ openparse (const char *fname, int dbgflags, int options)
   if (dbgflags != 0) {
     mp4tag_set_debug_flags (libmp4tag, dbgflags);
   }
+  if (freespacesz != 0) {
+    mp4tag_set_free_space (libmp4tag, freespacesz);
+  }
 
   mp4tag_parse (libmp4tag);
   return libmp4tag;
@@ -398,7 +410,7 @@ openparse (const char *fname, int dbgflags, int options)
 /* a streaming interface would need to provide read and seek callback */
 /* functions that work with the user's stream */
 static libmp4tag_t *
-openstream_parse (FILE *fh, int dbgflags, int options)
+openstream_parse (FILE *fh, int dbgflags, int options, int32_t freespacesz)
 {
   libmp4tag_t   *libmp4tag = NULL;
   int           mp4error;
@@ -412,6 +424,9 @@ openstream_parse (FILE *fh, int dbgflags, int options)
   mp4tag_set_option (libmp4tag, options);
   if (dbgflags != 0) {
     mp4tag_set_debug_flags (libmp4tag, dbgflags);
+  }
+  if (freespacesz != 0) {
+    mp4tag_set_free_space (libmp4tag, freespacesz);
   }
 
   mp4tag_parse (libmp4tag);

@@ -16,8 +16,9 @@ mp4tagcli \- mp4 tag command line interface
 .\" mp4tagcli <filename> --asstream
 .\" mp4tagcli <filename>
 .\" [--binary] [<tag>={|<value>|<filename>}] ...]
-.\" [<tag>={|<value>|<filename>}] ...]
 .\" [--display <tag> [--dump=<filename>]]
+.\" [--freespace <size>]
+.\" [<tag>={|<value>|<filename>}] ...]
 .B mp4tagcli
 \fB\-\-version\fP
 .br
@@ -40,8 +41,9 @@ mp4tagcli \- mp4 tag command line interface
 .B mp4tagcli
 \fIfilename\fP
 [\fB\-\-binary\fP]
-[\fItag\fP={|\fIvalue\fP|\fIfilename\fP}]
 [\fB\-\-display\fP \fItag\fP [\fB\-\-dump\fP \fIfilename\fP]]
+[\fB\-\-freespace\fP \fIsize\fP]
+[\fItag\fP={|\fIvalue\fP|\fIfilename\fP}]
 .PP
 .SH Description
 \fImp4tagcli\fP is used to read and write tags from an MP4 audio or
@@ -67,9 +69,9 @@ displayed if the tag is not present (for display) or is not known
 (when setting a tag).
 .SS Arrays
 .PP
-Arrays can be specified by suffixing the tag name with a colon and the
-index number.  e.g. \fBwrt:1\fP.  Arrays are only implemented for
-string data.
+Arrays can be specified by suffixing the tag name with a colon
+and the index number.  e.g. \fBwrt:1\fP.  Arrays are only implemented
+for string data.
 .PP
 Index values are relative, not absolute.  There will never be an array
 with a empty slot.
@@ -124,6 +126,9 @@ binary data.  It is not necessary to use the \fB\-\-binary\fP option
 with cover images or tags with existing binary data.
 .IP
 Multiple tags may be specified on the command line.
+.IP
+The \fB\-\-freespace\fP option is used to specify the size of the free
+space box to create when the audio file is re-written.
 .SS Removing All Tags
 .TP
 \fBmp4tagcli\fP \fIfilename\fP \fB\-\-clean\fP

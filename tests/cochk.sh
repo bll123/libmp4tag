@@ -12,6 +12,21 @@ if [[ ! -f ${MP4TAGCLI} ]]; then
   exit 1
 fi
 
+DBGLVL=32
+while test $# -gt 0; do
+  case $1 in
+    --debug)
+      shift
+      DBGLVL=$1
+      shift
+      ;;
+    *)
+      echo "unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
+
 flist="samples/stco.m4a samples/v-mdhd64-co64.mp4"
 
 rm -f ${OUTA} ${OUTB} ${RESA} ${RESB} ${TFN}
@@ -23,11 +38,10 @@ for f in $flist; do
   fi
   cp $f ${TFN}
   chmod u+w ${TFN}
-  ${MP4TAGCLI} ${TFN} --debug 4 > ${OUTA}
-  ${MP4TAGCLI} ${TFN} --debug 27 covr:0=samples/bdj4-y.png covr:0:name=xyzzy
-exit 1
-  ${MP4TAGCLI} ${TFN} --debug 27 covr:1=samples/bdj4-y.jpg covr:1:name=plugh
-  ${MP4TAGCLI} ${TFN} covr:2=samples/bdj4-b.jpg covr:2:name=three
+  ${MP4TAGCLI} ${TFN} --debug ${DBGLVL} > ${OUTA}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:0=samples/bdj4-y.png covr:0:name=xyzzy
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=samples/bdj4-y.jpg covr:1:name=plugh
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:2=samples/bdj4-b.jpg covr:2:name=three
   ${MP4TAGCLI} ${TFN} --debug 4 > ${OUTB}
   sed -e '/^duration/,$ d' -e 's/[ 0-9]*: [0-9a-z]* //' ${OUTA} > ${RESA}
   sed -e '/^duration/,$ d' -e 's/[ 0-9]*: [0-9a-z]* //' ${OUTB} > ${RESB}

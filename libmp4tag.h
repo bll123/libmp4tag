@@ -104,15 +104,16 @@ libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag);
 int       mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve);
 int       mp4tag_preserve_free (libmp4tagpreserve_t *preserve);
 
-int         mp4tag_error (libmp4tag_t *libmp4tag);
-const char  * mp4tag_version (void);
-const char  * mp4tag_error_str (libmp4tag_t *libmp4tag);
-void      mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
-void      mp4tag_set_option (libmp4tag_t *libmp4tag, int option);
+int   mp4tag_error (libmp4tag_t *libmp4tag);
+const char * mp4tag_version (void);
+const char * mp4tag_error_str (libmp4tag_t *libmp4tag);
+void  mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags);
+void  mp4tag_set_free_space (libmp4tag_t *libmp4tag, int32_t freespacesz);
+void  mp4tag_set_option (libmp4tag_t *libmp4tag, int option);
 
 /* mp4const.c */
 
-extern const char *PREFIX_STR;
+extern const char *COPYRIGHT_STR;
 
 /* mp4tagfileop.c */
 /* public file interface helper routines */

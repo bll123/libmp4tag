@@ -10,7 +10,7 @@ case ${systype} in
     ;;
 esac
 
-DBGLVL=0
+DBGLVL=32
 while test $# -gt 0; do
   case $1 in
     --debug)
@@ -46,7 +46,7 @@ if [[ ! -f ${MP4TAGCLI} ]]; then
   exit 1
 fi
 
-flist="samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a"
+flist="samples/no-tags.m4a samples/alac.m4a test-files/array-keys.m4a test-files/array-keys-int.m4a test-files/itunes811.m4a"
 rm -f ${TEXPA} ${TEXPS} ${TACT} ${TFN}
 # no-tags.m4a has no udta box, tag space is unlimited
 # alac.m4a tags are not at the end
@@ -68,7 +68,7 @@ for f in $flist; do
       day dir gen grp lyr mvn \
       nam nrt pub too wrk wrt \
       ; do
-    ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} ${tag}=${tag}123456
+    ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} ${tag}=${tag}123456
     rc=$?
     if [[ $rc -ne 0 ]]; then
       echo "fail a"
@@ -79,7 +79,7 @@ for f in $flist; do
   done
 
   for idx in 1 2 3; do
-    ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} wrt:${idx}=wrt-${idx}
+    ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} wrt:${idx}=wrt-${idx}
     rc=$?
     if [[ $rc -ne 0 ]]; then
       echo "fail a2"
@@ -91,7 +91,7 @@ for f in $flist; do
   # custom tags
   for tag in ----:TEST:A ----:TEST:BBB \
       ; do
-    ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} -- ${tag}=CCC123456
+    ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} -- ${tag}=CCC123456
     rc=$?
     if [[ $rc -ne 0 ]]; then
       echo "fail b"
@@ -101,9 +101,9 @@ for f in $flist; do
   done
 
   # numeric tags
-  for tag in cpil hdvd pgap shwm tmpo tves tvsn mvc mvi \
+  for tag in cpil hdvd pgap shwm tmpo tves tvsn mvc mvi rtng \
       ; do
-    ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} ${tag}=1
+    ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} ${tag}=1
     rc=$?
     if [[ $rc -ne 0 ]]; then
       echo "fail c"
@@ -115,7 +115,7 @@ for f in $flist; do
   # disk/trkn tags
   for tag in disk trkn \
       ; do
-    ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} ${tag}=1/5
+    ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} ${tag}=1/5
     rc=$?
     if [[ $rc -ne 0 ]]; then
       echo "fail d"
@@ -126,14 +126,14 @@ for f in $flist; do
 
   # cover images
 
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr=${PICA}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr=${PICA}
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail e"
     exit 1
   fi
   echo "covr=(data: png ${PICALEN} bytes)" >> ${TEXPA}
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:0:name=xyzzy
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:0:name=xyzzy
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail f"
@@ -141,17 +141,17 @@ for f in $flist; do
   fi
   echo "covr:0:name=xyzzy" >> ${TEXPA}
 
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:1=${PICD}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=${PICD}
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail g"
     exit 1
   fi
   echo "covr:1=(data: jpg ${PICDLEN} bytes)" >> ${TEXPA}
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:1:name=plugh
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1:name=plugh
   echo "covr:1:name=plugh" >> ${TEXPA}
 
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:2=${PICC} covr:2:name=three
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:2=${PICC} covr:2:name=three
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail h"
@@ -162,13 +162,13 @@ for f in $flist; do
 
   # replace cover 1 with an alternate
   # this should be in-place
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:1=${PICB}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=${PICB}
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail i"
     exit 1
   fi
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:1:name=alt
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1:name=alt
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail j"
@@ -177,13 +177,13 @@ for f in $flist; do
 
   # and then change it back to what it was
   # this should be in-place
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:1=${PICD}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=${PICD}
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail k"
     exit 1
   fi
-  ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} covr:1:name=plugh
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1:name=plugh
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "fail l"
@@ -198,7 +198,7 @@ for f in $flist; do
       day dir gen grp lyr mvn \
       nam nrt pub too wrk wrt \
       ; do
-    ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} ${tag}=${tag}
+    ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} ${tag}=${tag}
     rc=$?
     if [[ $rc -ne 0 ]]; then
       echo "fail m"
@@ -212,7 +212,7 @@ for f in $flist; do
   # as longer names were used above
   for tag in ----:TEST:A ----:TEST:BBB \
       ; do
-    ${MP4TAGCLI} --debug ${DBGLVL} ${TFN} -- ${tag}=CCC
+    ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} -- ${tag}=CCC
     rc=$?
     if [[ $rc -ne 0 ]]; then
       echo "fail n"
@@ -245,35 +245,35 @@ diff ${TEXPS} ${TACT}
       day dir gen grp lyr mvn \
       nam nrt pub too wrk wrt \
       ; do
-    ${MP4TAGCLI} ${TFN} ${tag}=
+    ${MP4TAGCLI} --freespace 64 ${TFN} ${tag}=
   done
 
   # custom tags
   for tag in ----:TEST:A ----:TEST:BBB \
       ; do
-    ${MP4TAGCLI} ${TFN} -- ${tag}=
+    ${MP4TAGCLI} --freespace 64 ${TFN} -- ${tag}=
   done
 
   # numeric tags
-  for tag in cpil hdvd pgap shwm tmpo tves tvsn mvc mvi \
+  for tag in cpil hdvd pgap shwm tmpo tves tvsn mvc mvi rtng \
       ; do
-    ${MP4TAGCLI} ${TFN} ${tag}=
+    ${MP4TAGCLI} --freespace 64 ${TFN} ${tag}=
   done
 
   # disk/trkn tags
   for tag in disk trkn; do
-    ${MP4TAGCLI} ${TFN} ${tag}=
+    ${MP4TAGCLI} --freespace 64 ${TFN} ${tag}=
   done
 
   # 'wrt' w/no dataidx specified was already deleted,
   # so only 0, 1, 2 are existing
   for idx in 2 1 0; do
-    ${MP4TAGCLI} ${TFN} wrt:${idx}=
+    ${MP4TAGCLI} --freespace 64 ${TFN} wrt:${idx}=
   done
 
-  ${MP4TAGCLI} ${TFN} covr:2=
-  ${MP4TAGCLI} ${TFN} covr:1=
-  ${MP4TAGCLI} ${TFN} covr=
+  ${MP4TAGCLI} --freespace 64 ${TFN} covr:2=
+  ${MP4TAGCLI} --freespace 64 ${TFN} covr:1=
+  ${MP4TAGCLI} --freespace 64 ${TFN} covr=
 
   val=$(${MP4TAGCLI} ${TFN} |
       grep -E -v -- '(duration|----:com)' | wc -l)
@@ -292,4 +292,3 @@ if [[ $grc -eq 0 ]]; then
 else
   echo "FAIL"
 fi
-

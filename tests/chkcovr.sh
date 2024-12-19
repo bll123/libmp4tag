@@ -10,6 +10,21 @@ case ${systype} in
     ;;
 esac
 
+DBGLVL=32
+while test $# -gt 0; do
+  case $1 in
+    --debug)
+      shift
+      DBGLVL=$1
+      shift
+      ;;
+    *)
+      echo "unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
+
 TFN=xx.m4a
 
 MP4TAGCLI=./build/mp4tagcli
@@ -48,9 +63,9 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   FAILLIST=""
 
   # this should end up at position 0
-  ${MP4TAGCLI} ${TFN} covr:1=${PICD}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=${PICD}
   # this will fail as there is no cover at position 1
-  ${MP4TAGCLI} ${TFN} covr:1:name=plugh > /dev/null 2>&1
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1:name=plugh > /dev/null 2>&1
   rc=$?
   if [[ $rc -eq 0 ]]; then
     FAILLIST+="a-name "
@@ -69,8 +84,8 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   fi
 
   # will replace position 0
-  ${MP4TAGCLI} ${TFN} covr=${PICA}
-  ${MP4TAGCLI} ${TFN} covr:0:name=xyzzy
+  ${MP4TAGCLI} --debug ${DBGLVL} --freespace 64 ${TFN} covr=${PICA}
+  ${MP4TAGCLI} --debug ${DBGLVL} --freespace 64 ${TFN} covr:0:name=xyzzy
   val=$(${MP4TAGCLI} ${TFN} | grep '^covr' | wc -l)
   if [[ $val -ne 2 ]]; then
     FAILLIST+="b-count "
@@ -84,8 +99,8 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   fi
 
   # add at position 1
-  ${MP4TAGCLI} ${TFN} covr:1=${PICD}
-  ${MP4TAGCLI} ${TFN} covr:1:name=plugh
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=${PICD}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1:name=plugh
   val=$(${MP4TAGCLI} ${TFN} | grep '^covr' | wc -l)
   if [[ $val -ne 4 ]]; then
     FAILLIST+="c-count "
@@ -99,7 +114,7 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
   fi
 
   # add at position 2
-  ${MP4TAGCLI} ${TFN} covr:2=${PICC} covr:2:name=three
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:2=${PICC} covr:2:name=three
   val=$(${MP4TAGCLI} ${TFN} | grep '^covr' | wc -l)
   if [[ $val -ne 6 ]]; then
     FAILLIST+="d-count "
@@ -114,8 +129,8 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
 
   # replace cover 1 with an alternate
   # this should be in-place
-  ${MP4TAGCLI} ${TFN} covr:1=${PICB}
-  ${MP4TAGCLI} ${TFN} covr:1:name=alt
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=${PICB}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1:name=alt
   val=$(${MP4TAGCLI} ${TFN} | grep '^covr' | wc -l)
   if [[ $val -ne 6 ]]; then
     FAILLIST+="e-count "
@@ -130,8 +145,8 @@ for f in samples/no-tags.m4a samples/alac.m4a; do
 
   # and then change it back to what it was
   # this should be in-place
-  ${MP4TAGCLI} ${TFN} covr:1=${PICD}
-  ${MP4TAGCLI} ${TFN} covr:1:name=plugh
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1=${PICD}
+  ${MP4TAGCLI} --freespace 64 --debug ${DBGLVL} ${TFN} covr:1:name=plugh
   val=$(${MP4TAGCLI} ${TFN} | grep '^covr' | wc -l)
   if [[ $val -ne 6 ]]; then
     grc=1

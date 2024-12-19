@@ -11,7 +11,7 @@
 
 #include "mp4tagint.h"
 
-const char *PREFIX_STR = "\xc2\xa9";   /* copyright symbol */
+const char *COPYRIGHT_STR = "\xc2\xa9";   /* copyright symbol */
 
 const char *boxids [] = {
   /* various idents that libmp4tag needs to descend into or use */

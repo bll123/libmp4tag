@@ -92,6 +92,21 @@ Make a copy of the original file.  The backup has '-mp4tag.bak'
 appended.
 
 -------------
+##### mp4tag_set_free_space
+
+~~~
+#include <stdint.h>
+#include "libmp4tag.h"
+
+void mp4tag_set_option (libmp4tag_t *libmp4tag, int32_t freespacesz)
+~~~
+
+__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+
+__freespacesz__ : When re-writing the audio file, the size of the new
+free space box.
+
+-------------
 ##### mp4tag_parse
 
 ~~~

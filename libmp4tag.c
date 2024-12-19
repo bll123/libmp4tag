@@ -159,7 +159,7 @@ mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t seekcb,
 int
 mp4tag_parse (libmp4tag_t *libmp4tag)
 {
-  size_t    offset = -1;
+  ssize_t   offset = -1;
 
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return MP4TAG_ERR_BAD_STRUCT;
@@ -185,7 +185,8 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
   mp4tag_parse_file (libmp4tag, 0, 0);
 
   if (libmp4tag->mp4error == MP4TAG_OK) {
-    if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG)) {
+    if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_BUG) ||
+        mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_FIX_OUTPUT)) {
       if (libmp4tag->dofix) {
         fprintf (stdout, "== FIX\n");
       }
@@ -385,7 +386,7 @@ mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag,
   }
 
   offset = mp4tag_parse_tagname (ttag, &dataidx);
-// fprintf (stderr, "set-tag %s %s %d %d\n", tag, ttag, dataidx, offset);
+  // fprintf (stdout, "set-tag %s %s %d %d\n", tag, ttag, dataidx, offset);
   idx = mp4tag_find_tag (libmp4tag, ttag, dataidx);
   if (idx >= 0 && idx < libmp4tag->tagcount) {
     mp4tag_t  *mp4tag;
@@ -530,7 +531,7 @@ mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
   }
 
   offset = mp4tag_parse_tagname (ttag, &dataidx);
-// fprintf (stderr, "del-tag %s %s %d %d\n", tag, ttag, dataidx, offset);
+  // fprintf (stdout, "del-tag %s %s %d %d\n", tag, ttag, dataidx, offset);
   idx = mp4tag_find_tag (libmp4tag, ttag, dataidx);
   if (idx >= 0 && idx < libmp4tag->tagcount) {
     if (memcmp (ttag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) == 0) {
@@ -760,6 +761,16 @@ mp4tag_set_debug_flags (libmp4tag_t *libmp4tag, int dbgflags)
 }
 
 void
+mp4tag_set_free_space (libmp4tag_t *libmp4tag, int32_t freespacesz)
+{
+  if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
+    return;
+  }
+
+  libmp4tag->freespacesz = freespacesz;
+}
+
+void
 mp4tag_set_option (libmp4tag_t *libmp4tag, int option)
 {
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
@@ -792,6 +803,8 @@ mp4tag_alloc (int *mp4error)
   libmp4tag->filesz = MP4TAG_NO_FILESZ;
   libmp4tag->dbgflags = 0;
   libmp4tag->options = MP4TAG_OPTION_NONE;
+  libmp4tag->timeout = 0;
+  libmp4tag->freespacesz = MP4TAG_FREE_SPACE_SZ;
 
   mp4tag_init_tags (libmp4tag);
 
@@ -841,7 +854,6 @@ mp4tag_init_tags (libmp4tag_t *libmp4tag)
   libmp4tag->modifieddate = 0;
   libmp4tag->duration = 0;
   libmp4tag->samplerate = 0;
-  libmp4tag->timeout = 0;
   for (int i = 0; i < MP4TAG_LEVEL_MAX; ++i) {
     libmp4tag->base_lengths [i] = 0;
     libmp4tag->base_offsets [i] = 0;

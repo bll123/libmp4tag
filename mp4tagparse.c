@@ -146,9 +146,9 @@ mp4tag_parse_file (libmp4tag_t *libmp4tag, uint32_t boxlen, int level)
     /* save the name of the box */
     if (*bh.nm == '\xa9') {
       /* maximum 5 bytes */
-      strcpy (bd.nm, PREFIX_STR);
-      memcpy (bd.nm + strlen (PREFIX_STR), bh.nm + 1, MP4TAG_ID_LEN - 1);
-      bd.nm [MP4TAG_ID_LEN + strlen (PREFIX_STR) - 1] = '\0';
+      strcpy (bd.nm, COPYRIGHT_STR);
+      memcpy (bd.nm + strlen (COPYRIGHT_STR), bh.nm + 1, MP4TAG_ID_LEN - 1);
+      bd.nm [MP4TAG_ID_LEN + strlen (COPYRIGHT_STR) - 1] = '\0';
     } else {
       memcpy (bd.nm, bh.nm, MP4TAG_ID_LEN);
       bd.nm [MP4TAG_ID_LEN] = '\0';
@@ -751,7 +751,7 @@ mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag,
           t16 -= 1;
           if (t16 < mp4tagoldgenrelistsz) {
             /* do not use the 'gnre' identifier */
-            strcpy (tnm, PREFIX_STR);
+            strcpy (tnm, COPYRIGHT_STR);
             strcat (tnm, boxids [MP4TAG_GEN]);
             mp4tag_add_tag (libmp4tag, tnm, mp4tagoldgenrelist [t16],
                 MP4TAG_STRING, MP4TAG_ID_STRING,

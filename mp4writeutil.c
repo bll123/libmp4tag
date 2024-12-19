@@ -31,7 +31,6 @@ mp4tag_update_parent_lengths (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta)
   while (idx >= 0) {
     uint32_t    t32;
 
-fprintf (stdout, "upl: seek-set-ff %ld\n", libmp4tag->base_offsets [idx]);
     rc = fseek (ofh, libmp4tag->base_offsets [idx], SEEK_SET);
     if (rc != 0) {
       libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
@@ -43,7 +42,6 @@ fprintf (stdout, "upl: seek-set-ff %ld\n", libmp4tag->base_offsets [idx]);
       fprintf (stdout, "    update-parent: idx: %d %s offset: %" PRId64 " len: %d / %d\n", idx, libmp4tag->base_name [idx], libmp4tag->base_offsets [idx], libmp4tag->base_lengths [idx], t32);
     }
     t32 = htobe32 (t32);
-fprintf (stdout, "upl: jj-tell %ld %ld\n", ftell (ofh), sizeof (uint32_t));
     if (fwrite (&t32, sizeof (uint32_t), 1, ofh) != 1) {
       libmp4tag->mp4error = MP4TAG_ERR_FILE_WRITE_ERROR;
     }
