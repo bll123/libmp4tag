@@ -5,25 +5,23 @@
 ### Modifying Tags
 
 These routines modify the list of tags internally.  The MP4 file is
-not modified until the __mp4tag_write_tags__ function is called.
+not modified until the `mp4tag_write_tags` function is called.
 
 -------------
 ##### mp4tag_set_tag
 
 Sets the specified tag to a new value.
 
-__mp4tag_set_tag__ is used for both string values and binary data values
+`mp4tag_set_tag` is used for both string values and binary data values
 (e.g. 'covr').
 
 When setting binary data, the data argument specifies a file to read
 to load the binary data.  If the application already has the binary
-data in memory, the __mp4tag_set_binary_tag__ function should be used.
+data in memory, the `mp4tag_set_binary_tag` function should be used.
 
-~~~
-int mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, bool forcebinary)
-~~~
+    int mp4tag_set_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, bool forcebinary)
 
-__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The `libmp4tag_t` structure returned from `mp4tag_open`.
 
 __tag__ : The tag name.
 
@@ -33,7 +31,7 @@ __forcebinary__ : If setting a tag with a binary value, and the tag is
 not currently set, forcebinary should be set to true.  Used for custom
 tags.
 
-Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
+Returns: `MP4TAG_OK` or other [error&nbsp;code](ErrorCodes).
 
 -------------
 ##### mp4tag_set_binary_tag
@@ -42,11 +40,9 @@ Available with version 1.2.0.
 
 Used when the binary data is already in the application's memory.
 
-~~~
-int mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, size_t datalen)
-~~~
+    int mp4tag_set_binary_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, size_t datalen)
 
-__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The `libmp4tag_t` structure returned from `mp4tag_open`.
 
 __tag__ : The tag name.
 
@@ -54,32 +50,28 @@ __data__ : The value to set.
 
 __datalen__ : The length of the data.
 
-Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
+Returns: `MP4TAG_OK` or other [error&nbsp;code](ErrorCodes).
 
 -------------
 ##### mp4tag_delete_tag
 
 Delete the specified tag.
 
-~~~
-int mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
-~~~
+    int mp4tag_delete_tag (libmp4tag_t *libmp4tag, const char *tag)
 
-__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The `libmp4tag_t` structure returned from `mp4tag_open`.
 
 __tag__ : The name of the tag to delete.
 
-Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
+Returns: `MP4TAG_OK` or other [error&nbsp;code](ErrorCodes).
 
 -------------
 ##### mp4tag_clean_tags
 
 Deletes all tags.
 
-~~~
-int mp4tag_clean_tags (libmp4tag_t *libmp4tag);
-~~~
+    int mp4tag_clean_tags (libmp4tag_t *libmp4tag);
 
-__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The `libmp4tag_t` structure returned from `mp4tag_open`.
 
-Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
+Returns: `MP4TAG_OK` or other [error&nbsp;code](ErrorCodes).

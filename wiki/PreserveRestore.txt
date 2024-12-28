@@ -9,109 +9,99 @@ mangle tags are used.  The preserve and restore functions can also be
 used to copy tags to another MP4 file.
 
 Example usage (no error checking):
-~~~
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "libmp4tag.h"
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
 
-int
-main (int argc, const char *argv [])
-{
-  libmp4tag_t         *libmp4tag;
-  libmp4tagpreserve_t *preserve;
-  char                cmd [1024];
+    #include "libmp4tag.h"
 
-  /* first, preserve the tags */
-  libmp4tag = mp4tag_open (argv [1]);
-  mp4tag_parse (libmp4tag);
-  preserve = mp4tag_preserve_tags (libmp4tag);
-  mp4tag_free (libmp4tag);
+    int
+    main (int argc, const char *argv [])
+    {
+      libmp4tag_t         *libmp4tag;
+      libmp4tagpreserve_t *preserve;
+      char                cmd [1024];
 
-  /* run the application that mangles the tags */
-  snprintf (cmd, sizeof (cmd), "tag-mangling-app %s", argv [1]);
-  system (cmd);
+      /* first, preserve the tags */
+      libmp4tag = mp4tag_open (argv [1]);
+      mp4tag_parse (libmp4tag);
+      preserve = mp4tag_preserve_tags (libmp4tag);
+      mp4tag_free (libmp4tag);
 
-  /* now restore the preserved tags */
-  libmp4tag = mp4tag_open (argv [1]);
-  mp4tag_parse (libmp4tag);
-  mp4tag_restore_tags (libmp4tag, preserve);
-  mp4tag_write_tags (libmp4tag);
-  mp4tag_preserve_free (preserve);
-  mp4tag_free (libmp4tag);
+      /* run the application that mangles the tags */
+      snprintf (cmd, sizeof (cmd), "tag-mangling-app %s", argv [1]);
+      system (cmd);
 
-}
-~~~
+      /* now restore the preserved tags */
+      libmp4tag = mp4tag_open (argv [1]);
+      mp4tag_parse (libmp4tag);
+      mp4tag_restore_tags (libmp4tag, preserve);
+      mp4tag_write_tags (libmp4tag);
+      mp4tag_preserve_free (preserve);
+      mp4tag_free (libmp4tag);
+    }
 
 Copying tags (no error checking):
-~~~
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "libmp4tag.h"
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
 
-int
-main (int argc, const char *argv [])
-{
-  libmp4tag_t         *libmp4tag;
-  libmp4tagpreserve_t *preserve;
-  char                cmd [1024];
+    #include "libmp4tag.h"
 
-  /* first, preserve the tags from file A */
-  libmp4tag = mp4tag_open (argv [1]);
-  mp4tag_parse (libmp4tag);
-  preserve = mp4tag_preserve_tags (libmp4tag);
-  mp4tag_free (libmp4tag);
+    int
+    main (int argc, const char *argv [])
+    {
+      libmp4tag_t         *libmp4tag;
+      libmp4tagpreserve_t *preserve;
+      char                cmd [1024];
 
-  /* now restore the preserved tags to file B */
-  libmp4tag = mp4tag_open (argv [2]);
-  mp4tag_parse (libmp4tag);
-  mp4tag_restore_tags (libmp4tag, preserve);
-  mp4tag_write_tags (libmp4tag);
-  mp4tag_preserve_free (preserve);
-  mp4tag_free (libmp4tag);
+      /* first, preserve the tags from file A */
+      libmp4tag = mp4tag_open (argv [1]);
+      mp4tag_parse (libmp4tag);
+      preserve = mp4tag_preserve_tags (libmp4tag);
+      mp4tag_free (libmp4tag);
 
-}
-~~~
+      /* now restore the preserved tags to file B */
+      libmp4tag = mp4tag_open (argv [2]);
+      mp4tag_parse (libmp4tag);
+      mp4tag_restore_tags (libmp4tag, preserve);
+      mp4tag_write_tags (libmp4tag);
+      mp4tag_preserve_free (preserve);
+      mp4tag_free (libmp4tag);
+    }
 
 -------------
 ##### mp4tag_preserve_tags
 
-~~~
-libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
-~~~
+    libmp4tagpreserve_t *mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
 
-__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The `libmp4tag_t` structure returned from `mp4tag_open`.
 
-Returns: Allocated libmp4tagpreserve_t structure.  The
-*8mp4tag_preserve_free__ function must be called to free this value.
+Returns: Allocated `libmp4tagpreserve_t` structure.  The
+`mp4tag_preserve_free` function must be called to free this value.
 
 -------------
 ##### mp4tag_restore_tags
 
 Be sure to call __mp4tag_write_tags__ after restoring the tags.
 
-~~~
-int mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve)
-~~~
+    int mp4tag_restore_tags (libmp4tag_t *libmp4tag, libmp4tagpreserve_t *preserve)
 
-__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The `libmp4tag_t` structure returned from `mp4tag_open`.
 
-__preserve__ : The libmp4tagpreserve_t structure returned from
-__mp4tag_preserve_tags__.
+__preserve__ : The `libmp4tagpreserve_t` structure returned from
+`mp4tag_preserve_tags`.
 
-Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
+Returns: `MP4TAG_OK` or other [error&nbsp;code](ErrorCodes).
 
 -------------
 ##### mp4tag_preserve_free
 
-~~~
-int mp4tag_preserve_free (libmp4tagpreserve_t *preserve)
-~~~
+    int mp4tag_preserve_free (libmp4tagpreserve_t *preserve)
 
-__preserve__ : The libmp4tagpreserve_t structure returned from
-__mp4tag_preserve_tags__.
+__preserve__ : The `libmp4tagpreserve_t` structure returned from
+`mp4tag_preserve_tags`.
 
-Returns: MP4TAG_OK or other [error&nbsp;code](ErrorCodes).
+Returns: `MP4TAG_OK` or other [error&nbsp;code](ErrorCodes).

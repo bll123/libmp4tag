@@ -9,22 +9,18 @@ These routines are written to work both on posix systems and on Windows.
 -------------
 ##### mp4tag_fopen
 
-~~~
-FILE * mp4tag_fopen (const char *filename, const char *mode)
-~~~
+    FILE * mp4tag_fopen (const char *filename, const char *mode)
 
 __filename__ : The file to open.
 
 __mode__ : The mode to use to open the file (see __fopen__).
 
-Returns: A FILE pointer or NULL on error.
+Returns: A FILE pointer or `NULL` on error.
 
 -------------
 ##### mp4tag_file_size
 
-~~~
-ssize_t mp4tag_file_size (const char *filename)
-~~~
+    ssize_t mp4tag_file_size (const char *filename)
 
 __filename__ : The file to open.
 
@@ -33,9 +29,7 @@ Returns: The size of the file or -1 on error.
 -------------
 ##### mp4tag_read_file
 
-~~~
-char * mp4tag_read_file (const char *filename, size_t *sz, int *mp4error)
-~~~
+    char * mp4tag_read_file (const char *filename, size_t *sz, int *mp4error)
 
 __filename__ : The file to read.
 
@@ -49,9 +43,7 @@ ownership of the returned data and must free it.
 -------------
 ##### mp4tag_file_delete
 
-~~~
-int mp4tag_file_delete (const char *filename)
-~~~
+    int mp4tag_file_delete (const char *filename)
 
 __filename__ : The file to delete.
 
@@ -62,24 +54,21 @@ Returns: 0 on success.
 
 Renames a file.
 
-~~~
-int mp4tag_file_move (const char *filename, const char *nfn)
-~~~
+    int mp4tag_file_move (const char *filename, const char *nfn)
 
 __filename__ : The old filename.
 
 __nfn__ : The new filename.
 
 Returns: 0 on success.
+
 -------------
 ##### mp4tag_copy_file_times
 
 Copies the file times (modification time, et. al) from one open file
 to another.
 
-~~~
-void mp4tag_copy_file_times (FILE *ifh, FILE *ofh)
-~~~
+    void mp4tag_copy_file_times (FILE *ifh, FILE *ofh)
 
 __ifh__ : FILE pointer to open source file.
 
@@ -90,13 +79,11 @@ __ofh__ : FILE pointer to open target file.
 
 Converts a utf8 string to Windows unicode.
 
-~~~
-wchar_t *mp4tag_towide (const char *buff)
-~~~
+    wchar_t *mp4tag_towide (const char *buff)
 
 __buff__ : utf8 string
 
-Returns: pointer to wchar_t
+Returns: pointer to `wchar_t`
 
 The caller takes ownership of the returned string and must free it.
 -------------
@@ -104,12 +91,10 @@ The caller takes ownership of the returned string and must free it.
 
 Converts a Windows unicode string to utf8.
 
-~~~
-char *mp4tag_fromwide (const wchar_t *buff)
-~~~
+    char *mp4tag_fromwide (const wchar_t *buff)
 
 __buff__ : Windows unicode string
 
-Returns: pointer to char
+Returns: pointer to `char`
 
 The caller takes ownership of the returned string and must free it.

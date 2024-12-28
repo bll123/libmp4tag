@@ -4,7 +4,7 @@
 
 ### Writing Tags
 
-The MP4 file is not modified until the __mp4tag_write_tags__ function is
+The MP4 file is not modified until the `mp4tag_write_tags` function is
 called.
 
 If possible, the MP4 file is modified in-place.  If there is not
@@ -12,18 +12,16 @@ enough room for the modified tags, the MP4 file is re-written and
 replaced.
 
 Determining whether any tags have changed and whether calling
-__mp4tag_write_tags__ is necessary is the responsibility of the
+`mp4tag_write_tags` is necessary is the responsibility of the
 application.
 
 -------------
 
 ##### mp4tag_write_tags
 
-~~~
-int mp4tag_write_tags (libmp4tag_t *libmp4tag)
-~~~
+    int mp4tag_write_tags (libmp4tag_t *libmp4tag)
 
-__libmp4tag__ : The libmp4tag_t structure returned from mp4tag_open.
+__libmp4tag__ : The `libmp4tag_t` structure returned from `mp4tag_open`.
 
-Returns: MP4TAG_OK or MP4TAG_ERR_CANNOT_WRITE for read-only files and
+Returns: `MP4TAG_OK` or `MP4TAG_ERR_CANNOT_WRITE` for read-only files and
 streams, or other [error&nbsp;code](ErrorCodes).
