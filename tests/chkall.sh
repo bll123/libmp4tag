@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Copyright 2024-2025 Brad Lanam Pleasant Hill CA
+#
+
+GREP=grep
 
 systype=$(uname -s)
 sopt=--format
@@ -224,7 +229,7 @@ for f in $flist; do
   # any existing custom tags are not present in
   # the expected results file
   ${MP4TAGCLI} ${TFN} |
-      grep -E -v -- '(duration|----:com)' |
+      ${GREP} -E -v -- '(duration|----:com)' |
       sed 's,©,,g' |
       LANG=C sort > ${TACT}
 
@@ -276,7 +281,7 @@ diff ${TEXPS} ${TACT}
   ${MP4TAGCLI} --freespace 64 ${TFN} covr=
 
   val=$(${MP4TAGCLI} ${TFN} |
-      grep -E -v -- '(duration|----:com)' | wc -l)
+      ${GREP} -E -v -- '(duration|----:com)' | wc -l)
   if [[ $val -ne 0 ]]; then
     echo "del-fail"
     grc=1

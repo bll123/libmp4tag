@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Copyright 2024-2025 Brad Lanam Pleasant Hill CA
+#
 
 grep '^#define LIBMP4TAG_DEBUG 0' mp4tagint.h > /dev/null 2>&1
 rc=$?

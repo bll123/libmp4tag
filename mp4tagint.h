@@ -7,6 +7,8 @@
 
 #include "config.h"
 
+#include <stdio.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "libmp4tag.h"

@@ -60,10 +60,17 @@ Build Requirements:
   libmp4tag does not use any external libraries.
 
 Building:
-  make PREFIX=target-install-dir
-  make install
-  # for staging
-  make DESTDIR=stage-dir install
+
+  cmake only:
+    cmake -DCMAKE_INSTALL_PREFIX=$HOME/local
+    cmake --build build
+    cmake --install build
+
+  with makefile:
+    make PREFIX=$HOME/local
+    make PREFIX=$HOME/local install
+    # for staging
+    make DESTDIR=stage-dir PREFIX=$HOME/local install
 
 Using the mp4tagcli executable:
 

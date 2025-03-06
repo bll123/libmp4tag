@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Copyright 2024-2025 Brad Lanam Pleasant Hill CA
+#
 
 SFUSER=bll123
 

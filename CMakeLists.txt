@@ -160,7 +160,7 @@ if (LIBMP4TAG_BUILD STREQUAL "SanitizeAddress")
   endif()
 endif()
 
-if (LIBMP4TAG_FORTIFY STREQUAL T)
+if (LIBMP4TAG_FORTIFY STREQUAL Y AND NOT CMAKE_HOST_SOLARIS)
   # hardening
   checkAddCompileFlag ("-fstack-protector-strong")
   checkAddCompileFlag ("-fstack-protector-all")

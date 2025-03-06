@@ -39,7 +39,7 @@ sanitizeaddressclang:
 cmake:
 	@. ./VERSION.txt ; \
 	case $$(uname -s) in \
-          Linux) \
+          Linux|Darwin) \
 	    $(MAKE) cmake-unix; \
             pmode=--parallel $(MAKE) build; \
             ;; \
@@ -47,16 +47,12 @@ cmake:
 	    $(MAKE) cmake-unix; \
 	    $(MAKE) build; \
             ;; \
-	  Darwin) \
-	    $(MAKE) cmake-unix; \
-	    pmode=--parallel $(MAKE) build; \
-            ;; \
 	  MINGW*) \
 	    $(MAKE) cmake-windows; \
 	    $(MAKE) build; \
             ;; \
 	  *) \
-	    $(MAKE) cmake-windows; \
+	    $(MAKE) cmake-unix; \
 	    $(MAKE) build; \
             ;; \
 	esac
@@ -65,7 +61,7 @@ cmake:
 cmakeclang:
 	@. ./VERSION.txt ; \
 	case $$(uname -s) in \
-          Linux) \
+          Linux|Darwin) \
 	    $(MAKE) CC=clang cmake-unix; \
             pmode=--parallel $(MAKE) build; \
             ;; \
@@ -73,11 +69,6 @@ cmakeclang:
 	    CC=clang \
 	    $(MAKE) CC=clang cmake-unix; \
 	    $(MAKE) build; \
-            ;; \
-	  Darwin) \
-	    CC=clang \
-	    $(MAKE) CC=clang cmake-unix; \
-	    pmode=--parallel $(MAKE) build; \
             ;; \
 	  MINGW*) \
 	    $(MAKE) CC=/ucrt64/bin/clang.exe cmake-windows; \
@@ -124,14 +115,14 @@ install:
 # source
 
 # the wiki/ directory has the changelog in it
-.PHONY: source
-source:
+.PHONY: tar
+tar:
 	@. ./VERSION.txt ; \
 	SRCDIR=libmp4tag-$${LIBMP4TAG_VERSION} ; \
 	$(MAKE) tclean ; \
 	$(MAKE) SRCDIR=$${SRCDIR} $(SRCFLAG) ; \
 	$(MAKE) SRCDIR=$${SRCDIR} sourcetar ; \
-	$(MAKE) SRCDIR=$${SRCDIR} sourcezip
+	$(MAKE) SRCDIR=$${SRCDIR} sourcezip ; \
 	rm -rf $${SRCDIR} $(SRCFLAG)
 
 # internal use
@@ -142,9 +133,9 @@ $(SRCFLAG):
 	@mkdir $(SRCDIR)
 	@cp -pfr \
 		CMakeLists.txt Makefile \
-		README.txt LICENSE.txt \
+		VERSION.txt README.txt LICENSE.txt \
 		*.c *.h libmp4tag.h.in config.h.in libmp4tag.pc.in \
-		man tests wiki \
+		man wiki \
 		$(SRCDIR)
 	@touch $(SRCFLAG)
 
@@ -161,6 +152,31 @@ sourcezip: $(SRCFLAG)
 	ZIPF=libmp4tag-src-$${LIBMP4TAG_VERSION}.zip; \
 	test -f $${ZIPF} && rm -f $${ZIPF}; \
 	zip -q -o -r -9 $${ZIPF} $(SRCDIR)
+
+# development tarball
+.PHONY: devtar
+devtar:
+	@. ./VERSION.txt ; \
+	SRCDIR=libmp4tag-$${LIBMP4TAG_VERSION} ; \
+	TARGZ=libmp4tag-dev-$${LIBMP4TAG_VERSION}.tar.gz ; \
+	$(MAKE) SRCDIR=$${SRCDIR} TARGZ=$${TARGZ} devtartgt
+
+.PHONY: devtartgt
+devtartgt:
+	$(MAKE) tclean
+	-test -d $(SRCDIR) && rm -rf $(SRCDIR)
+	mkdir $(SRCDIR)
+	cp -pfr \
+		CMakeLists.txt Makefile \
+		VERSION.txt \
+		*.c *.h libmp4tag.h.in config.h.in libmp4tag.pc.in \
+		samples tests test-files \
+		man \
+		$(SRCDIR)
+	-test -f $(TARGZ) && rm -f $(TARGZ)
+	tar -c -z -f $(TARGZ) $(SRCDIR)
+	chmod -R a+w $(SRCDIR)
+	rm -rf $(SRCDIR)
 
 # cleaning
 

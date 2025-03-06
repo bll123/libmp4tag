@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Copyright 2024-2025 Brad Lanam Pleasant Hill CA
+#
 
 MP4TAGCLI=./build/mp4tagcli
 TFN=xx.m4a
