@@ -9,15 +9,6 @@ fi
 
 SFUSER=bll123
 
-echo -n "sourceforge Password: "
-read -s SSHPASS
-echo ""
-if [[ $SSHPASS == "" ]]; then
-  echo "No password."
-  exit 1
-fi
-export SSHPASS
-
 VERSFN=tmp/vers.txt
 VERS=$(cat ${VERSFN})
 
@@ -37,12 +28,12 @@ fi
 make tclean
 
 fn=README.txt
-sshpass -e rsync -v -e ssh ${fn} \
+rsync -v -e ssh ${fn} \
     ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/${fn}
 
-sshpass -e rsync -v -e ssh libmp4tag-src-${VERS}.tar.gz \
+rsync -v -e ssh libmp4tag-src-${VERS}.tar.gz \
     ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/
-sshpass -e rsync -v -e ssh libmp4tag-src-${VERS}.zip \
+rsync -v -e ssh libmp4tag-src-${VERS}.zip \
     ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/
 
 exit 0

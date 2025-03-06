@@ -2,15 +2,6 @@
 
 SFUSER=bll123
 
-echo -n "sourceforge Password: "
-read -s SSHPASS
-echo ""
-if [[ $SSHPASS == "" ]]; then
-  echo "No password."
-  exit 1
-fi
-export SSHPASS
-
 project=libmp4tag
 server=web.sourceforge.net
 remuser=bll123
@@ -43,7 +34,7 @@ if [[ ! -d $TMP ]]; then
 fi
 
 cd $TMP
-sshpass -e rsync -c -v -e ssh -aS --delete \
+rsync -c -v -e ssh -aS --delete \
     . \
     ${remuser}@${server}:${wwwpath}
 cd ..

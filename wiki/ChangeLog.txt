@@ -4,10 +4,11 @@
 
 <!--
 
-**2.0.1 2025-1---**
+**2.0.1 2025-2---**
 
 * Bug Fixes:
     * Fix compiler warnings.
+    * Improve cmake configuration.
 
 -->
 

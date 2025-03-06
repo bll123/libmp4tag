@@ -138,17 +138,8 @@ char    * mp4tag_fromwide (const wchar_t *buff);
 /* or there are additions to the api. */
 /* The revision value will change for bug fixes/cleanup/documentation. */
 
-#define LIBMP4TAG_VERS_MAJOR 2
-#define LIBMP4TAG_VERS_MINOR 0
-#define LIBMP4TAG_VERS_REVISION 1
 #define LIBMP4TAG_RELEASE_STATE "production"
-#define CPP_STR(x) #x
-#define LIBMP4TAG_VERSION_STR(maj,min,rev) \
-   CPP_STR(maj) "." \
-   CPP_STR(min) "." \
-   CPP_STR(rev)
-#define LIBMP4TAG_VERSION \
-   LIBMP4TAG_VERSION_STR(LIBMP4TAG_VERS_MAJOR,LIBMP4TAG_VERS_MINOR,LIBMP4TAG_VERS_REVISION)
+#define LIBMP4TAG_VERSION "@CMAKE_PROJECT_VERSION@"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 } /* extern C */

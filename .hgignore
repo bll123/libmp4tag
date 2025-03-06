@@ -1,8 +1,7 @@
 syntax: regexp
 ^Archive/
 ^build/
-^dev/rs\.sh$
-^dev/wikibearer\.txt$
+^dev/
 ^libmp4tag\.pc$
 ^samples/
 ^test-bad/

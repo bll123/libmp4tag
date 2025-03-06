@@ -1,13 +1,40 @@
 #
 # Copyright 2023-2024 Brad Lanam Pleasant Hill CA
 #
-cmake_minimum_required (VERSION 3.18)
+cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
 
 # avoid msys2/windows issue
 set (CMAKE_C_COMPILER_WORKS 1)
 set (CMAKE_CXX_COMPILER_WORKS 1)
 
-project (LIBMP4TAG VERSION ${LIBMP4TAG_BUILD_VERS})
+###
+# check to make sure cmake-install-prefix is set
+if (NOT DEFINED CMAKE_INSTALL_PREFIX OR CMAKE_INSTALL_PREFIX STREQUAL "")
+  message (FATAL_ERROR "CMAKE_INSTALL_PREFIX is not set")
+endif()
+
+###
+# load the LIBMP4TAG_* variables from VERSION.txt
+
+file (STRINGS VERSION.txt tlibmp4tagvars)
+foreach (tvar IN LISTS tlibmp4tagvars)
+  # the export lines are not needed
+  if (tvar MATCHES "=")
+    string (REGEX MATCH "^[^=]*" tnm ${tvar})
+    string (REGEX MATCH "=.*" tvala ${tvar})
+    string (REPLACE "=" "" tval ${tvala})
+    set (${tnm} ${tval})
+  endif()
+endforeach()
+
+project (LIBMP4TAG
+  VERSION ${LIBMP4TAG_VERSION}
+  DESCRIPTION "MP4 tagging library"
+  HOMEPAGE_URL "https://libmp4tag.sourceforge.io"
+  LANGUAGES C
+)
+
+string (REGEX REPLACE "\\..*" "" LIBMP4TAG_SOVERSION ${LIBMP4TAG_VERSION})
 
 option (BUILD_SHARED_LIBS "Build dynamic library" ON)
 
@@ -15,11 +42,14 @@ set (default_build_type "Release")
 
 include (GNUInstallDirs)
 
-set (LIBMP4TAG_LIBNAME mp4tag)
-if (WIN32)
-  set (CMAKE_SHARED_LIBRARY_PREFIX "lib")
-  set (CMAKE_STATIC_LIBRARY_PREFIX "lib")
-endif()
+include (CheckCCompilerFlag)
+include (CheckLinkerFlag)
+include (CheckIncludeFile)
+include (CheckFunctionExists)
+include (CheckSymbolExists)
+include (CheckStructHasMember)
+
+set (LIBMP4TAG_LIBNAME libmp4tag)
 
 include_directories (
   "${CMAKE_BINARY_DIR}"
@@ -27,50 +57,70 @@ include_directories (
 
 SET (CMAKE_SKIP_BUILD_RPATH FALSE)
 SET (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+if (DEFINED ENV{CMAKE_SKIP_RPATH} AND NOT ENV{CMAKE_SKIP_RPATH} STREQUAL "")
+  set (CMAKE_SKIP_RPATH "$ENV{CMAKE_SKIP_RPATH}")
+endif()
 
 #### compile options
 
-add_compile_options (-fPIC)
+macro (checkAddCompileFlag flag)
+  string (REPLACE "-" "_" tflag ${flag})
+  string (REPLACE "=" "_" tflag ${tflag})
+  check_c_compiler_flag (${flag} cfchk${tflag})
+  if (cfchk${tflag})
+    add_compile_options (${flag})
+  endif()
+endmacro()
 
-add_compile_options (-Wall)
-add_compile_options (-Wextra)
-add_compile_options (-Wno-unused-parameter)
-add_compile_options (-Wno-unknown-pragmas)
-add_compile_options (-Wno-float-equal)
-add_compile_options (-Wdeclaration-after-statement)
-add_compile_options (-Wmissing-prototypes)
-add_compile_options (-Wformat)
-add_compile_options (-Wformat-security)
-add_compile_options (-Werror=format-security)
-add_compile_options (-Wdeprecated-declarations)
+macro (checkAddLinkFlag flag)
+  string (REPLACE "-" "_" tflag ${flag})
+  string (REPLACE "=" "_" tflag ${tflag})
+  check_linker_flag ("C" ${flag} lfchk${tflag})
+  if (lfchk${tflag})
+    add_link_options (${flag})
+  endif()
+endmacro()
+
+checkAddCompileFlag ("-fPIC")
+checkAddLinkFlag ("-fPIC")
+
+checkAddCompileFlag ("-Wall")
+checkAddCompileFlag ("-Wextra")
+checkAddCompileFlag ("-Wno-unused-parameter")
+checkAddCompileFlag ("-Wno-unknown-pragmas")
+checkAddCompileFlag ("-Wno-float-equal")
+checkAddCompileFlag ("-Wdeclaration-after-statement")
+checkAddCompileFlag ("-Wmissing-prototypes")
+checkAddCompileFlag ("-Wformat")
+checkAddCompileFlag ("-Wformat-security")
+checkAddCompileFlag ("-Werror=format-security")
+checkAddCompileFlag ("-Wdeprecated-declarations")
 
 #### compiler-specific compile options
 
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  add_compile_options (-Wmaybe-uninitialized)
-  add_compile_options (-Wno-unused-but-set-variable)
-  add_compile_options (-Wno-stringop-overflow)
-  add_compile_options (-Wno-stringop-truncation)
-  add_compile_options (-Wno-format-truncation)
-endif()
-if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  add_compile_options (-Wno-poison-system-directories)
-  add_compile_options (-Wno-shift-sign-overflow)
-  add_compile_options (-Wno-pragma-pack)
-  add_compile_options (-Wno-ignored-attributes)
-  if (APPLE)
-    add_compile_options (-Wno-reserved-macro-identifier)
-  endif()
-  add_compile_options (-Wno-reserved-id-macro)
-  add_compile_options (-Wno-implicit-int-conversion)
-  add_compile_options (-Wno-switch-enum)
-  add_compile_options (-Wno-gnu-zero-variadic-macro-arguments)
-  add_compile_options (-Wno-documentation-deprecated-sync)
-  add_compile_options (-Wno-documentation-unknown-command)
-  add_compile_options (-Wno-documentation)
-endif()
+checkAddCompileFlag ("-Wmaybe-uninitialized")
+checkAddCompileFlag ("-Wno-unused-but-set-variable")
+checkAddCompileFlag ("-Wno-stringop-overflow")
+checkAddCompileFlag ("-Wno-stringop-truncation")
+checkAddCompileFlag ("-Wno-format-truncation")
+checkAddCompileFlag ("-Wno-poison-system-directories")
+checkAddCompileFlag ("-Wno-shift-sign-overflow")
+checkAddCompileFlag ("-Wno-pragma-pack")
+checkAddCompileFlag ("-Wno-ignored-attributes")
+checkAddCompileFlag ("-Wno-reserved-macro-identifier")
+checkAddCompileFlag ("-Wno-reserved-id-macro")
+checkAddCompileFlag ("-Wno-implicit-int-conversion")
+checkAddCompileFlag ("-Wno-switch-enum")
+checkAddCompileFlag ("-Wno-gnu-zero-variadic-macro-arguments")
+checkAddCompileFlag ("-Wno-documentation-deprecated-sync")
+checkAddCompileFlag ("-Wno-documentation-unknown-command")
+checkAddCompileFlag ("-Wno-documentation")
 
 #### build compile options
+
+if (NOT DEFINED LIBMP4TAG_BUILD OR LIBMP4TAG_BUILD STREQUAL "")
+  set (LIBMP4TAG_BUILD "Release")
+endif()
 
 if (LIBMP4TAG_BUILD STREQUAL "Release")
   add_compile_options (-O2)
@@ -82,45 +132,41 @@ endif()
 
 add_compile_options (-g)
 add_link_options (-g)
-if (NOT WIN32)
-  add_link_options (-rdynamic)
-endif()
 
 #### more compile options: fortification/address sanitizer
 
 set (LIBMP4TAG_FORTIFY T)
+if (DEFINED ENV{LIBMP4TAG_FORTIFY} AND NOT ENV{LIBMP4TAG_FORTIFY} STREQUAL "")
+  set (LIBMP4TAG_FORTIFY $ENV{LIBMP4TAG_FORTIFY})
+endif()
 
 # address sanitizer
 if (LIBMP4TAG_BUILD STREQUAL "SanitizeAddress")
   set (LIBMP4TAG_FORTIFY F)
   add_compile_options (-O0)
-  add_compile_options (-ggdb)
+  checkAddCompileFlag ("-ggdb")
   add_link_options (-g)
-  add_compile_options (-fsanitize=address)
-  add_link_options (-fsanitize=address)
-  add_compile_options (-fsanitize-address-use-after-scope)
-  add_link_options (-fsanitize-address-use-after-scope)
-  add_compile_options (-fsanitize-recover=address)
-  add_link_options (-fsanitize-recover=address)
-  add_compile_options (-fno-omit-frame-pointer)
-  add_compile_options (-fno-common)
-  add_compile_options (-fno-inline)
+  checkAddCompileFlag ("-fsanitize=address")
+  checkAddLinkFlag ("-fsanitize=address")
+  checkAddCompileFlag ("-fsanitize-address-use-after-scope")
+  checkAddLinkFlag ("-fsanitize-address-use-after-scope")
+  checkAddCompileFlag ("-fsanitize-recover=address")
+  checkAddLinkFlag ("-fsanitize-recover=address")
+  checkAddCompileFlag ("-fno-omit-frame-pointer")
+  checkAddCompileFlag ("-fno-common")
+  checkAddCompileFlag ("-fno-inline")
   if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    add_link_options (-lrt)
+    checkAddLinkFlag ("-lrt")
   endif()
 endif()
 
 if (LIBMP4TAG_FORTIFY STREQUAL T)
   # hardening
-  add_compile_options (-fstack-protector-strong)
-  add_compile_options (-fstack-protector-all)
-  add_compile_options (-fstack-protector-strong)
-  add_compile_options (-fstack-protector-all)
-  add_compile_options (-D_FORTIFY_SOURCE=2)
+  checkAddCompileFlag ("-fstack-protector-strong")
+  checkAddCompileFlag ("-fstack-protector-all")
+  checkAddCompileFlag ("-D_FORTIFY_SOURCE=2")
 else()
-  if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    add_compile_options (-Wno-macro-redefined)
-  endif()
+  checkAddCompileFlag ("-Wno-macro-redefined")
   add_compile_options (-U_FORTIFY_SOURCE)
   add_compile_options (-D_FORTIFY_SOURCE=0)
 endif()
@@ -133,25 +179,22 @@ if (NOT WIN32)
   endif()
   if (APPLE)
     SET (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} "@loader_path")
+    # 10.6 = Snow Leopard, 10.7 = Lion
+    # 10.8 = Mountain Lion, 10.9 = Mavericks
+    # 10.10 = Yosemite, 10.11 = El Capitan
     # 10.12 = Sierra, 10.13 = High Sierra
     # 10.14 = Mojave, 10.15 = Catalina
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
     # 15 = Sequoia
-    add_compile_options (-mmacosx-version-min=10.13)
-    add_link_options (-mmacosx-version-min=10.13)
     # universal binary
     set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
   endif()
 else()
-  add_link_options (-static-libgcc)
-  add_link_options (-static-libstdc++)
+  checkAddLinkFlag ("-static-libgcc")
+  checkAddLinkFlag ("-static-libstdc++")
 endif()
 
 #### configuration
-
-include (CheckIncludeFile)
-include (CheckFunctionExists)
-include (CheckStructHasMember)
 
 check_include_file (arpa/inet.h _hdr_arpa_inet)
 check_include_file (endian.h _hdr_endian)
@@ -159,6 +202,7 @@ check_include_file (sys/resource.h _sys_resource)
 check_include_file (windows.h _hdr_windows)
 check_include_file (winsock2.h _hdr_winsock2)
 
+# windows functions
 check_function_exists (GetFileTime _lib_GetFileTime)
 check_function_exists (Sleep _lib_Sleep)
 check_function_exists (CommandLineToArgvW _lib_CommandLinetoArgvW)
@@ -166,8 +210,8 @@ check_function_exists (_wrename _lib__wrename)
 check_function_exists (_wstat64 _lib__wstat64)
 check_function_exists (_wunlink _lib__wunlink)
 
-check_function_exists (nanosleep _lib_nanosleep)
-check_function_exists (setrlimit _lib_setrlimit)
+check_symbol_exists (nanosleep time.h _lib_nanosleep)
+check_symbol_exists (setrlimit sys/resource.h _lib_setrlimit)
 
 check_struct_has_member ("struct stat"
     st_atim sys/stat.h _mem_struct_stat_st_atim)
@@ -175,6 +219,7 @@ check_struct_has_member ("struct stat"
     st_atimespec sys/stat.h _mem_struct_stat_st_atimespec)
 
 configure_file (config.h.in config.h)
+configure_file (libmp4tag.h.in libmp4tag.h)
 
 #### libraries
 
@@ -187,6 +232,11 @@ add_library (${LIBMP4TAG_LIBNAME}
   mp4writeutil.c
   mp4const.c
 )
+set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES PREFIX "")
+if (WIN32)
+  set (CMAKE_SHARED_LIBRARY_PREFIX "lib")
+  set (CMAKE_STATIC_LIBRARY_PREFIX "lib")
+endif()
 if (WIN32)
   target_link_libraries (${LIBMP4TAG_LIBNAME} PUBLIC ws2_32)
 endif()
@@ -197,7 +247,7 @@ if (WIN32)
 endif()
 set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES
   VERSION ${CMAKE_PROJECT_VERSION}
-  SOVERSION ${CMAKE_PROJECT_VERSION}
+  SOVERSION ${LIBMP4TAG_SOVERSION}
 )
 
 #### executables
@@ -218,21 +268,6 @@ configure_file (${CMAKE_SOURCE_DIR}/libmp4tag.pc.in libmp4tag.pc @ONLY)
 
 # compressed manual pages
 
-# these do not work (probably need to be added to target)
-#add_custom_command (
-#  OUTPUT mp4tagcli.1.gz
-#  DEPENDS ${PROJECT_SOURCE_DIR}/man/mp4tagcli.1
-#  COMMAND cat ${PROJECT_SOURCE_DIR}/man/mp4tagcli.1 |
-#      gzip -9 > ${CMAKE_BINARY_DIR}/mp4tagcli.1.gz
-#)
-#
-#add_custom_command (
-#  OUTPUT libmp4tag.3.gz
-#  DEPENDS ${PROJECT_SOURCE_DIR}/man/libmp4tag.3
-#  COMMAND cat ${PROJECT_SOURCE_DIR}/man/libmp4tag.3 |
-#      gzip -9 > ${CMAKE_BINARY_DIR}/libmp4tag.3.gz
-#)
-
 #### install
 
 install (TARGETS ${LIBMP4TAG_LIBNAME}
@@ -246,15 +281,15 @@ install (TARGETS mp4tagcli
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 
-install (FILES libmp4tag.h
+install (FILES ${CMAKE_BINARY_DIR}/libmp4tag.h
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 install (FILES man/mp4tagcli.1
-  DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/man/man1"
 )
 install (FILES man/libmp4tag.3
-  DESTINATION "${CMAKE_INSTALL_MANDIR}/man3"
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/man/man3"
 )
 
 install (FILES

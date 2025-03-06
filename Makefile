@@ -8,9 +8,7 @@ MAKEFLAGS += --no-print-directory
 BUILDDIR = build
 CLANG = clang
 LOCTMP = tmp
-VERSFN = $(LOCTMP)/vers.txt
 SRCFLAG = $(LOCTMP)/source.txt
-RM = rm
 
 .PHONY: release
 release:
@@ -35,87 +33,58 @@ sanitizeaddressclang:
 .PHONY: cmake
 .PHONY: cmakeclang cmake-unix cmake-windows
 
-$(VERSFN): libmp4tag.h
-	@test -d $(LOCTMP) || mkdir $(LOCTMP)
-	@MAJVERS=$$(grep '^#define LIBMP4TAG_VERS_MAJOR [0-9]' libmp4tag.h \
-		| sed 's,.* ,,'); \
-	MINVERS=$$(grep '^#define LIBMP4TAG_VERS_MINOR [0-9]' libmp4tag.h \
-		| sed 's,.* ,,'); \
-	REVVERS=$$(grep '^#define LIBMP4TAG_VERS_REVISION [0-9]' libmp4tag.h \
-		| sed 's,.* ,,'); \
-	VERS="$${MAJVERS}.$${MINVERS}.$${REVVERS}"; \
-	echo $${VERS} > $(VERSFN)
-
 # parallel doesn't seem to work under msys2
 # cmake doesn't seem to support parallel under *BSD
 .PHONY: cmake
-cmake: $(VERSFN)
-	@VERS=$$(cat $(VERSFN)); \
+cmake:
+	@. ./VERSION.txt ; \
 	case $$(uname -s) in \
           Linux) \
-	    COMP=$(CC) \
-	    VERS=$${VERS} \
 	    $(MAKE) cmake-unix; \
             pmode=--parallel $(MAKE) build; \
             ;; \
 	  *BSD) \
-	    COMP=$(CLANG) \
-	    VERS=$${VERS} \
 	    $(MAKE) cmake-unix; \
 	    $(MAKE) build; \
             ;; \
 	  Darwin) \
-	    COMP=$(CLANG) \
-	    VERS=$${VERS} \
 	    $(MAKE) cmake-unix; \
 	    pmode=--parallel $(MAKE) build; \
             ;; \
 	  MINGW*) \
-	    COMP=$(CC) \
-	    VERS=$${VERS} \
 	    $(MAKE) cmake-windows; \
 	    $(MAKE) build; \
             ;; \
 	  *) \
-	    COMP=$(CC) \
-	    VERS=$${VERS} \
 	    $(MAKE) cmake-windows; \
 	    $(MAKE) build; \
             ;; \
 	esac
 
 .PHONY: cmakeclang
-cmakeclang: $(VERSFN)
-	@VERS=$$(cat $(VERSFN)); \
+cmakeclang:
+	@. ./VERSION.txt ; \
 	case $$(uname -s) in \
           Linux) \
-	    COMP=$(CLANG) \
-	    VERS=$${VERS} \
-	    $(MAKE) cmake-unix; \
+	    $(MAKE) CC=clang cmake-unix; \
             pmode=--parallel $(MAKE) build; \
             ;; \
 	  *BSD) \
-	    COMP=$(CLANG) \
-	    VERS=$${VERS} \
-	    $(MAKE) cmake-unix; \
+	    CC=clang \
+	    $(MAKE) CC=clang cmake-unix; \
 	    $(MAKE) build; \
             ;; \
 	  Darwin) \
-	    COMP=$(CLANG) \
-	    VERS=$${VERS} \
-	    $(MAKE) cmake-unix; \
+	    CC=clang \
+	    $(MAKE) CC=clang cmake-unix; \
 	    pmode=--parallel $(MAKE) build; \
             ;; \
 	  MINGW*) \
-	    COMP=/ucrt64/bin/clang.exe \
-	    VERS=$${VERS} \
-	    $(MAKE) cmake-windows; \
+	    $(MAKE) CC=/ucrt64/bin/clang.exe cmake-windows; \
 	    $(MAKE) build; \
             ;; \
 	  *) \
-	    COMP=clang \
-	    VERS=$${VERS} \
-	    $(MAKE) cmake-windows; \
+	    $(MAKE) CC=clang cmake-windows; \
 	    $(MAKE) build; \
             ;; \
 	esac
@@ -125,10 +94,9 @@ cmakeclang: $(VERSFN)
 cmake-unix:
 	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
 	cmake \
-		-DCMAKE_C_COMPILER=$(COMP) \
+		-DCMAKE_C_COMPILER=$(CC) \
 		-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
 		-DLIBMP4TAG_BUILD:STATIC=$(LIBMP4TAG_BUILD) \
-		-DLIBMP4TAG_BUILD_VERS:STATIC=$(VERS) \
 		-S . -B $(BUILDDIR) -Werror=deprecated
 
 # internal use
@@ -139,7 +107,6 @@ cmake-windows:
 		-DCMAKE_C_COMPILER=$(COMP) \
 		-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
 		-DLIBMP4TAG_BUILD:STATIC=$(LIBMP4TAG_BUILD) \
-		-DLIBMP4TAG_BUILD_VERS:STATIC=$(VERS) \
 		-G "MSYS Makefiles" \
 		-S . -B $(BUILDDIR) -Werror=deprecated
 
@@ -150,36 +117,33 @@ cmake-windows:
 build:
 	cmake --build $(BUILDDIR) $(pmode)
 
-# force cmake to re-build the pkgconfig file
-# make sure the correct prefix is available for the pkgconfig file.
-# cmake's --prefix argument is disassociated from the prefix needed
-# for the pkgconfig file.
 .PHONY: install
-install: $(VERSFN)
+install:
 	cmake --install $(BUILDDIR)
 
 # source
 
 # the wiki/ directory has the changelog in it
 .PHONY: source
-source: $(VERSFN)
-	@VERS=$$(cat $(VERSFN)); \
-	SRCDIR=libmp4tag-$${VERS}; \
-	$(MAKE) tclean; \
-	$(MAKE) SRCDIR=$${SRCDIR} $(SRCFLAG); \
-	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcetar; \
-	$(MAKE) VERS=$${VERS} SRCDIR=$${SRCDIR} sourcezip; \
-	$(RM) -rf $${SRCDIR} $(SRCFLAG)
+source:
+	@. ./VERSION.txt ; \
+	SRCDIR=libmp4tag-$${LIBMP4TAG_VERSION} ; \
+	$(MAKE) tclean ; \
+	$(MAKE) SRCDIR=$${SRCDIR} $(SRCFLAG) ; \
+	$(MAKE) SRCDIR=$${SRCDIR} sourcetar ; \
+	$(MAKE) SRCDIR=$${SRCDIR} sourcezip
+	rm -rf $${SRCDIR} $(SRCFLAG)
 
 # internal use
 $(SRCFLAG):
 	@test -d $(LOCTMP) || mkdir $(LOCTMP)
 	@if [ "$(SRCDIR)" = "" ]; then echo "No source-dir set"; exit 1; fi
-	@-test -d $(SRCDIR) && $(RM) -rf $(SRCDIR)
+	@-test -d $(SRCDIR) && rm -rf $(SRCDIR)
 	@mkdir $(SRCDIR)
 	@cp -pfr \
-		*.c *.h CMakeLists.txt Makefile config.h.in libmp4tag.pc.in \
+		CMakeLists.txt Makefile \
 		README.txt LICENSE.txt \
+		*.c *.h libmp4tag.h.in config.h.in libmp4tag.pc.in \
 		man tests wiki \
 		$(SRCDIR)
 	@touch $(SRCFLAG)
@@ -187,15 +151,15 @@ $(SRCFLAG):
 # internal use
 .PHONY: sourcetar
 sourcetar: $(SRCFLAG)
-	TARGZ=libmp4tag-src-$(VERS).tar.gz; \
-	test -f $${TARGZ} && $(RM) -f $${TARGZ}; \
+	TARGZ=libmp4tag-src-$${LIBMP4TAG_VERSION}.tar.gz; \
+	test -f $${TARGZ} && rm -f $${TARGZ}; \
 	tar -c -z -f $${TARGZ} $(SRCDIR)
 
 # internal use
 .PHONY: sourcezip
 sourcezip: $(SRCFLAG)
-	ZIPF=libmp4tag-src-$(VERS).zip; \
-	test -f $${ZIPF} && $(RM) -f $${ZIPF}; \
+	ZIPF=libmp4tag-src-$${LIBMP4TAG_VERSION}.zip; \
+	test -f $${ZIPF} && rm -f $${ZIPF}; \
 	zip -q -o -r -9 $${ZIPF} $(SRCDIR)
 
 # cleaning
@@ -203,18 +167,17 @@ sourcezip: $(SRCFLAG)
 .PHONY: distclean
 distclean:
 	@-$(MAKE) tclean
-	@-$(RM) -rf build $(LOCTMP)
-	@-$(RM) -f libmp4tag-src-[0-9]*[0-9].[tz]*
-	@mkdir $(BUILDDIR)
+	@-rm -rf $(BUILDDIR) $(LOCTMP) x
+	@-rm -f libmp4tag-src-[0-9]*[0-9].[tz]*
 
 .PHONY: clean
 clean:
 	@-$(MAKE) tclean
-	@-test -d build && cmake --build build --target clean
+	@-test -d $(BUILDDIR) && cmake --build $(BUILDDIR) --target clean
 
 .PHONY: tclean
 tclean:
-	@-$(RM) -f w ww www core
-	@-$(RM) -f test-*.txt test-xx.m4a
-	@-$(RM) -f *~ */*~ *.orig */*.orig
-	@-$(RM) -f asan.*
+	@-rm -f w ww www core
+	@-rm -f test-*.txt test-xx.m4a
+	@-rm -f *~ */*~ *.orig */*.orig
+	@-rm -f asan.*
