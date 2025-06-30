@@ -4,13 +4,15 @@
 
 <!--
 
-**2.0.0.1 2025-6---**
+-->
+
+**2.0.0.1 2025-6-30**
+
+Maintenance Release
 
 * Bug Fixes:
     * Fix compiler warnings.
     * Improve cmake configuration.
-
--->
 
 **2.0.0 2024-12-19**
 
