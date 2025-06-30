@@ -4,7 +4,7 @@ libdir=@CMAKE_INSTALL_FULL_LIBDIR@
 
 Name: libmp4tag
 Description: MP4 tagging lbirary
-Version: @LIBMP4TAG_BUILD_VERS@
+Version: @LIBMP4TAG_VERSION@
 URL: https://sourceforge.net/project/libmp4tag/
 Libs: -L${libdir} -lmp4tag
 Cflags: -I${includedir}
