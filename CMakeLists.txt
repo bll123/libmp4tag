@@ -52,6 +52,11 @@ include (CheckSymbolExists)
 include (CheckStructHasMember)
 
 set (LIBMP4TAG_LIBNAME libmp4tag)
+if (WIN32)
+  # msys2 loves to put the lib prefix in front
+  # difficult to work around
+  set (LIBMP4TAG_LIBNAME mp4tag)
+endif()
 
 include_directories (
   "${CMAKE_BINARY_DIR}"
@@ -240,8 +245,7 @@ add_library (${LIBMP4TAG_LIBNAME}
 )
 set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES PREFIX "")
 if (WIN32)
-  set (CMAKE_SHARED_LIBRARY_PREFIX "lib")
-  set (CMAKE_STATIC_LIBRARY_PREFIX "lib")
+  set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES PREFIX "lib")
 endif()
 if (WIN32)
   target_link_libraries (${LIBMP4TAG_LIBNAME} PUBLIC ws2_32)
