@@ -11,8 +11,9 @@ remuser=bll123
 port=22
 wwwpath=/home/project-web/${project}/htdocs
 
-VERSFN=tmp/vers.txt
-VERS=$(cat ${VERSFN})
+. ./VERSION.txt
+
+VERS=$LIBMP4TAG_VERSION
 TMP=webtmp
 
 test -d ${TMP} && rm -rf ${TMP}

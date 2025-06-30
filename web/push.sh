@@ -12,13 +12,9 @@ fi
 
 SFUSER=bll123
 
-VERSFN=tmp/vers.txt
-VERS=$(cat ${VERSFN})
+. ./VERSION.txt
+VERS=$LIBMP4TAG_VERSION
 
-if [[ ! -f $VERSFN ]]; then
-  echo "no version file"
-  exit 1
-fi
 if [[ ! -f libmp4tag-src-${VERS}.tar.gz ]]; then
   echo "no source tar"
   exit 1
