@@ -133,7 +133,7 @@ $(SRCFLAG):
 	@mkdir $(SRCDIR)
 	@cp -pfr \
 		CMakeLists.txt Makefile \
-		VERSION.txt README.txt LICENSE.txt \
+		VERSION.txt README.md LICENSE.txt \
 		*.c *.h libmp4tag.h.in config.h.in libmp4tag.pc.in \
 		man wiki \
 		$(SRCDIR)
