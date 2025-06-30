@@ -30,7 +30,7 @@ About
 
   A command line utility is included to display or change the tags.
 
-  Wiki: https://sourceforge.net/p/libmp4tag/wiki/Home/
+  [Wiki](https://sourceforge.net/p/libmp4tag/wiki/Home/)
 
 Current Status:
 
@@ -39,9 +39,6 @@ Current Status:
   The API is stable, and all functionality is working.
 
   To Do:
-    - re-write the data fetching interface using callbacks.
-      re-write the streaming interface.
-      this will be version 3.0.0.
     - Other languages ?
       I do not have any good samples of this.
 
@@ -60,6 +57,8 @@ Build Requirements:
   libmp4tag does not use any external libraries.
 
 Building:
+
+  Note that the MacOS deployment target is set to 10.13
 
   cmake only:
     cmake -DCMAKE_INSTALL_PREFIX=$HOME/local

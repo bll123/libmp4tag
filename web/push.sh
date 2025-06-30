@@ -30,7 +30,7 @@ fi
 
 make tclean
 
-fn=README.txt
+fn=README.md
 rsync -v -e ssh ${fn} \
     ${SFUSER}@frs.sourceforge.net:/home/frs/project/libmp4tag/${fn}
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2023-2024 Brad Lanam Pleasant Hill CA
+# Copyright 2023-2025 Brad Lanam Pleasant Hill CA
 #
 cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
 
@@ -34,6 +34,8 @@ project (LIBMP4TAG
   LANGUAGES C
 )
 
+# It is possible that the so-version may not match the main version
+# in some future.  This would need to be changed.
 string (REGEX REPLACE "\\..*" "" LIBMP4TAG_SOVERSION ${LIBMP4TAG_VERSION})
 
 option (BUILD_SHARED_LIBS "Build dynamic library" ON)
@@ -132,6 +134,9 @@ endif()
 
 add_compile_options (-g)
 add_link_options (-g)
+if (NOT WIN32)
+  checkAddLinkFlag ("-rdynamic")
+endif()
 
 #### more compile options: fortification/address sanitizer
 
@@ -185,7 +190,8 @@ if (NOT WIN32)
     # 10.12 = Sierra, 10.13 = High Sierra
     # 10.14 = Mojave, 10.15 = Catalina
     # 11 = Big Sur, 12 = Monterey, 13 = Ventura, 14 = Sonoma
-    # 15 = Sequoia
+    # 15 = Sequoia, 26 = Tahoe
+    set (CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
     # universal binary
     set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
   endif()

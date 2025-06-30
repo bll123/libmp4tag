@@ -1,6 +1,6 @@
 #!/usr/bin/make
 #
-# Copyright 2023-2024 Brad Lanam Pleasant Hill CA
+# Copyright 2023-2025 Brad Lanam Pleasant Hill CA
 #
 
 MAKEFLAGS += --no-print-directory
@@ -95,7 +95,7 @@ cmake-unix:
 cmake-windows:
 	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
 	cmake \
-		-DCMAKE_C_COMPILER=$(COMP) \
+		-DCMAKE_C_COMPILER=$(CC) \
 		-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
 		-DLIBMP4TAG_BUILD:STATIC=$(LIBMP4TAG_BUILD) \
 		-G "MSYS Makefiles" \
