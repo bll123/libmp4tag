@@ -36,6 +36,7 @@ static int  mp4tag_copy_file_data (FILE *ifh, FILE *ofh, uint64_t offset, size_t
 static void mp4tag_debug_write_vals (libmp4tag_t *libmp4tag, uint32_t datalen, int32_t delta, int32_t totdelta, int32_t freelen);
 
 /* if there are no tags, null will be returned. */
+[[nodiscard]]
 char *
 mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
 {

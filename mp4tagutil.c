@@ -12,7 +12,7 @@
 #include <ctype.h>
 #include <time.h>
 
-#if _hdr_windows
+#if __has_include (<windows.h>)
 # define WIN32_LEAN_AND_MEAN 1
 # include <windows.h>
 #endif
@@ -125,6 +125,7 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx)
   return idx;
 }
 
+[[nodiscard]]
 mp4tagdef_t *
 mp4tag_check_tag (const char *tag)
 {

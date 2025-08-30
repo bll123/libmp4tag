@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#if _hdr_windows
+#if __has_include (<windows.h>)
 # define WIN32_LEAN_AND_MEAN 1
 # include <windows.h>
 #endif
@@ -21,6 +21,7 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 
+[[nodiscard]]
 FILE *
 mp4tag_fopen (const char *fname, const char *mode)
 {
@@ -47,6 +48,7 @@ mp4tag_fopen (const char *fname, const char *mode)
   return fh;
 }
 
+[[nodiscard]]
 ssize_t
 mp4tag_file_size (const char *fname)
 {
@@ -81,6 +83,7 @@ mp4tag_file_size (const char *fname)
   return sz;
 }
 
+[[nodiscard]]
 char *
 mp4tag_read_file (const char *fn, size_t *sz, int *mp4error)
 {
@@ -225,6 +228,7 @@ mp4tag_copy_file_times (FILE *ifh, FILE *ofh)
 
 #ifdef _WIN32
 
+[[nodiscard]]
 wchar_t *
 mp4tag_towide (const char *buff)
 {
@@ -241,6 +245,7 @@ mp4tag_towide (const char *buff)
   return tbuff;
 }
 
+[[nodiscard]]
 char *
 mp4tag_fromwide (const wchar_t *buff)
 {

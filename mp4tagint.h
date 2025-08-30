@@ -2,8 +2,7 @@
  * Copyright 2023-2025 Brad Lanam Pleasant Hill CA
  */
 
-#ifndef INC_MP4TAGINT_H
-#define INC_MP4TAGINT_H
+#pragma once
 
 #include "config.h"
 
@@ -209,7 +208,7 @@ int  mp4tag_parse_ftyp (libmp4tag_t *libmp4tag);
 
 /* mp4tagwrite.c */
 
-char  * mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *dlen);
+[[nodiscard]] char  * mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *dlen);
 int   mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen);
 
 
@@ -222,7 +221,7 @@ extern const char *MP4TAG_INPUT_DELIM;
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
 int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx);
 int  mp4tag_parse_tagname (char *tag, int *dataidx);
-mp4tagdef_t *mp4tag_check_tag (const char *tag);
+[[nodiscard]] mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
 int  mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, ssize_t sz, uint32_t origflag, size_t origlen, const char *covername);
@@ -238,5 +237,3 @@ bool mp4tag_chk_dbg (libmp4tag_t *libmp4tag, int dbg);
 #if defined (__cplusplus) || defined (c_plusplus)
 } /* extern C */
 #endif
-
-#endif /* INC_MP4TAGINT_H */

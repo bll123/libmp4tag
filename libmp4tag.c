@@ -17,7 +17,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#if _sys_resource
+#if __has_include (<sys/resource.h>)
 # include <sys/resource.h>
 #endif
 
@@ -62,6 +62,7 @@ static void mp4tag_init_tags (libmp4tag_t *libmp4tag);
 static void enable_core_dump (void);
 #endif
 
+[[nodiscard]]
 libmp4tag_t *
 mp4tag_open (const char *fn, int *mp4error)
 {
@@ -120,6 +121,7 @@ mp4tag_open (const char *fn, int *mp4error)
   return libmp4tag;
 }
 
+[[nodiscard]]
 libmp4tag_t *
 mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t seekcb,
     void *userdata, uint32_t timeout, int *mp4error)
@@ -232,6 +234,7 @@ mp4tag_free (libmp4tag_t *libmp4tag)
   free (libmp4tag);
 }
 
+[[nodiscard]]
 int64_t
 mp4tag_duration (libmp4tag_t *libmp4tag)
 {
@@ -619,6 +622,7 @@ mp4tag_write_tags (libmp4tag_t *libmp4tag)
   return rc;
 }
 
+[[nodiscard]]
 libmp4tagpreserve_t *
 mp4tag_preserve_tags (libmp4tag_t *libmp4tag)
 {
@@ -734,12 +738,14 @@ mp4tag_error (libmp4tag_t *libmp4tag)
   return libmp4tag->mp4error;
 }
 
+[[nodiscard]]
 const char *
 mp4tag_version (void)
 {
   return LIBMP4TAG_VERSION;
 }
 
+[[nodiscard]]
 const char *
 mp4tag_error_str (libmp4tag_t *libmp4tag)
 {

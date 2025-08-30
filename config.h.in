@@ -1,14 +1,7 @@
 /*
  * Copyright 2023-2025 Brad Lanam Pleasant Hill CA
  */
-#ifndef INC_CONFIG_H
-#define INC_CONFIG_H
-
-#cmakedefine01 _hdr_arpa_inet
-#cmakedefine01 _hdr_endian
-#cmakedefine01 _sys_resource
-#cmakedefine01 _hdr_windows
-#cmakedefine01 _hdr_winsock2
+#pragma once
 
 #cmakedefine01 _lib_GetFileTime
 #cmakedefine01 _lib_Sleep
@@ -21,5 +14,3 @@
 
 #cmakedefine01 _mem_struct_stat_st_atim
 #cmakedefine01 _mem_struct_stat_st_atimespec
-
-#endif /* INC_CONFIG_H */
