@@ -124,7 +124,7 @@ typedef struct libmp4tag {
   void            *userdata;
   mp4tag_t        *tags;
   size_t          filesz;
-  size_t          offset;
+  int64_t         offset;
   int64_t         creationdate;
   int64_t         modifieddate;
   int64_t         duration;
@@ -133,33 +133,33 @@ typedef struct libmp4tag {
   int32_t         freespacesz;
   /* used by the parser and writer */
   uint32_t        base_lengths [MP4TAG_LEVEL_MAX];
-  ssize_t         base_offsets [MP4TAG_LEVEL_MAX];
+  int64_t         base_offsets [MP4TAG_LEVEL_MAX];
   int64_t         rem_length [MP4TAG_LEVEL_MAX];
   uint64_t        ilst_remaining;           /* for 1.3.0 bug */
   /* base_name is for debugging, otherwise not needed */
   char            base_name [MP4TAG_LEVEL_MAX][MP4TAG_ID_DISP_LEN + 1];
   uint32_t        taglist_orig_data_len;    /* for debugging */
   int             base_offset_count;
-  ssize_t         taglist_base_offset;
-  ssize_t         taglist_offset;
+  int64_t         taglist_base_offset;
+  int64_t         taglist_offset;
   uint32_t        taglist_orig_len;
   uint32_t        taglist_len;
   uint32_t        interior_free_len;
   uint32_t        exterior_free_len;
   int             parentidx;
-  ssize_t         noilst_offset;
-  ssize_t         after_ilst_offset;
+  int64_t         noilst_offset;
+  int64_t         after_ilst_offset;
   uint32_t        insert_delta;
-  ssize_t         stco_offset;
+  int64_t         stco_offset;
   uint32_t        stco_len;
-  ssize_t         co64_offset;
+  int64_t         co64_offset;
   uint32_t        co64_len;
   /* datacount is a temporary variable used by both add-tag */
   /* and the write process */
   int             datacount;
   /* temporary variables used by the write process */
   char            lastbox_nm [TEMP_NM_SZ];
-  int32_t         lastbox_offset;
+  int64_t         lastbox_offset;
   /* tag list */
   int             tagcount;
   int             tagalloccount;

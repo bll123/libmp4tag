@@ -4,12 +4,17 @@
 
 <!--
 
-**2.0.0.2 2025----**
+-->
 
+**2.0.1 2025-10-6**
+
+* Bug Fixes:
+    * Windows: Fix ftell/fseek for large files.
+* Changes
+    * Added helper routines: mp4tag_ftell, mp4tag_fseek
+    * mp4tagcli: Add --preserve option
 * Internal
     * Code Cleanup (modernization)
-
--->
 
 **2.0.0.1 2025-6-30**
 

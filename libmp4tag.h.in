@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 Brad Lanam Pleasant Hill CA
+ * Copyright 2023-2025 Brad Lanam Pleasant Hill CA
  */
 
 #pragma once
@@ -124,6 +124,8 @@ extern const char *COPYRIGHT_STR;
 int     mp4tag_file_delete (const char *fname);
 int     mp4tag_file_move (const char *fname, const char *nfn);
 void    mp4tag_copy_file_times (FILE *ifh, FILE *ofh);
+int64_t mp4tag_ftell (FILE *fh);
+int     mp4tag_fseek (FILE *fh, int64_t offset, int whence);
 #ifdef _WIN32
 [[nodiscard]] wchar_t * mp4tag_towide (const char *buff);
 [[nodiscard]] char    * mp4tag_fromwide (const wchar_t *buff);

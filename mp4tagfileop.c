@@ -226,6 +226,26 @@ mp4tag_copy_file_times (FILE *ifh, FILE *ofh)
 #endif
 }
 
+int64_t
+mp4tag_ftell (FILE *fh)
+{
+#if _lib_ftello
+  return ftello (fh);
+#else
+  return ftell (fh);
+#endif
+}
+
+int
+mp4tag_fseek (FILE *fh, int64_t offset, int whence)
+{
+#if _lib_fseeko
+  return fseeko (fh, offset, whence);
+#else
+  return fseek (fh, (long) offset, whence);
+#endif
+}
+
 #ifdef _WIN32
 
 [[nodiscard]]

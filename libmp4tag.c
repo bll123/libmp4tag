@@ -161,7 +161,7 @@ mp4tag_openstream (mp4tag_readcb_t readcb, mp4tag_seekcb_t seekcb,
 int
 mp4tag_parse (libmp4tag_t *libmp4tag)
 {
-  ssize_t   offset = -1;
+  int64_t     offset = -1;
 
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return MP4TAG_ERR_BAD_STRUCT;
@@ -182,7 +182,7 @@ mp4tag_parse (libmp4tag_t *libmp4tag)
   }
 
   if (! libmp4tag->isstream) {
-    offset = ftell (libmp4tag->fh);
+    offset = mp4tag_ftell (libmp4tag->fh);
   }
   mp4tag_parse_file (libmp4tag, 0, 0);
 

@@ -226,6 +226,8 @@ check_function_exists (_wrename _lib__wrename)
 check_function_exists (_wstat64 _lib__wstat64)
 check_function_exists (_wunlink _lib__wunlink)
 
+check_function_exists (fseeko _lib_fseeko)
+check_function_exists (ftello _lib_ftello)
 check_symbol_exists (nanosleep time.h _lib_nanosleep)
 check_symbol_exists (setrlimit sys/resource.h _lib_setrlimit)
 

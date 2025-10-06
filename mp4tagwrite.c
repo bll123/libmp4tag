@@ -32,7 +32,7 @@ static char * mp4tag_append_len_16 (char *dptr, uint64_t val);
 static char * mp4tag_append_len_32 (char *dptr, uint64_t val);
 static char * mp4tag_append_len_64 (char *dptr, uint64_t val);
 static void mp4tag_update_data_len (libmp4tag_t *libmp4tag, char *data, uint32_t len);
-static int  mp4tag_copy_file_data (FILE *ifh, FILE *ofh, uint64_t offset, size_t len);
+static int  mp4tag_copy_file_data (FILE *ifh, FILE *ofh, int64_t offset, size_t len);
 static void mp4tag_debug_write_vals (libmp4tag_t *libmp4tag, uint32_t datalen, int32_t delta, int32_t totdelta, int32_t freelen);
 
 /* if there are no tags, null will be returned. */
@@ -95,7 +95,7 @@ mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data,
   /* c) or the 'ilst/free' is at the end of the file */
   if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
     fprintf (stdout, "-- check in-place\n");
-    fprintf (stdout, "  offset: %ld\n", (long) libmp4tag->taglist_offset);
+    fprintf (stdout, "  offset: %" PRId64 "\n", libmp4tag->taglist_offset);
     fprintf (stdout, "  taglist-len: %ld\n", (long) libmp4tag->taglist_len);
     fprintf (stdout, "  tlen (max): %ld\n", (long) tlen);
     fprintf (stdout, "  datalen: %ld\n", (long) datalen);
@@ -154,7 +154,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     fclose (ofh);
   }
 
-  if (fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) != 0) {
+  if (mp4tag_fseek (libmp4tag->fh, libmp4tag->taglist_offset, SEEK_SET) != 0) {
     libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
     return libmp4tag->mp4error;
   }
@@ -234,7 +234,7 @@ mp4tag_write_inplace (libmp4tag_t *libmp4tag, const char *data,
     uint32_t    t32;
     int         rc;
 
-    rc = fseek (libmp4tag->fh, libmp4tag->taglist_base_offset, SEEK_SET);
+    rc = mp4tag_fseek (libmp4tag->fh, libmp4tag->taglist_base_offset, SEEK_SET);
     if (rc != 0) {
       libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
       return libmp4tag->mp4error;
@@ -306,7 +306,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
   /* once this code is complete */
 
   if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
-    fprintf (stdout, "  copy-data: length:%ld\n", (long) offset);
+    fprintf (stdout, "  copy-data: length:%" PRId64 "\n", offset);
   }
   rc = mp4tag_copy_file_data (libmp4tag->fh, ofh, 0, offset);
 
@@ -400,7 +400,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
   }
 
   if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
-    fprintf (stdout, "  data-offset: %ld\n", ftell (ofh));
+    fprintf (stdout, "  data-offset: % " PRId64 "\n", mp4tag_ftell (ofh));
     fprintf (stdout, "  tags: %ld\n", (long) datalen);
   }
   if (rc == MP4TAG_OK && fwrite (data, datalen, 1, ofh) != 1) {
@@ -418,7 +418,7 @@ mp4tag_write_rewrite (libmp4tag_t *libmp4tag, const char *data,
   wlen = libmp4tag->filesz - offset;
   if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
     fprintf (stdout, "  file-size: %ld\n", (long) libmp4tag->filesz);
-    fprintf (stdout, "  copy-final-data: i-offset:%ld length:%ld\n", (long) offset, (long) wlen);
+    fprintf (stdout, "  copy-final-data: i-offset:%" PRId64 " length:%ld\n", offset, (long) wlen);
   }
   if (rc == MP4TAG_OK) {
     rc = mp4tag_copy_file_data (libmp4tag->fh, ofh, offset, wlen);
@@ -554,7 +554,7 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
     fprintf (stdout, "    boffset: %" PRId64 "\n", boffset);
     fprintf (stdout, "    blen: %d\n", blen);
   }
-  rc = fseek (ofh, boffset, SEEK_SET);
+  rc = mp4tag_fseek (ofh, boffset, SEEK_SET);
   if (rc != 0) {
     libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
     return;
@@ -605,7 +605,7 @@ mp4tag_update_offset_block (libmp4tag_t *libmp4tag, FILE *ofh, int32_t delta,
     dptr += offsetsz;
   }
 
-  rc = fseek (ofh, boffset, SEEK_SET);
+  rc = mp4tag_fseek (ofh, boffset, SEEK_SET);
   if (rc != 0) {
     libmp4tag->mp4error = MP4TAG_ERR_FILE_SEEK_ERROR;
     return;
@@ -743,7 +743,7 @@ mp4tag_build_append (libmp4tag_t *libmp4tag, int idx,
 
   if (mp4tag_chk_dbg (libmp4tag, MP4TAG_DBG_WRITE)) {
     fprintf (stdout, "  datacount: %d\n", libmp4tag->datacount);
-    fprintf (stdout, "  lastbox offset %d\n", libmp4tag->lastbox_offset);
+    fprintf (stdout, "  lastbox offset %" PRId64 "\n", libmp4tag->lastbox_offset);
   }
 
   if (libmp4tag->datacount > 0) {
@@ -1003,7 +1003,7 @@ mp4tag_update_data_len (libmp4tag_t *libmp4tag, char *data, uint32_t len)
 }
 
 static int
-mp4tag_copy_file_data (FILE *ifh, FILE *ofh, uint64_t offset, size_t len)
+mp4tag_copy_file_data (FILE *ifh, FILE *ofh, int64_t offset, size_t len)
 {
   char    *data;
   size_t  rlen = 0;
@@ -1013,7 +1013,7 @@ mp4tag_copy_file_data (FILE *ifh, FILE *ofh, uint64_t offset, size_t len)
   size_t  totwrite = 0;
   int     rc = MP4TAG_OK;
 
-  if (fseek (ifh, offset, SEEK_SET) != 0) {
+  if (mp4tag_fseek (ifh, offset, SEEK_SET) != 0) {
     return MP4TAG_ERR_FILE_SEEK_ERROR;
   }
 

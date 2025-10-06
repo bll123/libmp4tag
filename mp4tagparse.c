@@ -71,12 +71,12 @@ static void mp4tag_process_tag (libmp4tag_t *libmp4tag, const char *tag, uint32_
 static void mp4tag_process_covr (libmp4tag_t *libmp4tag, const char *tag, uint32_t blen, const char *data);
 static void mp4tag_process_data (const char *p, uint32_t *tlen, uint32_t *flags);
 static void mp4tag_parse_check_end (libmp4tag_t *libmp4tag);
-static int mp4tag_data_seek (libmp4tag_t *libmp4tag, size_t skiplen);
+static int mp4tag_data_seek (libmp4tag_t *libmp4tag, int64_t skiplen);
 static int mp4tag_data_read (libmp4tag_t *libmp4tag, void *buff, size_t sz);
 static time_t mp4tag_get_time (void);
 /* debugging */
 static void mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const char *data);
-static void mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset);
+static void mp4tag_dump_data (libmp4tag_t *libmp4tag, int64_t offset);
 
 /* uses a recursive descent method */
 int
@@ -890,12 +890,12 @@ mp4tag_parse_check_end (libmp4tag_t *libmp4tag)
 }
 
 static int
-mp4tag_data_seek (libmp4tag_t *libmp4tag, size_t skiplen)
+mp4tag_data_seek (libmp4tag_t *libmp4tag, int64_t skiplen)
 {
   int     rc;
 
   if (! libmp4tag->isstream) {
-    rc = fseek (libmp4tag->fh, skiplen, SEEK_CUR);
+    rc = mp4tag_fseek (libmp4tag->fh, skiplen, SEEK_CUR);
   } else {
     if (libmp4tag->seekcb == NULL) {
       libmp4tag->mp4error = MP4TAG_ERR_NO_CALLBACK;
@@ -992,12 +992,12 @@ mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const cha
   uint32_t      numoffsets;
   int           offsetsz;
   uint32_t      t32;
-  uint64_t      t64 = 0;
-  uint64_t      origoffset = 0;
+  int64_t       t64 = 0;
+  int64_t       origoffset = 0;
 
   if (libmp4tag->isstream == false) {
     /* preserve the current position */
-    origoffset = ftell (libmp4tag->fh);
+    origoffset = mp4tag_ftell (libmp4tag->fh);
   }
 
   if (strcmp (ident, boxids [MP4TAG_STCO]) == 0) {
@@ -1032,12 +1032,12 @@ mp4tag_dump_co (libmp4tag_t *libmp4tag, const char *ident, size_t len, const cha
 
   if (libmp4tag->isstream == false) {
     /* restore the original position */
-    fseek (libmp4tag->fh, origoffset, SEEK_SET);
+    mp4tag_fseek (libmp4tag->fh, origoffset, SEEK_SET);
   }
 }
 
 static void
-mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset)
+mp4tag_dump_data (libmp4tag_t *libmp4tag, int64_t offset)
 {
   unsigned char    buff [8];
 
@@ -1045,7 +1045,7 @@ mp4tag_dump_data (libmp4tag_t *libmp4tag, uint64_t offset)
     return;
   }
 
-  if (fseek (libmp4tag->fh, offset, SEEK_SET) == 0) {
+  if (mp4tag_fseek (libmp4tag->fh, offset, SEEK_SET) == 0) {
     if (fread (buff, sizeof (buff), 1, libmp4tag->fh) == 1) {
       for (size_t j = 0; j < sizeof (buff); ++j) {
         fprintf (stdout, "%02x", buff [j]);

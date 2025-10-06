@@ -9,6 +9,8 @@
 #cmakedefine01 _lib__wstat64
 #cmakedefine01 _lib__wunlink
 
+#cmakedefine01 _lib_fseeko
+#cmakedefine01 _lib_ftello
 #cmakedefine01 _lib_nanosleep
 #cmakedefine01 _lib_setrlimit
 

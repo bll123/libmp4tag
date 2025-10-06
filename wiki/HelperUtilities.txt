@@ -75,6 +75,24 @@ __ifh__ : FILE pointer to open source file.
 __ofh__ : FILE pointer to open target file.
 
 -------------
+##### mp4tag_ftell
+
+    int64_t mp4tag_ftell (FILE *fh)
+
+__fh__ : FILE pointer to open file
+
+-------------
+##### mp4tag_fseek
+
+    int mp4tag_fseek (FILE *fh, int64_t offset, int whence)
+
+__fh__ : FILE pointer to open file
+
+__offset__ : offset into file
+
+__whence__ : SEEK_SET, SEEK_END, SEEK_CUR
+
+-------------
 ##### mp4tag_towide
 
 Converts a utf8 string to Windows unicode.

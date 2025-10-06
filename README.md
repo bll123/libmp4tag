@@ -14,11 +14,6 @@ libmp4tag
 -  2.0.0
    - mp4tagpub_t : coveridx renamed to dataidx.
    - openstream interface re-written.
--  1.3.0
-   - Added support for streams.  This functionality is in beta status.
--  1.2.9
-   - The build/install process has been brought into line with cmake's
-   methods.  See the Building section.
 
 ### About
 
@@ -30,6 +25,8 @@ added.
 A command line utility is included to display or change the tags.
 
 [Wiki](https://sourceforge.net/p/libmp4tag/wiki/Home/)
+
+2025-10-6 Tested on Linux, MacOS, and Windows (Msys2).
 
 ### Current Status
 
@@ -84,6 +81,7 @@ Usage:
       mp4tagcli \
           [--debug <value>] \
           --copyfrom in-filename --copyto out-filename
+      mp4tagcli <filename> --preserve command-to-run
       mp4tagcli <filename> [--debug <value>] --clean
       mp4tagcli <filename> [--debug <value>] --duration
       mp4tagcli <filename> \
@@ -172,9 +170,15 @@ Deleting all tags:
 
 Copy all tags:
 
-    # this was implemented to test the preserve/restore functionality
-    # of the library.
     mp4tagcli --copyfrom aaa.m4a --copyto bbb.m4a
+
+Preserve tags, run a command, restore the tags:
+
+    mp4tagcli aaa.m4a --preserve "command-to-run"
+
+    e.g.
+
+    mp4tagcli aaa.m4a --preserve "audacity aaa.m4a"
 
 Free Space Size:
 

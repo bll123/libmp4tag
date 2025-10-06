@@ -1,9 +1,9 @@
 .\"
 .\" mp4tagcli.1
 .\"
-.\" Copyright 2023-2024 Brad Lanam Pleasant Hill CA USA
+.\" Copyright 2023-2025 Brad Lanam Pleasant Hill CA USA
 .\"
-.\" brad.lanam.di_at_gmail.com
+.\" brad.lanam.di / gmail.com
 .\"
 .TH mp4tagcli 1 "28 Nov 2023"
 .SH Name
@@ -11,6 +11,7 @@ mp4tagcli \- mp4 tag command line interface
 .SH Synopsis
 .\" mp4tagcli --version
 .\" mp4tagcli --copyfrom in-filename --copyto out-filename
+.\" mp4tagcli <filename> --preserve "command-to-run"
 .\" mp4tagcli <filename> --clean
 .\" mp4tagcli <filename> --duration
 .\" mp4tagcli <filename> --asstream
@@ -29,6 +30,11 @@ mp4tagcli \- mp4 tag command line interface
 .B mp4tagcli
 \fIfilename\fP
 \fB\-\-clean\fP
+.br
+.br
+.B mp4tagcli
+\fIfilename\fP
+\fB\-\-preserve\fP \fIcommand\-to\-run\fP
 .br
 .B mp4tagcli
 \fIfilename\fP
@@ -139,6 +145,12 @@ Removes all tags from the MP4 file.
 \fBmp4tagcli\fP {\fB\-f|\-\-copyfrom\fP} \fIinfile\fP {\fB\-t|\-\-copyto\fP} \fIoutfile\fP
 Copies the tags from from \fIinfile\fP to \fIoutfile\fP.  Any existing
 tags in \fIoutfile\fP are completely removed.
+.PP
+.SS Preserving Tags
+.TP
+\fBmp4tagcli\fP \fIinfile\fP {\fB\-\-preserve\fP} \fIcommand\-to\-run\fP
+Preserves the tags in \fIinfile\fP, runs the specfied command, then
+restores the tags back to \fIinfile\fP.
 .PP
 .SH See Also
 \fBlibmp4tag\fP(3)

@@ -37,22 +37,25 @@ main (int argc, char *argv [])
 {
   argcopy_t     argcopy;
   libmp4tag_t   *libmp4tag;
+  libmp4tagpreserve_t *preservedata;
   mp4tagpub_t   mp4tagpub;
   int           c;
   int           option_index;
   char          tagname [MP4TAG_ID_MAX];
   const         char *infname = NULL;
   const         char *copyto = NULL;
+  const         char *preservecmd = NULL;
   const         char *dumpfn = NULL;
+  bool          asstream = false;
+  bool          clean = false;
+  bool          copy = false;
   bool          display = false;
   bool          dump = false;
   bool          duration = false;
   bool          forcebinary = false;
-  bool          clean = false;
-  bool          write = false;
-  bool          copy = false;
+  bool          preserve = false;
   bool          testbin = false;
-  bool          asstream = false;
+  bool          write = false;
   int           fnidx = -1;
   int           dbgflags = 0;
   int           options = 0;
@@ -77,6 +80,7 @@ main (int argc, char *argv [])
     { "dump",           required_argument,  NULL,   'D' },
     { "duration",       no_argument,        NULL,   'u' },
     { "freespace",      required_argument,  NULL,   'F' },
+    { "preserve",       required_argument,  NULL,   'P' },
     { "testbin",        no_argument,        NULL,   'B' },
     { "version",        no_argument,        NULL,   'v' },
     { NULL,             0,                  NULL,   0 }
@@ -166,6 +170,13 @@ main (int argc, char *argv [])
         duration = true;
         break;
       }
+      case 'P': {
+        if (optarg != NULL) {
+          targ = argcopy.utf8argv [optind - 1];
+          preservecmd = targ;
+        }
+        break;
+      }
       case 'v': {
         fprintf (stdout, "mp4tagcli: version %s\n", mp4tag_version ());
         exit (0);
@@ -195,6 +206,10 @@ main (int argc, char *argv [])
     infname = argcopy.utf8argv [fnidx];
   }
 
+  if (infname != NULL && preservecmd != NULL) {
+    preserve = true;
+  }
+
   if (asstream) {
     fh = fopen (infname, "rb");
     libmp4tag = openstream_parse (fh, dbgflags, options, freespacesz);
@@ -202,17 +217,26 @@ main (int argc, char *argv [])
     libmp4tag = openparse (infname, dbgflags, options, freespacesz);
   }
 
-  if (! asstream && copy) {
-    libmp4tagpreserve_t   *preserve;
-
-    preserve = mp4tag_preserve_tags (libmp4tag);
+  if (! asstream && preserve) {
+    preservedata = mp4tag_preserve_tags (libmp4tag);
     mp4tag_free (libmp4tag);
-    libmp4tag = openparse (copyto, dbgflags, options, freespacesz);
-    mp4tag_restore_tags (libmp4tag, preserve);
+    rc = system (preservecmd);
+    libmp4tag = openparse (infname, dbgflags, options, freespacesz);
+    rc = mp4tag_restore_tags (libmp4tag, preservedata);
+    mp4tag_preserve_free (preservedata);
     write = true;
   }
 
-  if (! asstream && clean && ! copy) {
+  if (! asstream && copy) {
+    preservedata = mp4tag_preserve_tags (libmp4tag);
+    mp4tag_free (libmp4tag);
+    libmp4tag = openparse (copyto, dbgflags, options, freespacesz);
+    mp4tag_restore_tags (libmp4tag, preservedata);
+    mp4tag_preserve_free (preservedata);
+    write = true;
+  }
+
+  if (! asstream && clean && ! copy && ! preserve ) {
     if (mp4tag_clean_tags (libmp4tag) != MP4TAG_OK) {
       fprintf (stderr, "Unable to clean tags (%s)\n", mp4tag_error_str (libmp4tag));
       rc = mp4tag_error (libmp4tag);
@@ -220,7 +244,7 @@ main (int argc, char *argv [])
     write = true;
   }
 
-  if (rc == MP4TAG_OK && ! asstream && ! clean && ! copy) {
+  if (rc == MP4TAG_OK && ! asstream && ! clean && ! copy && ! preserve) {
     for (int i = fnidx + 1; i < argc; ++i) {
       char    *tstr;
       char    *tokstr;
@@ -280,7 +304,7 @@ main (int argc, char *argv [])
     }
   }
 
-  if (rc == MP4TAG_OK && display && ! clean && ! copy) {
+  if (rc == MP4TAG_OK && display && ! clean && ! copy && ! preserve) {
     int     rc;
 
     rc = mp4tag_get_tag_by_name (libmp4tag, tagname, &mp4tagpub);
@@ -305,11 +329,11 @@ main (int argc, char *argv [])
     }
   }
 
-  if (rc == MP4TAG_OK && ! write && duration) {
+  if (rc == MP4TAG_OK && ! write && duration && ! preserve) {
     fprintf (stdout, "%" PRId64 "\n", mp4tag_duration (libmp4tag));
   }
 
-  if (rc == MP4TAG_OK && ! write && ! display && ! duration && ! clean) {
+  if (rc == MP4TAG_OK && ! write && ! display && ! duration && ! clean && ! preserve) {
     fprintf (stdout, "duration=%" PRId64 "\n", mp4tag_duration (libmp4tag));
 
     mp4tag_iterate_init (libmp4tag);
@@ -449,7 +473,7 @@ cliseekcb (size_t offset, void *udata)
   FILE    *fh = udata;
   int     rc;
 
-  rc = fseek (fh, offset, SEEK_CUR);
+  rc = mp4tag_fseek (fh, offset, SEEK_CUR);
   return rc;
 }
 

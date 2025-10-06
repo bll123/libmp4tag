@@ -1,10 +1,9 @@
-'\" t
 .\"
 .\" libmp4tag.3
 .\"
-.\" Copyright 2023-2024 Brad Lanam Pleasant Hill CA USA
+.\" Copyright 2023-2025 Brad Lanam Pleasant Hill CA USA
 .\"
-.\" brad.lanam.di_at_gmail.com
+.\" brad.lanam.di / gmail.com
 .\"
 .TH libmp4tag 3 "28 Nov 2023"
 .SH Name
@@ -22,6 +21,10 @@
 \fBint mp4tag_parse (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
 .br
 \fBvoid mp4tag_free (libmp4tag_t *\fP\fIlibmp4tag\fP\fB)\fP
+.PP
+\fBtypedef size_t (*mp4tag_readcb_t)(char *\fP\fIbuff\fP\fB, size_t \fP\fIsz\fP\fB, size_t \fP\fInmemb\fP\fB, void *\fP\fIudata\fP\fB)\fP
+.br
+\fBtypedef int (*mp4tag_seekcb_t)(size_t \fP\fIoffset\fP\fB, void *\fP\fIudata\fP\fB)\fP
 .SS Getting Tags
 .EX
 .B "typedef struct {"
@@ -74,6 +77,10 @@
 \fBint mp4tag_file_delete (const char *\fP\fIfilename\fP\fB)\fP
 .br
 \fBint mp4tag_file_move (const char *\fP\fIfilename\fP\fB, const char *\fP\fInewfilename\fP\fB)\fP
+.br
+\fBint64_t mp4tag_ftell (FILE *\fP\fIfh\fP\fB)\fP
+.br
+\fBint mp4tag_fseek (FILE *\fP\fIfh\fP\fB, int64_t \fP\fIoffset\fP\fB, int \fP\fIwhence\fP\fB)\fP
 .br
 \fBwchar_t *mp4tag_towide (const char *\fP\fIbuff\fP\fB)\fP
 .br
@@ -172,7 +179,7 @@ calling application.
 .PP
 \fBmp4tag_error_str\fP returns a readable error string corresponding to
 the current error.  This function is intended for debugging purposes and
-not for display to the end user.
+not for display to the end user.  The error strings are not localized.
 .PP
 \fBmp4tag_set_debug_flags\fP sets the debug flags to \fIdbgflags\fP.
 .SS Helper Functions
@@ -315,23 +322,29 @@ _
 \fBtvnn\fP	TV Network Name	string
 \fBtvsh\fP	TV Show Name	string
 \fBtvsn\fP	TV Season	numeric
-\fB©ART\fP	Artist	string
-\fB©alb\fP	Album	string
-\fB©cmt\fP	Comment	string
-\fB©day\fP	Year	string
-\fB©dir\fP	Director	string
-\fB©gen\fP	Genre	string
-\fB©grp\fP	Grouping	string
-\fB©lyr\fP	Lyrics	string
-\fB©mvc\fP	Movement Total	numeric
-\fB©mvi\fP	Movement Number	numeric
-\fB©mvn\fP	Movement Name	string
-\fB©nam\fP	Title	string
-\fB©nrt\fP	Narrator	string
-\fB©pub\fP	Publisher	string
-\fB©too\fP	Encoded By	string
-\fB©wrk\fP	Work	string
-\fB©wrt\fP	Writer, Composer	string
+\fB\[co]ART\fP	Artist	string
+\fB\[co]alb\fP	Album	string
+\fB\[co]cmt\fP	Comment	string
+\fB\[co]day\fP	Year	string
+\fB\[co]dir\fP	Director	string
+\fB\[co]gen\fP	Genre	string
+\fB\[co]grp\fP	Grouping	string
+\fB\[co]lyr\fP	Lyrics	string
+\fB\[co]mvc\fP	Movement Total	numeric
+\fB\[co]mvi\fP	Movement Number	numeric
+\fB\[co]mvn\fP	Movement Name	string
+\fB\[co]nam\fP	Title	string
+\fB\[co]nrt\fP	Narrator	string
+\fB\[co]pub\fP	Publisher	string
+\fB\[co]too\fP	Encoded By	string
+\fB\[co]wrk\fP	Work	string
+\fB\[co]wrt\fP	Writer, Composer	string
+.TE
+.TS
+l l l.
+Tag	Description	Type
+_
+\fB----:com.apple.iTunes:CONDUCTOR\fP	Conductor	string
 .TE
 .PP
 (1) \fBlibmp4tag\fP accepts N, N/T or (N,T) formats to specify the
