@@ -6,6 +6,11 @@
 
 -->
 
+**2.0.1 2025-10-27**
+
+* Bug Fixes:
+    * Update incorrect instructions in README.
+
 **2.0.1 2025-10-6**
 
 * Bug Fixes:

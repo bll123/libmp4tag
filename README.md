@@ -18,9 +18,9 @@ libmp4tag
 ### About
 
 An MP4 tagging library where all tags can be accessed and modified and
-any tags, unknown tags or custom tags are never lost when the audio
-file is updated. A list of known tags is only used when new tags are
-added.
+any tags, unknown tags or custom tags are never lost when the audio or
+video file is updated. A list of known tags is only used when new tags
+are added.
 
 A command line utility is included to display or change the tags.
 
@@ -57,7 +57,7 @@ Note that the MacOS deployment target is set to 10.13
 
 cmake only:
 
-    cmake -DCMAKE_INSTALL_PREFIX=$HOME/local
+    cmake -B build -DCMAKE_INSTALL_PREFIX=$HOME/local
     cmake --build build
     cmake --install build
 
@@ -183,4 +183,4 @@ Preserve tags, run a command, restore the tags:
 Free Space Size:
 
     # the free space size is only relevant if the mp4 file is re-written.
-    mp4tagcli -freespace 4096 filename.m4a covr=picA.png
+    mp4tagcli --freespace 4096 filename.m4a covr=picA.png

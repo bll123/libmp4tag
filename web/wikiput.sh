@@ -81,6 +81,18 @@ END {
     ${tfn} >> ${tmpfile}
 }
 
+function gitchanges {
+  tfn=$1
+
+  # remove toc (sourceforge only)
+  # remove all div's, they don't work
+  sed -e 's,\[TOC\],,' \
+      -e '/<div / d' \
+      -e '/<\/div>/ d' \
+      $tfn \
+      > ${tmpfile}
+}
+
 function getaccesstoken {
   bearer=$(cat dev/wikibearer.txt)
 }
@@ -152,7 +164,7 @@ function put {
   eval $cmd > /dev/null
   echo "$tfn: sourceforge updated"
 
-#  gitchanges $tfn
+  gitchanges $tfn
   d=$(dirname $tfn | sed -e 's,^wiki,,' -e 's,^/,,')
   # github wiki will preserve the directory layout, though it
   # will not use it.
