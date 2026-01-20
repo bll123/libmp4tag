@@ -6,6 +6,12 @@
 
 -->
 
+**2.0.2 2026-1-20**
+
+* Bug Fixes:
+    * Fix build with recent Msys2.
+    * Fix build with older compilers.
+
 **2.0.1 2025-10-27**
 
 * Bug Fixes:

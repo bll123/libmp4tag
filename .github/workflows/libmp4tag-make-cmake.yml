@@ -45,7 +45,6 @@ jobs:
           make -e PREFIX=${{ steps.strings.outputs.inst-dir }}
           BUILDDIR=${{ steps.strings.outputs.build-output-dir }}
           CC=${{ matrix.c_compiler }}
-          all
 
       - name: Install
         run: >

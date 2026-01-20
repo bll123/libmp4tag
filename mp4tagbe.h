@@ -19,7 +19,14 @@
 #endif
 #if ! __has_include (<endian.h>) && __has_include (<winsock2.h>)
 # include <winsock2.h>
+# define be32toh ntohl
+# define be16toh ntohs
+# define be64toh ntohll
+# define htobe32 htonl
+# define htobe16 htons
+# define htobe64 htonll
 
+#if 0
 # if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {
 # endif
@@ -50,6 +57,7 @@ htonll (uint64_t v)
 # if defined (__cplusplus) || defined (c_plusplus)
 } /* extern C */
 # endif
+#endif
 
 #endif
 

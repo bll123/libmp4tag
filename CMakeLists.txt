@@ -211,9 +211,6 @@ if (NOT WIN32)
     # universal binary
     set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
   endif()
-else()
-  checkAddLinkFlag ("-static-libgcc")
-  checkAddLinkFlag ("-static-libstdc++")
 endif()
 
 #### configuration
