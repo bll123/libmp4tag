@@ -77,7 +77,7 @@ main (int argc, char *argv [])
   return 0;
 }
 _HERE_
-  cc -c -I build $INCTC >> $INCTOUT 2>&1
+  cc -c -I build -I . $INCTC >> $INCTOUT 2>&1
   rc=$?
   if [[ $rc -ne 0 ]]; then
     echo "compile of $bfn failed"

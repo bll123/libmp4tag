@@ -4,10 +4,11 @@
 
 #pragma once
 
-#include "config.h"
-
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "nodiscard.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

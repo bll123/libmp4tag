@@ -58,7 +58,7 @@ if (WIN32)
 endif()
 
 include_directories (
-  "${CMAKE_BINARY_DIR}"
+  "${CMAKE_BINARY_DIR}" "${PROJECT_SOURCE_DIR}"
 )
 
 SET (CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -235,12 +235,6 @@ check_struct_has_member ("struct stat"
 
 configure_file (config.h.in config.h)
 configure_file (libmp4tag.h.in libmp4tag.h)
-
-check_c_source_compiles (
-  "[[nodiscard]] int a (void) { return 20; }
-  int main (void) { int b = a(); }"
-  _has_nodiscard
-)
 
 #### libraries
 
