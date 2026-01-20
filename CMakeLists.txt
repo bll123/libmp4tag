@@ -102,6 +102,7 @@ endmacro()
 checkAddCompileFlag ("-fPIC")
 checkAddLinkFlag ("-fPIC")
 
+checkAddCompileFlag ("-std=c2x")
 checkAddCompileFlag ("-Wall")
 checkAddCompileFlag ("-Wextra")
 checkAddCompileNegFlag ("-Wno-unused-parameter")
