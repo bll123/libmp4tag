@@ -922,6 +922,7 @@ mp4tag_data_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
   time_t    tmval = 0;
   time_t    ttm = 0;
   int       rc = 0;
+  char      *cbuff = buff;
 
   if (libmp4tag->isstream) {
     if (libmp4tag->readcb == NULL) {
@@ -935,9 +936,9 @@ mp4tag_data_read (libmp4tag_t *libmp4tag, void *buff, size_t sz)
 
   while (bwant > 0) {
     if (! libmp4tag->isstream) {
-      br = fread (buff + totbr, 1, bwant, libmp4tag->fh);
+      br = fread (cbuff + totbr, 1, bwant, libmp4tag->fh);
     } else {
-      br = libmp4tag->readcb (buff + totbr, 1, bwant, libmp4tag->userdata);
+      br = libmp4tag->readcb (cbuff + totbr, 1, bwant, libmp4tag->userdata);
     }
     if (br > 0) {
       totbr += br;

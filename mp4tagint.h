@@ -95,9 +95,7 @@ enum {
   MP4TAG_DBG_FIX_OUTPUT             = (1 << 5),
 };
 
-enum {
-  MP4TAG_IDENT = 0x6c69626d70347467,
-};
+#define MP4TAG_IDENT 0x6c69626d70347467
 
 /* any changes to this structure must be reflected in mp4tag_clone_tag() */
 typedef struct mp4tag {

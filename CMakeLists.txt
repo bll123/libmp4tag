@@ -102,6 +102,8 @@ endmacro()
 checkAddCompileFlag ("-fPIC")
 checkAddLinkFlag ("-fPIC")
 
+checkAddCompileFlag ("-pedantic")
+checkAddCompileFlag ("-pedantic-errors")
 checkAddCompileFlag ("-Wall")
 checkAddCompileFlag ("-Wextra")
 checkAddCompileNegFlag ("-Wno-unused-parameter")

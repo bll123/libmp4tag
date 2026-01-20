@@ -10,7 +10,7 @@
 
 * Bug Fixes:
     * Fix build with recent Msys2.
-    * Fix build with older compilers.
+    * Fix build with [[nodiscard]].
 
 **2.0.1 2025-10-27**
 
