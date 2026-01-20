@@ -8,6 +8,7 @@
  *    https://github.com/quodlibet/mutagen/blob/master/mutagen/mp4/__init__.py
  *    https://picard-docs.musicbrainz.org/en/appendices/tag_mapping.html
  *    https://docs.mp3tag.de/mapping/
+ *    https://web.archive.org/web/20091007071048/http://www.3gpp2.org/Public_html/specs/C.S0050-B_v1.0_070521.pdf
  */
 
 #include "config.h"
