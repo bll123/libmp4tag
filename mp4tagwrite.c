@@ -14,6 +14,7 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 #include "mp4tagbe.h"
+#include "nodiscard.h"
 
 static const char *MP4TAG_CUSTOM_DELIM = ":";
 static const char *MP4TAG_TEMP_SUFFIX = "-mp4tag.tmp";
@@ -36,7 +37,7 @@ static int  mp4tag_copy_file_data (FILE *ifh, FILE *ofh, int64_t offset, size_t 
 static void mp4tag_debug_write_vals (libmp4tag_t *libmp4tag, uint32_t datalen, int32_t delta, int32_t totdelta, int32_t freelen);
 
 /* if there are no tags, null will be returned. */
-[[nodiscard]]
+NODISCARD
 char *
 mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *datalen)
 {

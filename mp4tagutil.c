@@ -19,6 +19,7 @@
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
+#include "nodiscard.h"
 
 const char *MP4TAG_INPUT_DELIM = ":";
 
@@ -125,7 +126,7 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx)
   return idx;
 }
 
-[[nodiscard]]
+NODISCARD
 mp4tagdef_t *
 mp4tag_check_tag (const char *tag)
 {
