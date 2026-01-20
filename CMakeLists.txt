@@ -102,7 +102,6 @@ endmacro()
 checkAddCompileFlag ("-fPIC")
 checkAddLinkFlag ("-fPIC")
 
-checkAddCompileFlag ("-std=c2x")
 checkAddCompileFlag ("-Wall")
 checkAddCompileFlag ("-Wextra")
 checkAddCompileNegFlag ("-Wno-unused-parameter")
@@ -236,6 +235,12 @@ check_struct_has_member ("struct stat"
 
 configure_file (config.h.in config.h)
 configure_file (libmp4tag.h.in libmp4tag.h)
+
+check_c_source_compiles (
+  "[[nodiscard]] int a (void) { return 20; }
+  int main (void) { int b = a(); }"
+  _has_nodiscard
+)
 
 #### libraries
 

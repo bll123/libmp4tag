@@ -16,3 +16,5 @@
 
 #cmakedefine01 _mem_struct_stat_st_atim
 #cmakedefine01 _mem_struct_stat_st_atimespec
+
+#cmakedefine01 _has_nodiscard
