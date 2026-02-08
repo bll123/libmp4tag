@@ -61,6 +61,7 @@ echo "## building"
 make distclean
 cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/x -S . -B build > cmake.log 2>&1
 cmake --build build >> cmake.log 2>&1
+cmake --install build >> cmake.log 2>&1
 
 echo "## checking include file compilation"
 test -f $INCTOUT && rm -f $INCTOUT
@@ -127,12 +128,57 @@ tdir=.
 if [[ -d build ]]; then
   tdir=build
 fi
-./utils/lorder $(find ${tdir} -name '*.o') > $TOIN
+
+OBJEXT=.o
+LORD=./utils/lorder
+case ${systype} in
+  Darwin)
+    LORD=lorder
+    ;;
+  Linux)
+    ;;
+  MINGW*|CYGWIN*)
+    OBJEXT=.obj
+    ;;
+esac
+
+${LORD} $(find ${tdir} -name '*'${OBJEXT} ) > $TOIN
 tsort < $TOIN > $TOSORT
 rc=$?
 if [[ $rc -ne 0 ]]; then
   grc=$rc
 fi
+
+echo "## checking user include file compilation"
+test -f $INCTOUT && rm -f $INCTOUT
+for fn in x/include/*.h; do
+  bfn=$(echo $fn | sed 's,x/include/,,')
+  cat > $INCTC << _HERE_
+
+#include "${bfn}"
+
+int
+main (int argc, char *argv [])
+{
+  return 0;
+}
+_HERE_
+  cc -c -I x/include $INCTC >> $INCTOUT 2>&1
+  rc=$?
+  if [[ $rc -ne 0 ]]; then
+    echo "compile of $bfn failed"
+    if [[ $rc -ne 0 ]]; then
+      grc=$rc
+    fi
+  fi
+  rm -f $INCTC $INCTO
+done
+rm -f $INCTC $INCTO
+if [[ $grc -ne 0 ]]; then
+  exit $grc
+fi
+rm -f $INCTOUT
+
 
 if [[ $keep == F ]]; then
   rm -f $TIIN $TISORT $TOIN $TOSORT > /dev/null 2>&1

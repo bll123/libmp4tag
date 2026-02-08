@@ -19,7 +19,6 @@
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
-#include "nodiscard.h"
 
 const char *MP4TAG_INPUT_DELIM = ":";
 

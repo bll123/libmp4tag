@@ -24,7 +24,6 @@
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
-#include "nodiscard.h"
 
 /* these error strings are only for debugging purposes, and */
 /* do not need to be translated */

@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 #include "libmp4tag.h"
-#include "nodiscard.h"
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

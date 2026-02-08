@@ -20,7 +20,6 @@
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
-#include "nodiscard.h"
 
 NODISCARD
 FILE *
@@ -196,8 +195,8 @@ mp4tag_copy_file_times (FILE *ifh, FILE *ofh)
     FILETIME    atime;
     FILETIME    wtime;
 
-    ih = (HANDLE) _get_osfhandle (_fileno (ifh));
-    oh = (HANDLE) _get_osfhandle (_fileno (ofh));
+    ih = (HANDLE) _get_osfhandle (fileno (ifh));
+    oh = (HANDLE) _get_osfhandle (fileno (ofh));
     /* the windows api documentation states that a non-zero return value */
     /* indicates success */
     if (GetFileTime (ih, &ctime, &atime, &wtime) != 0) {

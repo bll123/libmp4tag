@@ -34,6 +34,19 @@ project (LIBMP4TAG
   LANGUAGES C
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL CYGWIN)
+  set (SYSWIN T)
+endif()
+if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+  set (SYSWIN T)
+endif()
+if (CMAKE_SYSTEM_NAME STREQUAL Linux)
+  set (SYSLINUX T)
+endif()
+if (CMAKE_SYSTEM_NAME STREQUAL Darwin)
+  set (SYSMACOS T)
+endif()
+
 # It is possible that the so-version may not match the main version
 # in some future.  This would need to be changed.
 string (REGEX REPLACE "\\..*" "" LIBMP4TAG_SOVERSION ${LIBMP4TAG_VERSION})
@@ -51,8 +64,8 @@ include (CheckSymbolExists)
 include (CheckStructHasMember)
 
 set (LIBMP4TAG_LIBNAME libmp4tag)
-if (WIN32)
-  # msys2 loves to put the lib prefix in front
+if (SYSWIN)
+  # cmake on msys2 loves to put the lib prefix in front
   # difficult to work around
   set (LIBMP4TAG_LIBNAME mp4tag)
 endif()
@@ -152,7 +165,7 @@ endif()
 
 add_compile_options (-g)
 add_link_options (-g)
-if (NOT WIN32)
+if (NOT SYSWIN)
   checkAddLinkFlag ("-rdynamic")
 endif()
 
@@ -196,11 +209,11 @@ endif()
 
 #### system specific compile options
 
-if (NOT WIN32)
-  if (NOT APPLE)
+if (NOT SYSWIN)
+  if (SYSLINUX)
     SET (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} "\${ORIGIN}")
   endif()
-  if (APPLE)
+  if (SYSMAC)
     SET (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} "@loader_path")
     # 10.6 = Snow Leopard, 10.7 = Lion
     # 10.8 = Mountain Lion, 10.9 = Mavericks
@@ -250,15 +263,15 @@ add_library (${LIBMP4TAG_LIBNAME}
   mp4const.c
 )
 set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES PREFIX "")
-if (WIN32)
+if (SYSWIN)
   set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES PREFIX "lib")
 endif()
-if (WIN32)
+if (SYSWIN)
   target_link_libraries (${LIBMP4TAG_LIBNAME} PUBLIC ws2_32)
 endif()
 
 # I don't know if this is needed.  windows works fine for me.
-if (WIN32)
+if (SYSWIN)
   set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 set_target_properties (${LIBMP4TAG_LIBNAME} PROPERTIES
@@ -274,7 +287,7 @@ add_executable (mp4tagcli
 target_link_libraries (mp4tagcli PRIVATE
   ${LIBMP4TAG_LIBNAME}
 )
-if (WIN32)
+if (SYSWIN)
   target_link_libraries (mp4tagcli PUBLIC ws2_32)
 endif()
 

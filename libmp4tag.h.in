@@ -7,8 +7,19 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
-#include "nodiscard.h"
+#if __STDC_VERSION__ < 202000
+# undef NODISCARD
+# define NODISCARD __attribute__ ((warn_unused_result))
+#endif
+#if __STDC_VERSION__ >= 202000
+# undef NODISCARD
+# define NODISCARD [[nodiscard]]
+#endif
+#if ! defined (NODISCARD)
+# define NODISCARD
+#endif
 
 #if defined (__cplusplus) || defined (c_plusplus)
 extern "C" {

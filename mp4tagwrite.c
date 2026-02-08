@@ -14,7 +14,6 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 #include "mp4tagbe.h"
-#include "nodiscard.h"
 
 static const char *MP4TAG_CUSTOM_DELIM = ":";
 static const char *MP4TAG_TEMP_SUFFIX = "-mp4tag.tmp";
