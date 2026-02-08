@@ -213,7 +213,7 @@ if (NOT SYSWIN)
   if (SYSLINUX)
     SET (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} "\${ORIGIN}")
   endif()
-  if (SYSMAC)
+  if (SYSMACOS)
     SET (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR} "@loader_path")
     # 10.6 = Snow Leopard, 10.7 = Lion
     # 10.8 = Mountain Lion, 10.9 = Mavericks

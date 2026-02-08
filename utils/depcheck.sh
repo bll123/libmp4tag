@@ -135,9 +135,8 @@ case ${systype} in
   Darwin)
     LORD=lorder
     ;;
-  Linux)
-    ;;
-  MINGW*|CYGWIN*)
+  MINGW*)
+    # cygwin cmake uses .o
     OBJEXT=.obj
     ;;
 esac

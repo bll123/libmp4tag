@@ -17,6 +17,9 @@
 # define WIN32_LEAN_AND_MEAN 1
 # include <windows.h>
 #endif
+#if __has_include (<io.h>)
+# include <io.h>
+#endif
 
 #include "libmp4tag.h"
 #include "mp4tagint.h"
