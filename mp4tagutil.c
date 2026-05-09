@@ -93,9 +93,9 @@ mp4tag_parse_tagname (char *tag, int *pdataidx)
 int
 mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx)
 {
-  mp4tag_t    key;
-  mp4tag_t    *result;
-  int         idx = MP4TAG_NOTFOUND;
+  mp4tag_t        key;
+  const mp4tag_t  *result;
+  int             idx = MP4TAG_NOTFOUND;
 
   if (libmp4tag == NULL || libmp4tag->libmp4tagident != MP4TAG_IDENT) {
     return -1;
@@ -115,8 +115,8 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx)
   }
   key.tag = (char *) tag;
   key.dataidx = dataidx;
-  result = bsearch (&key, libmp4tag->tags, libmp4tag->tagcount,
-      sizeof (mp4tag_t), mp4tag_compare);
+  result = bsearch (&key, libmp4tag->tags,
+      libmp4tag->tagcount, sizeof (mp4tag_t), mp4tag_compare);
 
   if (result != NULL) {
     idx = result->idx;
@@ -125,13 +125,13 @@ mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx)
   return idx;
 }
 
-NODISCARD
-mp4tagdef_t *
+LIBMP4TAG_NODISCARD
+const mp4tagdef_t *
 mp4tag_check_tag (const char *tag)
 {
-  mp4tagdef_t key;
-  mp4tagdef_t *result;
-  char        tmp [MP4TAG_ID_DISP_LEN];
+  mp4tagdef_t       key;
+  const mp4tagdef_t *result;
+  char              tmp [MP4TAG_ID_DISP_LEN];
 
   if (tag == NULL) {
     return NULL;
@@ -507,7 +507,7 @@ mp4tag_set_tag_binary (libmp4tag_t *libmp4tag,
     identtype = mp4tag_check_covr (tag, fn);
     mp4tag->identtype = identtype;
   } else {
-    mp4tagdef_t *tagdef = NULL;
+    const mp4tagdef_t *tagdef = NULL;
     bool        ok = false;
 
     /* a new binary data tag */
@@ -706,9 +706,9 @@ mp4tag_chk_dbg (libmp4tag_t *libmp4tag, int dbg)
 static int
 mp4tag_check_covr (const char *tag, const char *fn)
 {
-  int     identtype = MP4TAG_ID_DATA;
-  char    *p;
-  char    ext [10];
+  int         identtype = MP4TAG_ID_DATA;
+  const char  *p;
+  char        ext [10];
 
   if (memcmp (tag, boxids [MP4TAG_COVR], MP4TAG_ID_LEN) != 0) {
     return identtype;

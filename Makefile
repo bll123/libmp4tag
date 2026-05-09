@@ -9,6 +9,7 @@ BUILDDIR = build
 CLANG = clang
 LOCTMP = tmp
 SRCFLAG = $(LOCTMP)/source.txt
+CMAKE = cmake
 
 .PHONY: release
 release:
@@ -84,7 +85,7 @@ cmakeclang:
 .PHONY: cmake-unix
 cmake-unix:
 	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
-	cmake \
+	$(CMAKE) \
 		-DCMAKE_C_COMPILER=$(CC) \
 		-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
 		-DLIBMP4TAG_BUILD:STATIC=$(LIBMP4TAG_BUILD) \
@@ -94,7 +95,7 @@ cmake-unix:
 .PHONY: cmake-windows
 cmake-windows:
 	@if [ "$(PREFIX)" = "" ]; then echo "No prefix set"; exit 1; fi
-	cmake \
+	$(CMAKE) \
 		-DCMAKE_C_COMPILER=$(CC) \
 		-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
 		-DLIBMP4TAG_BUILD:STATIC=$(LIBMP4TAG_BUILD) \
@@ -106,11 +107,11 @@ cmake-windows:
 # --parallel also seems to not work on *BSD
 .PHONY: build
 build:
-	cmake --build $(BUILDDIR) $(pmode)
+	$(CMAKE) --build $(BUILDDIR) $(pmode)
 
 .PHONY: install
 install:
-	cmake --install $(BUILDDIR)
+	$(CMAKE) --install $(BUILDDIR)
 
 # source
 

@@ -206,7 +206,7 @@ int  mp4tag_parse_ftyp (libmp4tag_t *libmp4tag);
 
 /* mp4tagwrite.c */
 
-NODISCARD char  * mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *dlen);
+LIBMP4TAG_NODISCARD char  * mp4tag_build_data (libmp4tag_t *libmp4tag, uint32_t *dlen);
 int   mp4tag_write_data (libmp4tag_t *libmp4tag, const char *data, uint32_t datalen);
 
 
@@ -219,7 +219,7 @@ extern const char *MP4TAG_INPUT_DELIM;
 void mp4tag_sort_tags (libmp4tag_t *libmp4tag);
 int  mp4tag_find_tag (libmp4tag_t *libmp4tag, const char *tag, int dataidx);
 int  mp4tag_parse_tagname (char *tag, int *dataidx);
-NODISCARD mp4tagdef_t *mp4tag_check_tag (const char *tag);
+LIBMP4TAG_NODISCARD const mp4tagdef_t *mp4tag_check_tag (const char *tag);
 int  mp4tag_compare (const void *a, const void *b);
 int  mp4tag_compare_list (const void *a, const void *b);
 int  mp4tag_add_tag (libmp4tag_t *libmp4tag, const char *tag, const char *data, ssize_t sz, uint32_t origflag, size_t origlen, const char *covername);

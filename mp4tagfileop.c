@@ -24,7 +24,7 @@
 #include "libmp4tag.h"
 #include "mp4tagint.h"
 
-NODISCARD
+LIBMP4TAG_NODISCARD
 FILE *
 mp4tag_fopen (const char *fname, const char *mode)
 {
@@ -51,7 +51,7 @@ mp4tag_fopen (const char *fname, const char *mode)
   return fh;
 }
 
-NODISCARD
+LIBMP4TAG_NODISCARD
 ssize_t
 mp4tag_file_size (const char *fname)
 {
@@ -86,7 +86,7 @@ mp4tag_file_size (const char *fname)
   return sz;
 }
 
-NODISCARD
+LIBMP4TAG_NODISCARD
 char *
 mp4tag_read_file (const char *fn, size_t *sz, int *mp4error)
 {
@@ -251,7 +251,7 @@ mp4tag_fseek (FILE *fh, int64_t offset, int whence)
 
 #ifdef _WIN32
 
-NODISCARD
+LIBMP4TAG_NODISCARD
 wchar_t *
 mp4tag_towide (const char *buff)
 {
@@ -268,7 +268,7 @@ mp4tag_towide (const char *buff)
   return tbuff;
 }
 
-NODISCARD
+LIBMP4TAG_NODISCARD
 char *
 mp4tag_fromwide (const wchar_t *buff)
 {

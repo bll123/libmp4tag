@@ -127,7 +127,7 @@ Set a tag and display the value:
 
 Setting multiple tags:
 
-    mp4tagcli filename.m4a nam=My-Title gnr=Country
+    mp4tagcli filename.m4a nam=My-Title gen=Country
 
 Setting a custom tag:
 

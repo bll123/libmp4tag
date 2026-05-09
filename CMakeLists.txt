@@ -149,6 +149,10 @@ checkAddCompileNegFlag ("-Wno-documentation-deprecated-sync")
 checkAddCompileNegFlag ("-Wno-documentation-unknown-command")
 checkAddCompileNegFlag ("-Wno-documentation")
 
+# I am not seeing the warnings this is supposed to generate, though
+# other users are.
+checkAddCompileFlag ("-Wdiscarded-qualifiers")
+
 #### build compile options
 
 if (NOT DEFINED LIBMP4TAG_BUILD OR LIBMP4TAG_BUILD STREQUAL "")
